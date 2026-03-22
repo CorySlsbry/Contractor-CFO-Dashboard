@@ -13,14 +13,6 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createBrowserClient();
-
-  const generateSlug = (name: string): string => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,67 +20,35 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // Step 1: Create user account
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            company_name: companyName,
-          },
-        },
+      // Step 1: Call server-side signup API (auto-confirms email, creates org + profile)
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, fullName, companyName }),
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Signup failed');
         setLoading(false);
         return;
       }
 
-      if (!authData.user) {
-        setError('Failed to create user account');
+      // Step 2: Sign in the user (account is already confirmed)
+      const supabase = createBrowserClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError('Account created but sign-in failed: ' + signInError.message);
         setLoading(false);
         return;
       }
 
-      const userId = authData.user.id;
-
-      // Step 2: Create organization record and get back the ID
-      const slug = generateSlug(companyName);
-      const { data: orgData, error: orgError } = await (supabase as any)
-        .from('organizations')
-        .insert({
-          name: companyName,
-          slug,
-        })
-        .select('id')
-        .single();
-
-      if (orgError || !orgData) {
-        setError('Failed to create organization: ' + (orgError?.message || 'Unknown error'));
-        setLoading(false);
-        return;
-      }
-
-      // Step 3: Create profile record linked to the organization
-      const { error: profileError } = await (supabase as any)
-        .from('profiles')
-        .insert({
-          id: userId,
-          email,
-          full_name: fullName,
-          organization_id: orgData.id,
-          role: 'owner',
-        });
-
-      if (profileError) {
-        setError('Failed to create user profile: ' + profileError.message);
-        setLoading(false);
-        return;
-      }
-
-      // Step 4: Redirect to dashboard
+      // Step 3: Redirect to dashboard
       router.push('/dashboard');
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
@@ -183,6 +143,7 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
+              minLength={6}
               className="w-full px-4 py-2 rounded bg-[#0a0a0f] border border-[#1e1e2e] text-[#e8e8f0] placeholder-[#8888a0] focus:outline-none focus:border-[#6366f1] transition"
             />
           </div>
