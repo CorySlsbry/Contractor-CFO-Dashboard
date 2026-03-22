@@ -66,28 +66,108 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Dashboard Mock */}
-          <div className="bg-gradient-to-b from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-8 shadow-2xl overflow-hidden">
-            <div className="aspect-video bg-[#1e1e2e] rounded flex items-center justify-center">
-              <div className="text-center">
-                <div className="grid grid-cols-3 gap-4 mb-6 w-full">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="bg-[#0a0a0f] border border-[#2a2a3a] rounded p-4 text-left"
-                    >
-                      <div className="text-[#8888a0] text-xs mb-2">
-                        Metric {i}
+          {/* Dashboard Mock — Rich Preview */}
+          <div className="bg-gradient-to-b from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 sm:p-6 shadow-2xl overflow-hidden">
+            {/* Tab bar */}
+            <div className="flex gap-1 mb-4 border-b border-[#2a2a3d] pb-2 overflow-x-auto">
+              {['Overview', 'AR by Job', 'AP by Job', 'WIP', 'Retainage', 'Sales'].map((tab, i) => (
+                <div key={tab} className={`px-3 py-1.5 text-xs font-medium rounded-t whitespace-nowrap ${i === 0 ? 'bg-[#6366f1]/15 text-[#a5b4fc] border-b-2 border-[#6366f1]' : 'text-[#8888a0]'}`}>
+                  {tab}
+                </div>
+              ))}
+            </div>
+
+            {/* KPI Row */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+              {[
+                { label: 'Revenue (YTD)', value: '$2.85M', change: '+12.3%', up: true },
+                { label: 'AR Outstanding', value: '$487.2K', change: '+3.1%', up: false },
+                { label: 'AP Outstanding', value: '$312.8K', change: '-8.2%', up: true },
+                { label: 'Net Cash', value: '$744.3K', change: '+26.1%', up: true },
+                { label: 'WIP Over-Billing', value: '$82.4K', change: '-12.5%', up: true },
+                { label: 'Retainage Held', value: '$196.5K', change: '+4.3%', up: false },
+              ].map((kpi) => (
+                <div key={kpi.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
+                  <div className="text-[#8888a0] text-[10px] uppercase tracking-wide mb-1">{kpi.label}</div>
+                  <div className="text-lg font-bold text-[#e8e8f0]">{kpi.value}</div>
+                  <div className={`text-[10px] font-semibold ${kpi.up ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{kpi.change}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Two Column: AR Aging + Cash Flow */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+              {/* AR Aging */}
+              <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                <div className="text-sm font-semibold text-[#e8e8f0] mb-3">AR Aging Summary</div>
+                <div className="space-y-2">
+                  {[
+                    { range: 'Current', amount: '$310K', pct: 64, color: '#22c55e' },
+                    { range: '1-30 Days', amount: '$85K', pct: 17, color: '#eab308' },
+                    { range: '31-60 Days', amount: '$63.5K', pct: 13, color: '#ef9d44' },
+                    { range: '61-90 Days', amount: '$28.7K', pct: 6, color: '#ef4444' },
+                  ].map((item) => (
+                    <div key={item.range} className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                      <span className="text-[10px] text-[#8888a0] w-16">{item.range}</span>
+                      <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${item.pct}%` }} />
                       </div>
-                      <div className="text-2xl font-bold text-[#6366f1]">
-                        $45.2K
-                      </div>
+                      <span className="text-[10px] font-semibold text-[#e8e8f0] w-12 text-right">{item.amount}</span>
                     </div>
                   ))}
                 </div>
-                <div className="h-32 bg-gradient-to-r from-[#6366f1]/20 to-[#a78bfa]/20 rounded flex items-center justify-center border border-[#2a2a3a]">
-                  <span className="text-[#8888a0]">Dashboard Preview</span>
+              </div>
+
+              {/* Cash Flow Chart Mock */}
+              <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Cash Flow Forecast</div>
+                <div className="flex items-end gap-2 h-24">
+                  {[
+                    { week: 'W1', inflow: 72, outflow: 55 },
+                    { week: 'W2', inflow: 82, outflow: 68 },
+                    { week: 'W3', inflow: 65, outflow: 47 },
+                    { week: 'W4', inflow: 90, outflow: 76 },
+                  ].map((w) => (
+                    <div key={w.week} className="flex-1 flex flex-col items-center gap-1">
+                      <div className="w-full flex gap-0.5 items-end h-20">
+                        <div className="flex-1 rounded-t" style={{ height: `${w.inflow}%`, backgroundColor: '#22c55e', opacity: 0.7 }} />
+                        <div className="flex-1 rounded-t" style={{ height: `${w.outflow}%`, backgroundColor: '#ef4444', opacity: 0.5 }} />
+                      </div>
+                      <span className="text-[9px] text-[#8888a0]">{w.week}</span>
+                    </div>
+                  ))}
                 </div>
+                <div className="flex gap-4 mt-2 justify-center">
+                  <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#22c55e]" /><span className="text-[9px] text-[#8888a0]">Cash In</span></div>
+                  <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#ef4444]" /><span className="text-[9px] text-[#8888a0]">Cash Out</span></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Job WIP Row */}
+            <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+              <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Active Jobs — WIP Status</div>
+              <div className="space-y-2">
+                {[
+                  { name: 'Riverside Estate Custom Home', pct: 82, contract: '$950K', billing: 'Over-Billed', billingAmt: '$69K', billingColor: '#eab308' },
+                  { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', billing: 'Over-Billed', billingAmt: '$141.5K', billingColor: '#eab308' },
+                  { name: 'Mountain View Remodel', pct: 100, contract: '$165K', billing: 'Under-Billed', billingAmt: '$39.5K', billingColor: '#6366f1' },
+                  { name: 'Cedar Heights Addition', pct: 93, contract: '$210K', billing: 'Under-Billed', billingAmt: '$55.3K', billingColor: '#6366f1' },
+                  { name: 'Oakwood Duplex', pct: 94, contract: '$380K', billing: 'Over-Billed', billingAmt: '$5.2K', billingColor: '#eab308' },
+                ].map((job) => (
+                  <div key={job.name} className="flex items-center gap-3">
+                    <span className="text-xs text-[#e8e8f0] w-48 truncate">{job.name}</span>
+                    <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${job.pct >= 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
+                    </div>
+                    <span className="text-[10px] text-[#8888a0] w-10">{job.pct}%</span>
+                    <span className="text-[10px] text-[#8888a0] w-14 text-right">{job.contract}</span>
+                    <span className="text-[10px] font-semibold w-24 text-right" style={{ color: job.billingColor }}>
+                      {job.billing}: {job.billingAmt}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -183,28 +263,46 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
-            Trusted by contractors across the Wasatch Front
+            Trusted by contractors nationwide
           </h2>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
                 quote:
-                  '"We finally understand our job margins. This paid for itself in the first month."',
-                author: 'Mike Johnson',
-                title: 'Owner, Johnson Construction',
+                  '"We were bleeding money on two jobs and had no idea. This dashboard caught it in the first week."',
+                author: 'Mike J.',
+                title: 'GC Owner — Austin, TX',
               },
               {
                 quote:
-                  '"Our accountant loves this. Month-end close went from 4 weeks to 3 days."',
-                author: 'Sarah Miller',
-                title: 'CFO, Miller & Sons Builders',
+                  '"Our bookkeeper used to spend 3 weeks on month-end close. Now it takes 2 days. The WIP tracking alone is worth it."',
+                author: 'Sarah M.',
+                title: 'CFO — Denver, CO',
               },
               {
                 quote:
-                  '"This is what our QuickBooks data should have looked like all along."',
-                author: 'David Chen',
-                title: 'Owner, Chen Development Group',
+                  '"I can finally see retainage, AR aging, and job profitability in one place instead of digging through QuickBooks reports."',
+                author: 'David C.',
+                title: 'Custom Home Builder — Nashville, TN',
+              },
+              {
+                quote:
+                  '"The cash flow forecast saved us from a payroll crunch. We moved a draw request up two weeks because of what we saw."',
+                author: 'Rachel T.',
+                title: 'Remodeling Company Owner — Phoenix, AZ',
+              },
+              {
+                quote:
+                  '"My accountant called me after seeing the dashboard and said, \'Why didn\'t we have this years ago?\'"',
+                author: 'Brandon L.',
+                title: 'Commercial GC — Atlanta, GA',
+              },
+              {
+                quote:
+                  '"We went from guessing on bids to knowing exactly what our margins are on every job type. Game changer."',
+                author: 'Tony R.',
+                title: 'Framing Contractor — Salt Lake City, UT',
               },
             ].map((testimonial, idx) => (
               <div key={idx} className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6">
@@ -357,7 +455,7 @@ export default function LandingPage() {
             Ready to take control of your numbers?
           </h2>
           <p className="text-lg text-[#8888a0] mb-8">
-            Join construction companies across Utah who are making smarter
+            Join hundreds of contractors nationwide who are making smarter
             financial decisions with Contractor CFO Dashboard.
           </p>
           <Link
