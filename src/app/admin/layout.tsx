@@ -18,20 +18,10 @@ export default async function AdminLayout({
     redirect('/login');
   }
 
-  // Get user's profile to check admin status
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('platform_role')
-    .eq('id', user.id)
-    .single() as { data: { platform_role: string } | null; error: any };
+  // Check admin status using RPC function (SECURITY DEFINER, bypasses RLS)
+  const { data: isAdmin, error } = await supabase.rpc('is_platform_admin');
 
-  if (error || !profile) {
-    redirect('/dashboard');
-  }
-
-  // Check if user is admin or superadmin (platform admin)
-  const isAdmin = profile.platform_role === 'admin' || profile.platform_role === 'superadmin';
-  if (!isAdmin) {
+  if (error || !isAdmin) {
     redirect('/dashboard');
   }
 
