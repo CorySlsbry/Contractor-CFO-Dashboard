@@ -1,8 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RevenueChart } from '@/components/charts/revenue-chart';
 import {
   LineChart,
   Line,
@@ -13,375 +13,825 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area,
 } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, Target } from 'lucide-react';
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Target,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  FileText,
+  Users,
+  Building2,
+  ArrowUpRight,
+  ArrowDownRight,
+} from 'lucide-react';
 
-// Mock Data
+// ── Tab Navigation ──────────────────────────────────────
+type TabKey = 'overview' | 'ar' | 'ap' | 'wip' | 'retainage' | 'sales';
+
+const tabs: { key: TabKey; label: string }[] = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'ar', label: 'AR by Job' },
+  { key: 'ap', label: 'AP by Job' },
+  { key: 'wip', label: 'WIP Tracking' },
+  { key: 'retainage', label: 'Retainage' },
+  { key: 'sales', label: 'Sales' },
+];
+
+// ── Mock Data ───────────────────────────────────────────
+
+// KPIs
 const kpis = [
-  {
-    title: 'Revenue',
-    value: '$2,847,500',
-    change: '+12.3%',
-    positive: true,
-    icon: DollarSign,
-  },
-  {
-    title: 'Expenses',
-    value: '$2,103,200',
-    change: '+5.2%',
-    positive: false,
-    icon: TrendingDown,
-  },
-  {
-    title: 'Net Profit',
-    value: '$744,300',
-    change: '+26.1%',
-    positive: true,
-    icon: TrendingUp,
-  },
-  {
-    title: 'Cash Balance',
-    value: '$487,200',
-    change: '+8.7%',
-    positive: true,
-    icon: Target,
-  },
+  { title: 'Revenue (YTD)', value: '$2,847,500', change: '+12.3%', positive: true, icon: DollarSign },
+  { title: 'Total AR Outstanding', value: '$487,200', change: '+3.1%', positive: false, icon: FileText },
+  { title: 'Total AP Outstanding', value: '$312,800', change: '-8.2%', positive: true, icon: TrendingDown },
+  { title: 'Net Cash Position', value: '$744,300', change: '+26.1%', positive: true, icon: Target },
+  { title: 'WIP Over-Billing', value: '$82,400', change: '-12.5%', positive: true, icon: TrendingUp },
+  { title: 'Total Retainage Held', value: '$196,500', change: '+4.3%', positive: false, icon: Building2 },
 ];
 
 const sparklineData = [
-  { value: 65 },
-  { value: 78 },
-  { value: 72 },
-  { value: 85 },
-  { value: 92 },
-  { value: 88 },
-  { value: 95 },
+  { value: 65 }, { value: 78 }, { value: 72 }, { value: 85 },
+  { value: 92 }, { value: 88 }, { value: 95 },
 ];
 
-const jobsData = [
-  {
-    name: 'Riverside Estate Custom Home',
-    estimated: 850000,
-    actual: 823000,
-    margin: 3.2,
-    status: 'In Progress',
-  },
-  {
-    name: 'Mountain View Remodel',
-    estimated: 125000,
-    actual: 148000,
-    margin: -18.4,
-    status: 'Over Budget',
-  },
-  {
-    name: 'Heritage Park Commercial',
-    estimated: 1200000,
-    actual: 890000,
-    margin: 25.8,
-    status: 'In Progress',
-  },
-  {
-    name: 'Oakwood Duplex',
-    estimated: 340000,
-    actual: 285000,
-    margin: 16.2,
-    status: 'Completed',
-  },
-  {
-    name: 'Cedar Heights Addition',
-    estimated: 180000,
-    actual: 157000,
-    margin: 12.8,
-    status: 'In Progress',
-  },
+// AR by Job
+const arByJob = [
+  { job: 'Riverside Estate Custom Home', customer: 'David & Sarah Mitchell', invoiceNum: 'INV-2024-142', amount: 125000, dueDate: '2024-02-15', daysPastDue: 0, status: 'Current' },
+  { job: 'Riverside Estate Custom Home', customer: 'David & Sarah Mitchell', invoiceNum: 'INV-2024-138', amount: 85000, dueDate: '2024-01-20', daysPastDue: 26, status: 'Past Due' },
+  { job: 'Mountain View Remodel', customer: 'Jennifer Pratt', invoiceNum: 'INV-2024-151', amount: 32000, dueDate: '2024-02-28', daysPastDue: 0, status: 'Current' },
+  { job: 'Mountain View Remodel', customer: 'Jennifer Pratt', invoiceNum: 'INV-2024-147', amount: 18500, dueDate: '2024-01-10', daysPastDue: 36, status: 'Past Due' },
+  { job: 'Heritage Park Commercial', customer: 'Heritage Park LLC', invoiceNum: 'INV-2024-155', amount: 125000, dueDate: '2024-03-05', daysPastDue: 0, status: 'Current' },
+  { job: 'Heritage Park Commercial', customer: 'Heritage Park LLC', invoiceNum: 'INV-2024-149', amount: 45000, dueDate: '2024-12-15', daysPastDue: 62, status: 'Past Due' },
+  { job: 'Oakwood Duplex', customer: 'Oakwood Investments', invoiceNum: 'INV-2024-133', amount: 28700, dueDate: '2023-11-30', daysPastDue: 92, status: 'Past Due' },
+  { job: 'Cedar Heights Addition', customer: 'Mark Thompson', invoiceNum: 'INV-2024-160', amount: 28000, dueDate: '2024-03-15', daysPastDue: 0, status: 'Current' },
 ];
 
-const cashFlowData = [
-  { week: 'This Week', projected: 487200 },
-  { week: 'Week 2', projected: 512400 },
-  { week: 'Week 3', projected: 538900 },
-  { week: 'Week 4', projected: 562100 },
+// AP by Job
+const apByJob = [
+  { job: 'Riverside Estate Custom Home', vendor: 'Summit Lumber Supply', invoiceNum: 'BILL-4521', amount: 42500, dueDate: '2024-02-20', daysPastDue: 0, status: 'Current' },
+  { job: 'Riverside Estate Custom Home', vendor: 'Wasatch Electric Co', invoiceNum: 'BILL-4498', amount: 18200, dueDate: '2024-01-15', daysPastDue: 31, status: 'Past Due' },
+  { job: 'Riverside Estate Custom Home', vendor: 'Rocky Mtn Concrete', invoiceNum: 'BILL-4477', amount: 35000, dueDate: '2024-01-05', daysPastDue: 41, status: 'Past Due' },
+  { job: 'Mountain View Remodel', vendor: 'Premier Plumbing', invoiceNum: 'BILL-4533', amount: 12800, dueDate: '2024-02-28', daysPastDue: 0, status: 'Current' },
+  { job: 'Mountain View Remodel', vendor: 'Utah Tile & Stone', invoiceNum: 'BILL-4510', amount: 8500, dueDate: '2024-01-25', daysPastDue: 21, status: 'Past Due' },
+  { job: 'Heritage Park Commercial', vendor: 'Intermountain Steel', invoiceNum: 'BILL-4545', amount: 87000, dueDate: '2024-03-10', daysPastDue: 0, status: 'Current' },
+  { job: 'Heritage Park Commercial', vendor: 'Valley HVAC Systems', invoiceNum: 'BILL-4502', amount: 45300, dueDate: '2024-01-18', daysPastDue: 28, status: 'Past Due' },
+  { job: 'Cedar Heights Addition', vendor: 'Quality Drywall Inc', invoiceNum: 'BILL-4550', amount: 15500, dueDate: '2024-03-01', daysPastDue: 0, status: 'Current' },
+  { job: 'Cedar Heights Addition', vendor: 'Apex Roofing', invoiceNum: 'BILL-4488', amount: 22000, dueDate: '2024-01-08', daysPastDue: 38, status: 'Past Due' },
+  { job: 'Oakwood Duplex', vendor: 'Pro Paint Solutions', invoiceNum: 'BILL-4560', amount: 9800, dueDate: '2024-03-15', daysPastDue: 0, status: 'Current' },
 ];
 
-const arData = [
-  { range: '0-30 days', amount: 189000, percentage: 55 },
-  { range: '31-60 days', amount: 98000, percentage: 29 },
-  { range: '61-90 days', amount: 42000, percentage: 12 },
-  { range: '90+ days', amount: 13500, percentage: 4 },
-];
-
-const activityData = [
+// WIP Tracking per Job
+const wipData = [
   {
-    description: 'Invoice #2024-156 paid by ABC Corp',
-    amount: '$45,200',
-    timestamp: '2 hours ago',
-    type: 'payment',
+    job: 'Riverside Estate Custom Home',
+    contractAmount: 950000,
+    totalEstCost: 760000,
+    costToDate: 623000,
+    billedToDate: 710000,
+    percentComplete: 82,
+    estGrossProfit: 190000,
+    earnedRevenue: 779000,
+    overUnderBilled: -69000, // negative = over-billed
   },
   {
-    description: 'Labor cost added to Riverside Estate',
-    amount: '$12,500',
-    timestamp: '4 hours ago',
-    type: 'expense',
+    job: 'Mountain View Remodel',
+    contractAmount: 165000,
+    totalEstCost: 132000,
+    costToDate: 148000,
+    billedToDate: 125500,
+    percentComplete: 112,
+    estGrossProfit: -17000,
+    earnedRevenue: 165000,
+    overUnderBilled: 39500, // positive = under-billed
   },
   {
-    description: 'Invoice #2024-155 issued to Heritage Park',
-    amount: '$125,000',
-    timestamp: '6 hours ago',
-    type: 'invoice',
+    job: 'Heritage Park Commercial',
+    contractAmount: 1450000,
+    totalEstCost: 1160000,
+    costToDate: 890000,
+    billedToDate: 975000,
+    percentComplete: 77,
+    estGrossProfit: 290000,
+    earnedRevenue: 1116500,
+    overUnderBilled: -141500,
   },
   {
-    description: 'Equipment rental for Mountain View Remodel',
-    amount: '$8,200',
-    timestamp: '1 day ago',
-    type: 'expense',
+    job: 'Cedar Heights Addition',
+    contractAmount: 210000,
+    totalEstCost: 168000,
+    costToDate: 157000,
+    billedToDate: 140000,
+    percentComplete: 93,
+    estGrossProfit: 42000,
+    earnedRevenue: 195300,
+    overUnderBilled: 55300,
   },
   {
-    description: 'Subcontractor payment cleared',
-    amount: '$35,800',
-    timestamp: '2 days ago',
-    type: 'payment',
+    job: 'Oakwood Duplex',
+    contractAmount: 380000,
+    totalEstCost: 304000,
+    costToDate: 285000,
+    billedToDate: 352000,
+    percentComplete: 94,
+    estGrossProfit: 76000,
+    earnedRevenue: 357200,
+    overUnderBilled: -5200,
   },
 ];
 
-const KPICard = ({
-  title,
-  value,
-  change,
-  positive,
-  icon: Icon,
-}: {
-  title: string;
-  value: string;
-  change: string;
-  positive: boolean;
-  icon: React.ComponentType<any>;
+// Retainage Tracking per Job
+const retainageData = [
+  { job: 'Riverside Estate Custom Home', contractAmount: 950000, retainagePercent: 10, retainageReceivable: 71000, retainagePayable: 38200, netRetainage: 32800, releaseDate: '2024-06-15', status: 'Held' },
+  { job: 'Mountain View Remodel', contractAmount: 165000, retainagePercent: 10, retainageReceivable: 12550, retainagePayable: 7400, netRetainage: 5150, releaseDate: '2024-04-01', status: 'Due Soon' },
+  { job: 'Heritage Park Commercial', contractAmount: 1450000, retainagePercent: 10, retainageReceivable: 97500, retainagePayable: 52100, netRetainage: 45400, releaseDate: '2024-09-30', status: 'Held' },
+  { job: 'Cedar Heights Addition', contractAmount: 210000, retainagePercent: 5, retainageReceivable: 7000, retainagePayable: 4200, netRetainage: 2800, releaseDate: '2024-05-01', status: 'Due Soon' },
+  { job: 'Oakwood Duplex', contractAmount: 380000, retainagePercent: 10, retainageReceivable: 35200, retainagePayable: 18500, netRetainage: 16700, releaseDate: '2024-03-30', status: 'Ready to Release' },
+];
+
+// Sales Dashboard Data
+const salesPipelineData = [
+  { stage: 'Leads', count: 24, value: 4200000 },
+  { stage: 'Proposals', count: 8, value: 2850000 },
+  { stage: 'Negotiation', count: 4, value: 1680000 },
+  { stage: 'Won', count: 3, value: 1250000 },
+];
+
+const salesByMonth = [
+  { month: 'Jul', closed: 380000, pipeline: 520000 },
+  { month: 'Aug', closed: 420000, pipeline: 610000 },
+  { month: 'Sep', closed: 290000, pipeline: 480000 },
+  { month: 'Oct', closed: 510000, pipeline: 720000 },
+  { month: 'Nov', closed: 340000, pipeline: 550000 },
+  { month: 'Dec', closed: 470000, pipeline: 680000 },
+  { month: 'Jan', closed: 560000, pipeline: 830000 },
+  { month: 'Feb', closed: 410000, pipeline: 710000 },
+];
+
+const recentDeals = [
+  { name: 'Silverstone Commercial Build', client: 'Silverstone Properties', value: 620000, probability: 85, stage: 'Negotiation' },
+  { name: 'Meadow Creek Townhomes (3 units)', client: 'Meadow Creek Dev', value: 890000, probability: 60, stage: 'Proposal' },
+  { name: 'Summit Ridge Custom Home', client: 'The Andersons', value: 445000, probability: 90, stage: 'Negotiation' },
+  { name: 'Downtown Office Remodel', client: 'TechStart Inc', value: 185000, probability: 40, stage: 'Proposal' },
+  { name: 'Lakewood Kitchen & Bath', client: 'Patricia Chen', value: 78000, probability: 95, stage: 'Won' },
+  { name: 'Hillcrest Garage + ADU', client: 'Robert Kim', value: 165000, probability: 70, stage: 'Proposal' },
+];
+
+const leadSourceData = [
+  { name: 'Referrals', value: 42 },
+  { name: 'Google/SEO', value: 28 },
+  { name: 'Social Media', value: 15 },
+  { name: 'Direct Mail', value: 10 },
+  { name: 'Other', value: 5 },
+];
+
+const LEAD_COLORS = ['#6366f1', '#22c55e', '#eab308', '#ef9d44', '#8888a0'];
+
+// ── Utility Functions ───────────────────────────────────
+const formatCurrency = (val: number) => {
+  if (Math.abs(val) >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
+  if (Math.abs(val) >= 1000) return `$${(val / 1000).toFixed(0)}k`;
+  return `$${val.toLocaleString()}`;
+};
+
+const formatFullCurrency = (val: number) =>
+  val < 0
+    ? `-$${Math.abs(val).toLocaleString()}`
+    : `$${val.toLocaleString()}`;
+
+// ── Components ──────────────────────────────────────────
+
+const KPICard = ({ title, value, change, positive, icon: Icon }: {
+  title: string; value: string; change: string; positive: boolean; icon: React.ComponentType<any>;
 }) => (
-  <Card variant="metric" className="p-6">
-    <div className="flex items-start justify-between mb-4">
+  <Card variant="metric" className="p-5">
+    <div className="flex items-start justify-between mb-3">
       <div>
-        <p className="text-sm text-[#8888a0] mb-1">{title}</p>
-        <p className="text-2xl font-bold">{value}</p>
+        <p className="text-xs text-[#8888a0] mb-1 uppercase tracking-wide">{title}</p>
+        <p className="text-xl font-bold">{value}</p>
       </div>
-      <div
-        className={`p-2 rounded-lg ${
-          positive ? 'bg-[#22c55e]/10' : 'bg-[#ef4444]/10'
-        }`}
-      >
-        <Icon
-          size={20}
-          className={positive ? 'text-[#22c55e]' : 'text-[#ef4444]'}
-        />
+      <div className={`p-2 rounded-lg ${positive ? 'bg-[#22c55e]/10' : 'bg-[#ef4444]/10'}`}>
+        <Icon size={18} className={positive ? 'text-[#22c55e]' : 'text-[#ef4444]'} />
       </div>
     </div>
     <div className="flex items-center justify-between">
       <div className="flex-1 mr-2">
-        <ResponsiveContainer width="100%" height={40}>
+        <ResponsiveContainer width="100%" height={32}>
           <LineChart data={sparklineData}>
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke={positive ? '#22c55e' : '#ef4444'}
-              dot={false}
-              isAnimationActive={true}
-              strokeWidth={2}
-            />
+            <Line type="monotone" dataKey="value" stroke={positive ? '#22c55e' : '#ef4444'} dot={false} strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div
-        className={`text-sm font-semibold ${
-          positive ? 'text-[#22c55e]' : 'text-[#ef4444]'
-        }`}
-      >
+      <div className={`text-xs font-semibold ${positive ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
         {change}
       </div>
     </div>
   </Card>
 );
 
-export default function DashboardContent() {
+// ── Tab Content Components ──────────────────────────────
+
+function OverviewTab() {
   return (
     <div className="space-y-6">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map((kpi) => (
-          <KPICard key={kpi.title} {...kpi} />
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {kpis.map((kpi) => <KPICard key={kpi.title} {...kpi} />)}
       </div>
 
-      {/* Revenue vs Expenses Chart */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Revenue vs Expenses</h2>
-        <RevenueChart />
-      </Card>
-
-      {/* Job Profitability & Cash Flow Forecast */}
+      {/* Quick AR/AP Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Job Profitability */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Job Profitability</h2>
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <FileText size={20} className="text-[#6366f1]" /> AR Aging Summary
+          </h2>
           <div className="space-y-3">
-            {jobsData.map((job) => (
-              <div key={job.name} className="space-y-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{job.name}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="flex-1 h-2 bg-[#2a2a3d] rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${
-                            job.margin > 0 ? 'bg-[#22c55e]' : 'bg-[#ef4444]'
-                          }`}
-                          style={{
-                            width: `${Math.min(Math.abs(job.margin) * 3, 100)}%`,
-                          }}
-                        />
-                      </div>
-                      <span
-                        className={`text-xs font-semibold whitespace-nowrap ${
-                          job.margin > 0
-                            ? 'text-[#22c55e]'
-                            : 'text-[#ef4444]'
-                        }`}
-                      >
-                        {job.margin > 0 ? '+' : ''}
-                        {job.margin}%
-                      </span>
-                    </div>
-                  </div>
-                  <Badge
-                    variant={
-                      job.status === 'Completed'
-                        ? 'success'
-                        : job.status === 'Over Budget'
-                          ? 'danger'
-                          : 'info'
-                    }
-                    className="flex-shrink-0 ml-2"
-                  >
-                    {job.status}
-                  </Badge>
+            {[
+              { range: 'Current', amount: 310000, color: '#22c55e' },
+              { range: '1-30 Days', amount: 85000, color: '#eab308' },
+              { range: '31-60 Days', amount: 63500, color: '#ef9d44' },
+              { range: '61-90 Days', amount: 28700, color: '#ef4444' },
+            ].map((item) => (
+              <div key={item.range} className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                <span className="text-sm text-[#8888a0] w-24">{item.range}</span>
+                <div className="flex-1 h-2 bg-[#2a2a3d] rounded-full overflow-hidden">
+                  <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${(item.amount / 310000) * 100}%` }} />
                 </div>
-                <div className="flex text-xs text-[#8888a0] gap-4">
-                  <span>Est: ${(job.estimated / 1000).toFixed(0)}k</span>
-                  <span>Act: ${(job.actual / 1000).toFixed(0)}k</span>
+                <span className="text-sm font-semibold w-20 text-right">{formatCurrency(item.amount)}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Building2 size={20} className="text-[#6366f1]" /> Cash Flow Forecast (4 Weeks)
+          </h2>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={[
+              { week: 'This Week', inflow: 185000, outflow: 142000 },
+              { week: 'Week 2', inflow: 210000, outflow: 175000 },
+              { week: 'Week 3', inflow: 165000, outflow: 120000 },
+              { week: 'Week 4', inflow: 230000, outflow: 195000 },
+            ]}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3d" vertical={false} />
+              <XAxis dataKey="week" stroke="#8888a0" style={{ fontSize: '0.7rem' }} />
+              <YAxis stroke="#8888a0" style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+              <Tooltip contentStyle={{ backgroundColor: '#1a1a26', border: '1px solid #2a2a3d', borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+              <Area type="monotone" dataKey="inflow" stroke="#22c55e" fill="#22c55e" fillOpacity={0.15} name="Cash In" />
+              <Area type="monotone" dataKey="outflow" stroke="#ef4444" fill="#ef4444" fillOpacity={0.15} name="Cash Out" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+
+      {/* WIP Summary + Sales Pipeline Mini */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">WIP Summary</h2>
+          <div className="space-y-3">
+            {wipData.map((w) => (
+              <div key={w.job} className="flex items-center justify-between py-2 border-b border-[#2a2a3d] last:border-0">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{w.job}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#6366f1] rounded-full" style={{ width: `${Math.min(w.percentComplete, 100)}%` }} />
+                    </div>
+                    <span className="text-xs text-[#8888a0]">{w.percentComplete}%</span>
+                  </div>
+                </div>
+                <div className="ml-4 text-right">
+                  <span className={`text-sm font-semibold ${w.overUnderBilled < 0 ? 'text-[#eab308]' : 'text-[#22c55e]'}`}>
+                    {w.overUnderBilled < 0 ? 'Over' : 'Under'}: {formatCurrency(Math.abs(w.overUnderBilled))}
+                  </span>
                 </div>
               </div>
             ))}
           </div>
         </Card>
 
-        {/* Cash Flow Forecast */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">
-            Cash Flow Forecast (4 Weeks)
-          </h2>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={cashFlowData}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#2a2a3d"
-                vertical={false}
-              />
-              <XAxis dataKey="week" stroke="#8888a0" style={{ fontSize: '0.75rem' }} />
-              <YAxis
-                stroke="#8888a0"
-                style={{ fontSize: '0.75rem' }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1a1a26',
-                  border: '1px solid #2a2a3d',
-                  borderRadius: '0.5rem',
-                  color: '#e8e8f0',
-                }}
-                formatter={(value: any) => `$${(Number(value) / 1000).toFixed(0)}k`}
-              />
-              <Bar dataKey="projected" fill="#6366f1" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <h2 className="text-lg font-semibold mb-4">Sales Pipeline</h2>
+          <div className="space-y-3">
+            {salesPipelineData.map((s) => (
+              <div key={s.stage} className="flex items-center gap-3">
+                <span className="text-sm text-[#8888a0] w-24">{s.stage}</span>
+                <div className="flex-1 h-6 bg-[#2a2a3d] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#6366f1] rounded-full flex items-center justify-end pr-2" style={{ width: `${(s.value / 4200000) * 100}%` }}>
+                    <span className="text-xs font-bold text-white">{s.count}</span>
+                  </div>
+                </div>
+                <span className="text-sm font-semibold w-20 text-right">{formatCurrency(s.value)}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function ARByJobTab() {
+  const grouped = arByJob.reduce((acc, inv) => {
+    if (!acc[inv.job]) acc[inv.job] = [];
+    acc[inv.job].push(inv);
+    return acc;
+  }, {} as Record<string, typeof arByJob>);
+
+  const totalAR = arByJob.reduce((s, i) => s + i.amount, 0);
+  const pastDueAR = arByJob.filter(i => i.daysPastDue > 0).reduce((s, i) => s + i.amount, 0);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total AR</p>
+          <p className="text-2xl font-bold mt-1">{formatFullCurrency(totalAR)}</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Past Due AR</p>
+          <p className="text-2xl font-bold mt-1 text-[#ef4444]">{formatFullCurrency(pastDueAR)}</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Current AR</p>
+          <p className="text-2xl font-bold mt-1 text-[#22c55e]">{formatFullCurrency(totalAR - pastDueAR)}</p>
         </Card>
       </div>
 
-      {/* AR Aging & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* AR Aging */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">
-            Accounts Receivable Aging
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium">Total Outstanding</span>
-                <span className="text-sm font-semibold text-[#6366f1]">
-                  $342,500
-                </span>
+      {Object.entries(grouped).map(([jobName, invoices]) => {
+        const jobTotal = invoices.reduce((s, i) => s + i.amount, 0);
+        const jobPastDue = invoices.filter(i => i.daysPastDue > 0).reduce((s, i) => s + i.amount, 0);
+        return (
+          <Card key={jobName} className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-semibold">{jobName}</h3>
+                <p className="text-xs text-[#8888a0]">{invoices[0].customer}</p>
               </div>
-              <div className="flex h-8 gap-1 rounded-lg overflow-hidden bg-[#2a2a3d]">
-                {arData.map((item, i) => (
-                  <div
-                    key={item.range}
-                    className={`flex items-center justify-center text-xs font-bold transition-all hover:opacity-80 ${
-                      i === 0
-                        ? 'bg-[#22c55e]'
-                        : i === 1
-                          ? 'bg-[#eab308]'
-                          : i === 2
-                            ? 'bg-[#ef9d44]'
-                            : 'bg-[#ef4444]'
-                    }`}
-                    style={{ width: `${item.percentage}%` }}
-                    title={`${item.range}: $${(item.amount / 1000).toFixed(0)}k`}
-                  >
-                    {item.percentage > 8 && `${item.percentage}%`}
-                  </div>
-                ))}
+              <div className="text-right">
+                <p className="text-sm font-semibold">{formatFullCurrency(jobTotal)}</p>
+                {jobPastDue > 0 && (
+                  <p className="text-xs text-[#ef4444] flex items-center gap-1 justify-end">
+                    <AlertTriangle size={12} /> {formatFullCurrency(jobPastDue)} past due
+                  </p>
+                )}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {arData.map((item) => (
-                <div key={item.range} className="flex justify-between p-2 bg-[#1a1a26] rounded">
-                  <span className="text-[#8888a0]">{item.range}</span>
-                  <span className="font-semibold text-[#e8e8f0]">
-                    ${(item.amount / 1000).toFixed(0)}k
-                  </span>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#2a2a3d]">
+                    <th className="text-left py-2 text-xs text-[#8888a0] font-medium">Invoice #</th>
+                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Amount</th>
+                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Due Date</th>
+                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Days Past Due</th>
+                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoices.map((inv) => (
+                    <tr key={inv.invoiceNum} className={`border-b border-[#2a2a3d]/50 ${inv.daysPastDue > 0 ? 'bg-[#ef4444]/5' : ''}`}>
+                      <td className="py-2.5 font-mono text-xs">{inv.invoiceNum}</td>
+                      <td className={`py-2.5 text-right font-semibold ${inv.daysPastDue > 0 ? 'text-[#ef4444]' : ''}`}>
+                        {formatFullCurrency(inv.amount)}
+                      </td>
+                      <td className="py-2.5 text-right text-[#8888a0]">{inv.dueDate}</td>
+                      <td className={`py-2.5 text-right font-semibold ${inv.daysPastDue > 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>
+                        {inv.daysPastDue > 0 ? inv.daysPastDue : '—'}
+                      </td>
+                      <td className="py-2.5 text-right">
+                        <Badge variant={inv.daysPastDue > 0 ? 'danger' : 'success'}>
+                          {inv.status}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+function APByJobTab() {
+  const grouped = apByJob.reduce((acc, bill) => {
+    if (!acc[bill.job]) acc[bill.job] = [];
+    acc[bill.job].push(bill);
+    return acc;
+  }, {} as Record<string, typeof apByJob>);
+
+  const totalAP = apByJob.reduce((s, i) => s + i.amount, 0);
+  const pastDueAP = apByJob.filter(i => i.daysPastDue > 0).reduce((s, i) => s + i.amount, 0);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total AP</p>
+          <p className="text-2xl font-bold mt-1">{formatFullCurrency(totalAP)}</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Past Due AP</p>
+          <p className="text-2xl font-bold mt-1 text-[#ef4444]">{formatFullCurrency(pastDueAP)}</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Current AP</p>
+          <p className="text-2xl font-bold mt-1 text-[#22c55e]">{formatFullCurrency(totalAP - pastDueAP)}</p>
+        </Card>
+      </div>
+
+      {Object.entries(grouped).map(([jobName, bills]) => {
+        const jobTotal = bills.reduce((s, i) => s + i.amount, 0);
+        const jobPastDue = bills.filter(i => i.daysPastDue > 0).reduce((s, i) => s + i.amount, 0);
+        return (
+          <Card key={jobName} className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold">{jobName}</h3>
+              <div className="text-right">
+                <p className="text-sm font-semibold">{formatFullCurrency(jobTotal)}</p>
+                {jobPastDue > 0 && (
+                  <p className="text-xs text-[#ef4444] flex items-center gap-1 justify-end">
+                    <AlertTriangle size={12} /> {formatFullCurrency(jobPastDue)} past due
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#2a2a3d]">
+                    <th className="text-left py-2 text-xs text-[#8888a0] font-medium">Vendor</th>
+                    <th className="text-left py-2 text-xs text-[#8888a0] font-medium">Bill #</th>
+                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Amount</th>
+                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Due Date</th>
+                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Days Past Due</th>
+                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bills.map((bill) => (
+                    <tr key={bill.invoiceNum} className={`border-b border-[#2a2a3d]/50 ${bill.daysPastDue > 0 ? 'bg-[#ef4444]/5' : ''}`}>
+                      <td className="py-2.5">{bill.vendor}</td>
+                      <td className="py-2.5 font-mono text-xs">{bill.invoiceNum}</td>
+                      <td className={`py-2.5 text-right font-semibold ${bill.daysPastDue > 0 ? 'text-[#ef4444]' : ''}`}>
+                        {formatFullCurrency(bill.amount)}
+                      </td>
+                      <td className="py-2.5 text-right text-[#8888a0]">{bill.dueDate}</td>
+                      <td className={`py-2.5 text-right font-semibold ${bill.daysPastDue > 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>
+                        {bill.daysPastDue > 0 ? bill.daysPastDue : '—'}
+                      </td>
+                      <td className="py-2.5 text-right">
+                        <Badge variant={bill.daysPastDue > 0 ? 'danger' : 'success'}>
+                          {bill.status}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+function WIPTrackingTab() {
+  const totalOverBilled = wipData.filter(w => w.overUnderBilled < 0).reduce((s, w) => s + Math.abs(w.overUnderBilled), 0);
+  const totalUnderBilled = wipData.filter(w => w.overUnderBilled > 0).reduce((s, w) => s + w.overUnderBilled, 0);
+  const totalContractValue = wipData.reduce((s, w) => s + w.contractAmount, 0);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Contract Value</p>
+          <p className="text-xl font-bold mt-1">{formatCurrency(totalContractValue)}</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Over-Billed</p>
+          <p className="text-xl font-bold mt-1 text-[#eab308]">{formatCurrency(totalOverBilled)}</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Under-Billed</p>
+          <p className="text-xl font-bold mt-1 text-[#6366f1]">{formatCurrency(totalUnderBilled)}</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Net Position</p>
+          <p className={`text-xl font-bold mt-1 ${totalOverBilled > totalUnderBilled ? 'text-[#eab308]' : 'text-[#22c55e]'}`}>
+            {totalOverBilled > totalUnderBilled ? 'Over' : 'Under'}: {formatCurrency(Math.abs(totalOverBilled - totalUnderBilled))}
+          </p>
+        </Card>
+      </div>
+
+      {wipData.map((w) => (
+        <Card key={w.job} className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base font-semibold">{w.job}</h3>
+              <p className="text-xs text-[#8888a0]">Contract: {formatFullCurrency(w.contractAmount)}</p>
+            </div>
+            <Badge variant={w.estGrossProfit < 0 ? 'danger' : w.percentComplete >= 100 ? 'warning' : 'info'}>
+              {w.percentComplete}% Complete
+            </Badge>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-4">
+            <div className="h-3 bg-[#2a2a3d] rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full ${w.percentComplete > 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`}
+                style={{ width: `${Math.min(w.percentComplete, 100)}%` }}
+              />
+            </div>
+          </div>
+
+          {/* WIP Detail Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="bg-[#1a1a26] rounded-lg p-3">
+              <p className="text-xs text-[#8888a0]">Est. Total Cost</p>
+              <p className="font-semibold mt-1">{formatFullCurrency(w.totalEstCost)}</p>
+            </div>
+            <div className="bg-[#1a1a26] rounded-lg p-3">
+              <p className="text-xs text-[#8888a0]">Cost to Date</p>
+              <p className={`font-semibold mt-1 ${w.costToDate > w.totalEstCost ? 'text-[#ef4444]' : ''}`}>
+                {formatFullCurrency(w.costToDate)}
+              </p>
+            </div>
+            <div className="bg-[#1a1a26] rounded-lg p-3">
+              <p className="text-xs text-[#8888a0]">Billed to Date</p>
+              <p className="font-semibold mt-1">{formatFullCurrency(w.billedToDate)}</p>
+            </div>
+            <div className="bg-[#1a1a26] rounded-lg p-3">
+              <p className="text-xs text-[#8888a0]">Earned Revenue</p>
+              <p className="font-semibold mt-1">{formatFullCurrency(w.earnedRevenue)}</p>
+            </div>
+            <div className="bg-[#1a1a26] rounded-lg p-3">
+              <p className="text-xs text-[#8888a0]">Est. Gross Profit</p>
+              <p className={`font-semibold mt-1 ${w.estGrossProfit < 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>
+                {formatFullCurrency(w.estGrossProfit)}
+              </p>
+            </div>
+            <div className={`rounded-lg p-3 ${w.overUnderBilled < 0 ? 'bg-[#eab308]/10 border border-[#eab308]/30' : 'bg-[#6366f1]/10 border border-[#6366f1]/30'}`}>
+              <p className="text-xs text-[#8888a0]">{w.overUnderBilled < 0 ? 'Over-Billed' : 'Under-Billed'}</p>
+              <p className={`font-semibold mt-1 ${w.overUnderBilled < 0 ? 'text-[#eab308]' : 'text-[#6366f1]'}`}>
+                {formatFullCurrency(Math.abs(w.overUnderBilled))}
+              </p>
+            </div>
+            <div className="bg-[#1a1a26] rounded-lg p-3 col-span-2">
+              <p className="text-xs text-[#8888a0]">Gross Profit Margin</p>
+              <p className={`font-semibold mt-1 ${w.estGrossProfit < 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>
+                {((w.estGrossProfit / w.contractAmount) * 100).toFixed(1)}%
+              </p>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function RetainageTab() {
+  const totalReceivable = retainageData.reduce((s, r) => s + r.retainageReceivable, 0);
+  const totalPayable = retainageData.reduce((s, r) => s + r.retainagePayable, 0);
+  const totalNet = retainageData.reduce((s, r) => s + r.netRetainage, 0);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Retainage Receivable</p>
+          <p className="text-2xl font-bold mt-1 text-[#22c55e]">{formatFullCurrency(totalReceivable)}</p>
+          <p className="text-xs text-[#8888a0] mt-1">Owed to you by owners</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Retainage Payable</p>
+          <p className="text-2xl font-bold mt-1 text-[#ef9d44]">{formatFullCurrency(totalPayable)}</p>
+          <p className="text-xs text-[#8888a0] mt-1">Owed to your subs</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Net Retainage Position</p>
+          <p className="text-2xl font-bold mt-1 text-[#6366f1]">{formatFullCurrency(totalNet)}</p>
+          <p className="text-xs text-[#8888a0] mt-1">Cash impact on release</p>
+        </Card>
+      </div>
+
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-4">Retainage by Job</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#2a2a3d]">
+                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Job</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Contract</th>
+                <th className="text-center py-3 text-xs text-[#8888a0] font-medium">Ret %</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Receivable</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Payable</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Net</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Release Date</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {retainageData.map((r) => (
+                <tr key={r.job} className="border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26]">
+                  <td className="py-3 font-medium">{r.job}</td>
+                  <td className="py-3 text-right">{formatFullCurrency(r.contractAmount)}</td>
+                  <td className="py-3 text-center">{r.retainagePercent}%</td>
+                  <td className="py-3 text-right text-[#22c55e] font-semibold">{formatFullCurrency(r.retainageReceivable)}</td>
+                  <td className="py-3 text-right text-[#ef9d44] font-semibold">{formatFullCurrency(r.retainagePayable)}</td>
+                  <td className="py-3 text-right text-[#6366f1] font-semibold">{formatFullCurrency(r.netRetainage)}</td>
+                  <td className="py-3 text-right text-[#8888a0]">{r.releaseDate}</td>
+                  <td className="py-3 text-right">
+                    <Badge variant={r.status === 'Ready to Release' ? 'success' : r.status === 'Due Soon' ? 'warning' : 'info'}>
+                      {r.status}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-[#6366f1]/30 font-semibold">
+                <td className="py-3">TOTALS</td>
+                <td className="py-3 text-right">{formatFullCurrency(retainageData.reduce((s, r) => s + r.contractAmount, 0))}</td>
+                <td className="py-3 text-center">—</td>
+                <td className="py-3 text-right text-[#22c55e]">{formatFullCurrency(totalReceivable)}</td>
+                <td className="py-3 text-right text-[#ef9d44]">{formatFullCurrency(totalPayable)}</td>
+                <td className="py-3 text-right text-[#6366f1]">{formatFullCurrency(totalNet)}</td>
+                <td className="py-3 text-right">—</td>
+                <td className="py-3 text-right">—</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function SalesDashboardTab() {
+  const totalPipeline = salesPipelineData.reduce((s, p) => s + p.value, 0);
+  const wonDeals = recentDeals.filter(d => d.stage === 'Won');
+  const wonValue = wonDeals.reduce((s, d) => s + d.value, 0);
+  const avgDealSize = totalPipeline / salesPipelineData.reduce((s, p) => s + p.count, 0);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Pipeline</p>
+          <p className="text-xl font-bold mt-1">{formatCurrency(totalPipeline)}</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Won (This Quarter)</p>
+          <p className="text-xl font-bold mt-1 text-[#22c55e]">{formatCurrency(wonValue)}</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Avg Deal Size</p>
+          <p className="text-xl font-bold mt-1">{formatCurrency(avgDealSize)}</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Win Rate</p>
+          <p className="text-xl font-bold mt-1 text-[#6366f1]">38%</p>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Sales Trend */}
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Closed vs Pipeline (Monthly)</h2>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={salesByMonth}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3d" vertical={false} />
+              <XAxis dataKey="month" stroke="#8888a0" style={{ fontSize: '0.7rem' }} />
+              <YAxis stroke="#8888a0" style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+              <Tooltip contentStyle={{ backgroundColor: '#1a1a26', border: '1px solid #2a2a3d', borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+              <Bar dataKey="closed" fill="#22c55e" radius={[4, 4, 0, 0]} name="Closed" />
+              <Bar dataKey="pipeline" fill="#6366f1" radius={[4, 4, 0, 0]} name="Pipeline" opacity={0.5} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        {/* Lead Sources */}
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Lead Sources</h2>
+          <div className="flex items-center gap-4">
+            <ResponsiveContainer width="50%" height={200}>
+              <PieChart>
+                <Pie data={leadSourceData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
+                  {leadSourceData.map((_, i) => (
+                    <Cell key={i} fill={LEAD_COLORS[i]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ backgroundColor: '#1a1a26', border: '1px solid #2a2a3d', borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => `${v}%`} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="space-y-2 flex-1">
+              {leadSourceData.map((source, i) => (
+                <div key={source.name} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: LEAD_COLORS[i] }} />
+                  <span className="text-sm text-[#8888a0] flex-1">{source.name}</span>
+                  <span className="text-sm font-semibold">{source.value}%</span>
                 </div>
               ))}
             </div>
           </div>
         </Card>
-
-        {/* Recent Activity */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-          <div className="space-y-3">
-            {activityData.map((activity, i) => (
-              <div key={i} className="flex items-start gap-3 pb-3 border-b border-[#2a2a3d] last:border-0">
-                <div
-                  className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                    activity.type === 'payment'
-                      ? 'bg-[#22c55e]'
-                      : activity.type === 'invoice'
-                        ? 'bg-[#6366f1]'
-                        : 'bg-[#eab308]'
-                  }`}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#e8e8f0]">
-                    {activity.description}
-                  </p>
-                  <p className="text-xs text-[#8888a0] mt-1">{activity.timestamp}</p>
-                </div>
-                <span className="text-sm font-semibold text-[#e8e8f0] flex-shrink-0">
-                  {activity.amount}
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
       </div>
+
+      {/* Active Deals Table */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-4">Active Deals</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#2a2a3d]">
+                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Project</th>
+                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Client</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Value</th>
+                <th className="text-center py-3 text-xs text-[#8888a0] font-medium">Probability</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Weighted Value</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Stage</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentDeals.map((deal) => (
+                <tr key={deal.name} className="border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26]">
+                  <td className="py-3 font-medium">{deal.name}</td>
+                  <td className="py-3 text-[#8888a0]">{deal.client}</td>
+                  <td className="py-3 text-right font-semibold">{formatFullCurrency(deal.value)}</td>
+                  <td className="py-3 text-center">
+                    <div className="flex items-center gap-2 justify-center">
+                      <div className="w-16 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${deal.probability >= 80 ? 'bg-[#22c55e]' : deal.probability >= 50 ? 'bg-[#eab308]' : 'bg-[#ef9d44]'}`}
+                          style={{ width: `${deal.probability}%` }}
+                        />
+                      </div>
+                      <span className="text-xs">{deal.probability}%</span>
+                    </div>
+                  </td>
+                  <td className="py-3 text-right text-[#6366f1] font-semibold">
+                    {formatFullCurrency(Math.round(deal.value * deal.probability / 100))}
+                  </td>
+                  <td className="py-3 text-right">
+                    <Badge variant={deal.stage === 'Won' ? 'success' : deal.stage === 'Negotiation' ? 'warning' : 'info'}>
+                      {deal.stage}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ── Main Dashboard Component ────────────────────────────
+export default function DashboardContent() {
+  const [activeTab, setActiveTab] = useState<TabKey>('overview');
+
+  return (
+    <div className="space-y-6">
+      {/* Tab Navigation */}
+      <div className="flex gap-1 overflow-x-auto pb-1 border-b border-[#2a2a3d]">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`px-4 py-2.5 text-sm font-medium rounded-t-lg whitespace-nowrap transition-all ${
+              activeTab === tab.key
+                ? 'bg-[#6366f1]/15 text-[#a5b4fc] border-b-2 border-[#6366f1]'
+                : 'text-[#8888a0] hover:text-[#e8e8f0] hover:bg-[#1a1a26]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'overview' && <OverviewTab />}
+      {activeTab === 'ar' && <ARByJobTab />}
+      {activeTab === 'ap' && <APByJobTab />}
+      {activeTab === 'wip' && <WIPTrackingTab />}
+      {activeTab === 'retainage' && <RetainageTab />}
+      {activeTab === 'sales' && <SalesDashboardTab />}
     </div>
   );
 }

@@ -58,9 +58,12 @@ export default function LandingPage() {
             >
               Start Free Trial <ChevronRight size={18} />
             </Link>
-            <button className="px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition">
+            <Link
+              href="/dashboard"
+              className="px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center"
+            >
               See It In Action
-            </button>
+            </Link>
           </div>
 
           {/* Dashboard Mock */}
