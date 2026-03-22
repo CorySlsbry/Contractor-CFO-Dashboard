@@ -99,6 +99,214 @@ export type Database = {
           pulled_at?: string;
         };
       };
+      integration_connections: {
+        Row: {
+          id: string;
+          organization_id: string;
+          provider: string;
+          status: string;
+          access_token: string | null;
+          refresh_token: string | null;
+          token_expires_at: string | null;
+          api_key: string | null;
+          external_account_id: string | null;
+          external_account_name: string | null;
+          config: Record<string, any>;
+          last_sync_at: string | null;
+          last_sync_status: string;
+          last_sync_error: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          provider: string;
+          status?: string;
+          access_token?: string | null;
+          refresh_token?: string | null;
+          token_expires_at?: string | null;
+          api_key?: string | null;
+          external_account_id?: string | null;
+          external_account_name?: string | null;
+          config?: Record<string, any>;
+          last_sync_at?: string | null;
+          last_sync_status?: string;
+          last_sync_error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          provider?: string;
+          status?: string;
+          access_token?: string | null;
+          refresh_token?: string | null;
+          token_expires_at?: string | null;
+          api_key?: string | null;
+          external_account_id?: string | null;
+          external_account_name?: string | null;
+          config?: Record<string, any>;
+          last_sync_at?: string | null;
+          last_sync_status?: string;
+          last_sync_error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      sync_jobs: {
+        Row: {
+          id: string;
+          organization_id: string;
+          integration_id: string;
+          provider: string;
+          status: string;
+          started_at: string;
+          completed_at: string | null;
+          records_synced: number;
+          error_message: string | null;
+          sync_type: string;
+          metadata: Record<string, any>;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          integration_id: string;
+          provider: string;
+          status?: string;
+          started_at?: string;
+          completed_at?: string | null;
+          records_synced?: number;
+          error_message?: string | null;
+          sync_type?: string;
+          metadata?: Record<string, any>;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          integration_id?: string;
+          provider?: string;
+          status?: string;
+          started_at?: string;
+          completed_at?: string | null;
+          records_synced?: number;
+          error_message?: string | null;
+          sync_type?: string;
+          metadata?: Record<string, any>;
+          created_at?: string;
+        };
+      };
+      normalized_projects: {
+        Row: {
+          id: string;
+          organization_id: string;
+          source: string;
+          external_id: string;
+          name: string;
+          customer_name: string | null;
+          address: string | null;
+          status: string;
+          project_type: string | null;
+          start_date: string | null;
+          estimated_completion: string | null;
+          actual_completion: string | null;
+          contract_amount: number;
+          estimated_cost: number;
+          actual_cost: number;
+          percent_complete: number;
+          change_orders_amount: number;
+          budget_remaining: number;
+          profit_margin: number;
+          costs_to_date: number;
+          billings_to_date: number;
+          earned_revenue: number;
+          over_under_billing: number;
+          retainage_receivable: number;
+          retainage_payable: number;
+          raw_data: Record<string, any>;
+          last_synced: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          source: string;
+          external_id: string;
+          name: string;
+          [key: string]: any;
+        };
+        Update: {
+          [key: string]: any;
+        };
+      };
+      normalized_contacts: {
+        Row: {
+          id: string;
+          organization_id: string;
+          source: string;
+          external_id: string;
+          first_name: string | null;
+          last_name: string | null;
+          email: string | null;
+          phone: string | null;
+          company: string | null;
+          title: string | null;
+          contact_type: string;
+          tags: string[];
+          raw_data: Record<string, any>;
+          last_synced: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          source: string;
+          external_id: string;
+          [key: string]: any;
+        };
+        Update: {
+          [key: string]: any;
+        };
+      };
+      normalized_deals: {
+        Row: {
+          id: string;
+          organization_id: string;
+          source: string;
+          external_id: string;
+          name: string;
+          contact_name: string | null;
+          company_name: string | null;
+          amount: number;
+          stage: string | null;
+          probability: number;
+          weighted_amount: number;
+          expected_close_date: string | null;
+          created_date: string | null;
+          last_activity_date: string | null;
+          deal_type: string | null;
+          source_campaign: string | null;
+          notes: string | null;
+          raw_data: Record<string, any>;
+          last_synced: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          source: string;
+          external_id: string;
+          name: string;
+          [key: string]: any;
+        };
+        Update: {
+          [key: string]: any;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

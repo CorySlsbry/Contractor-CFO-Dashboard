@@ -13,6 +13,7 @@ import {
   X,
   Bell,
   RefreshCw,
+  Plug,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
   { label: 'Cash Flow', href: '/dashboard/cashflow', icon: TrendingUp },
   { label: 'Invoices', href: '/dashboard/invoices', icon: FileText },
   { label: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+  { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check } from 'lucide-react';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug } from 'lucide-react';
 import { useState } from 'react';
 
 export default function LandingPage() {
@@ -216,7 +216,7 @@ export default function LandingPage() {
             Everything you need to run your numbers
           </h2>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
                 title: 'Real-Time Financial Dashboard',
@@ -238,6 +238,16 @@ export default function LandingPage() {
                 desc: 'Monthly narrative analysis that explains your numbers and flags opportunities.',
                 icon: Brain,
               },
+              {
+                title: '7+ Integrations',
+                desc: 'Connect Procore, Buildertrend, ServiceTitan, Salesforce, HubSpot, JobNimbus — all in one dashboard.',
+                icon: Plug,
+              },
+              {
+                title: 'Unified Sales Pipeline',
+                desc: 'Pull CRM deals into your financial view. See pipeline alongside cash flow and job costs.',
+                icon: TrendingUp,
+              },
             ].map((feature, idx) => {
               const IconComponent = feature.icon;
               return (
@@ -255,6 +265,37 @@ export default function LandingPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Integrations Banner */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 border-y border-[#1e1e2e]">
+        <div className="max-w-5xl mx-auto text-center">
+          <p className="text-sm text-[#8888a0] uppercase tracking-wider mb-6">
+            Connects with the tools you already use
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+            {[
+              { name: 'QuickBooks', color: '#2CA01C' },
+              { name: 'Procore', color: '#F47E20' },
+              { name: 'Buildertrend', color: '#00B4D8' },
+              { name: 'ServiceTitan', color: '#002B5C' },
+              { name: 'Salesforce', color: '#00A1E0' },
+              { name: 'HubSpot', color: '#FF7A59' },
+              { name: 'JobNimbus', color: '#4CAF50' },
+            ].map((tool) => (
+              <div
+                key={tool.name}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#12121a] border border-[#1e1e2e] hover:border-[#6366f1]/30 transition"
+              >
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: tool.color }}
+                />
+                <span className="text-sm font-medium text-[#8888a0]">{tool.name}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -339,8 +380,9 @@ export default function LandingPage() {
               <ul className="space-y-3 mb-8">
                 {[
                   'Financial dashboard',
-                  'Job costing',
+                  'Job costing & WIP tracking',
                   'Cash flow forecasting',
+                  'QuickBooks + Buildertrend + HubSpot + JobNimbus',
                   'Monthly CFO brief',
                   'Email support',
                 ].map((feature, idx) => (
@@ -375,9 +417,10 @@ export default function LandingPage() {
               <ul className="space-y-3 mb-8">
                 {[
                   'Everything in Essential',
+                  'Procore + Salesforce + ServiceTitan',
                   'Sales pipeline dashboard',
+                  'All 7+ integrations included',
                   'Crew utilization tracking',
-                  'Custom integrations',
                   'Priority support',
                   'Quarterly strategy call',
                 ].map((feature, idx) => (
