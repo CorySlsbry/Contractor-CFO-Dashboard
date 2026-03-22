@@ -90,16 +90,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 3: Create profile linked to the organization
+    // Step 3: Create or update profile linked to the organization
+    // Use upsert because a database trigger may have auto-created the profile
     const { error: profileError } = await supabase
       .from("profiles")
-      .insert({
-        id: userId,
-        email,
-        full_name: fullName,
-        organization_id: orgData.id,
-        role: "owner" as any,
-      });
+      .upsert(
+        {
+          id: userId,
+          email,
+          full_name: fullName,
+          organization_id: orgData.id,
+          role: "owner" as any,
+        },
+        { onConflict: "id" }
+      );
 
     if (profileError) {
       // Rollback: delete org and auth user
