@@ -177,12 +177,14 @@ const salesByMonth = [
 ];
 
 const recentDeals = [
-  { name: 'Silverstone Commercial Build', client: 'Silverstone Properties', value: 620000, probability: 85, stage: 'Negotiation' },
-  { name: 'Meadow Creek Townhomes (3 units)', client: 'Meadow Creek Dev', value: 890000, probability: 60, stage: 'Proposal' },
-  { name: 'Summit Ridge Custom Home', client: 'The Andersons', value: 445000, probability: 90, stage: 'Negotiation' },
-  { name: 'Downtown Office Remodel', client: 'TechStart Inc', value: 185000, probability: 40, stage: 'Proposal' },
-  { name: 'Lakewood Kitchen & Bath', client: 'Patricia Chen', value: 78000, probability: 95, stage: 'Won' },
-  { name: 'Hillcrest Garage + ADU', client: 'Robert Kim', value: 165000, probability: 70, stage: 'Proposal' },
+  { name: 'Silverstone Commercial Build', client: 'Silverstone Properties', value: 620000, probability: 85, stage: 'Negotiation', rep: 'Cory Salisbury' },
+  { name: 'Meadow Creek Townhomes (3 units)', client: 'Meadow Creek Dev', value: 890000, probability: 60, stage: 'Proposal', rep: 'Sarah Whitfield' },
+  { name: 'Summit Ridge Custom Home', client: 'The Andersons', value: 445000, probability: 90, stage: 'Negotiation', rep: 'Cory Salisbury' },
+  { name: 'Downtown Office Remodel', client: 'TechStart Inc', value: 185000, probability: 40, stage: 'Proposal', rep: 'Jake Mercer' },
+  { name: 'Lakewood Kitchen & Bath', client: 'Patricia Chen', value: 78000, probability: 95, stage: 'Won', rep: 'Marcus Reyes' },
+  { name: 'Hillcrest Garage + ADU', client: 'Robert Kim', value: 165000, probability: 70, stage: 'Proposal', rep: 'Sarah Whitfield' },
+  { name: 'Westfield Fire Station Reno', client: 'Westfield Township', value: 1250000, probability: 35, stage: 'Proposal', rep: 'Cory Salisbury' },
+  { name: 'Copper Ridge Spec Home', client: 'Salisbury Real Estate', value: 520000, probability: 75, stage: 'Negotiation', rep: 'Jake Mercer' },
 ];
 
 const leadSourceData = [
@@ -194,6 +196,100 @@ const leadSourceData = [
 ];
 
 const LEAD_COLORS = ['#6366f1', '#22c55e', '#eab308', '#ef9d44', '#8888a0'];
+
+// Sales Team Member Data
+const salesTeamMembers = [
+  {
+    name: 'Jake Mercer',
+    role: 'Senior Estimator',
+    avatar: 'JM',
+    deals: 8,
+    wonDeals: 4,
+    pipelineValue: 2150000,
+    wonValue: 890000,
+    quota: 1200000,
+    avgDealSize: 268750,
+    winRate: 50,
+    avgCycleTime: 32,
+    leadSource: 'Referrals',
+    monthlyTrend: [
+      { month: 'Sep', closed: 180000 },
+      { month: 'Oct', closed: 310000 },
+      { month: 'Nov', closed: 0 },
+      { month: 'Dec', closed: 220000 },
+      { month: 'Jan', closed: 180000 },
+      { month: 'Feb', closed: 0 },
+    ],
+  },
+  {
+    name: 'Sarah Whitfield',
+    role: 'Business Development',
+    avatar: 'SW',
+    deals: 12,
+    wonDeals: 5,
+    pipelineValue: 3450000,
+    wonValue: 1250000,
+    quota: 1500000,
+    avgDealSize: 287500,
+    winRate: 42,
+    avgCycleTime: 28,
+    leadSource: 'Google/SEO',
+    monthlyTrend: [
+      { month: 'Sep', closed: 110000 },
+      { month: 'Oct', closed: 200000 },
+      { month: 'Nov', closed: 340000 },
+      { month: 'Dec', closed: 250000 },
+      { month: 'Jan', closed: 380000 },
+      { month: 'Feb', closed: 410000 },
+    ],
+  },
+  {
+    name: 'Marcus Reyes',
+    role: 'Project Estimator',
+    avatar: 'MR',
+    deals: 6,
+    wonDeals: 2,
+    pipelineValue: 1680000,
+    wonValue: 420000,
+    quota: 900000,
+    avgDealSize: 280000,
+    winRate: 33,
+    avgCycleTime: 45,
+    leadSource: 'Direct Mail',
+    monthlyTrend: [
+      { month: 'Sep', closed: 0 },
+      { month: 'Oct', closed: 0 },
+      { month: 'Nov', closed: 0 },
+      { month: 'Dec', closed: 0 },
+      { month: 'Jan', closed: 0 },
+      { month: 'Feb', closed: 420000 },
+    ],
+  },
+  {
+    name: 'Cory Salisbury',
+    role: 'Owner / Lead Sales',
+    avatar: 'CS',
+    deals: 13,
+    wonDeals: 6,
+    pipelineValue: 4120000,
+    wonValue: 1820000,
+    quota: 2000000,
+    avgDealSize: 316923,
+    winRate: 46,
+    avgCycleTime: 21,
+    leadSource: 'Referrals',
+    monthlyTrend: [
+      { month: 'Sep', closed: 290000 },
+      { month: 'Oct', closed: 510000 },
+      { month: 'Nov', closed: 340000 },
+      { month: 'Dec', closed: 470000 },
+      { month: 'Jan', closed: 210000 },
+      { month: 'Feb', closed: 0 },
+    ],
+  },
+];
+
+const TEAM_COLORS = ['#6366f1', '#22c55e', '#eab308', '#a855f7'];
 
 // ── Utility Functions ───────────────────────────────────
 const formatCurrency = (val: number) => {
@@ -687,6 +783,9 @@ function SalesDashboardTab() {
   const wonDeals = recentDeals.filter(d => d.stage === 'Won');
   const wonValue = wonDeals.reduce((s, d) => s + d.value, 0);
   const avgDealSize = totalPipeline / salesPipelineData.reduce((s, p) => s + p.count, 0);
+  const teamTotalQuota = salesTeamMembers.reduce((s, m) => s + m.quota, 0);
+  const teamTotalWon = salesTeamMembers.reduce((s, m) => s + m.wonValue, 0);
+  const teamQuotaPercent = Math.round((teamTotalWon / teamTotalQuota) * 100);
 
   return (
     <div className="space-y-6">
@@ -704,10 +803,160 @@ function SalesDashboardTab() {
           <p className="text-xl font-bold mt-1">{formatCurrency(avgDealSize)}</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Win Rate</p>
-          <p className="text-xl font-bold mt-1 text-[#6366f1]">38%</p>
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Team Quota Attainment</p>
+          <p className={`text-xl font-bold mt-1 ${teamQuotaPercent >= 80 ? 'text-[#22c55e]' : teamQuotaPercent >= 50 ? 'text-[#eab308]' : 'text-[#ef4444]'}`}>
+            {teamQuotaPercent}%
+          </p>
         </Card>
       </div>
+
+      {/* Team Member Performance Cards */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-semibold">Sales Team Performance</h2>
+          <span className="text-xs text-[#8888a0]">Current Quarter</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {salesTeamMembers.map((member, idx) => {
+            const quotaPct = Math.round((member.wonValue / member.quota) * 100);
+            return (
+              <div key={member.name} className="bg-[#1a1a26] border border-[#2a2a3d] rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: TEAM_COLORS[idx] + '25', color: TEAM_COLORS[idx] }}>
+                    {member.avatar}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{member.name}</p>
+                    <p className="text-xs text-[#8888a0]">{member.role}</p>
+                  </div>
+                </div>
+
+                {/* Quota Progress Bar */}
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-[#8888a0]">Quota</span>
+                    <span className={quotaPct >= 80 ? 'text-[#22c55e]' : quotaPct >= 50 ? 'text-[#eab308]' : 'text-[#ef4444]'}>
+                      {quotaPct}% ({formatCurrency(member.wonValue)} / {formatCurrency(member.quota)})
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-[#2a2a3d] rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(quotaPct, 100)}%`,
+                        backgroundColor: quotaPct >= 80 ? '#22c55e' : quotaPct >= 50 ? '#eab308' : '#ef4444',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Key Metrics */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-[#12121a] rounded-lg p-2">
+                    <p className="text-[#8888a0]">Pipeline</p>
+                    <p className="font-semibold">{formatCurrency(member.pipelineValue)}</p>
+                  </div>
+                  <div className="bg-[#12121a] rounded-lg p-2">
+                    <p className="text-[#8888a0]">Win Rate</p>
+                    <p className="font-semibold">{member.winRate}%</p>
+                  </div>
+                  <div className="bg-[#12121a] rounded-lg p-2">
+                    <p className="text-[#8888a0]">Deals</p>
+                    <p className="font-semibold">{member.wonDeals}W / {member.deals - member.wonDeals}O</p>
+                  </div>
+                  <div className="bg-[#12121a] rounded-lg p-2">
+                    <p className="text-[#8888a0]">Avg Cycle</p>
+                    <p className="font-semibold">{member.avgCycleTime}d</p>
+                  </div>
+                </div>
+
+                {/* Sparkline Trend */}
+                <div>
+                  <p className="text-xs text-[#8888a0] mb-1">Monthly Closed</p>
+                  <ResponsiveContainer width="100%" height={40}>
+                    <AreaChart data={member.monthlyTrend}>
+                      <defs>
+                        <linearGradient id={`grad-${idx}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={TEAM_COLORS[idx]} stopOpacity={0.3} />
+                          <stop offset="100%" stopColor={TEAM_COLORS[idx]} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <Area type="monotone" dataKey="closed" stroke={TEAM_COLORS[idx]} fill={`url(#grad-${idx})`} strokeWidth={1.5} dot={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Team Leaderboard Table */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-4">Team Leaderboard</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#2a2a3d]">
+                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Rank</th>
+                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Rep</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Won Revenue</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Pipeline</th>
+                <th className="text-center py-3 text-xs text-[#8888a0] font-medium">Win Rate</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Avg Deal</th>
+                <th className="text-center py-3 text-xs text-[#8888a0] font-medium">Quota %</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Top Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...salesTeamMembers]
+                .sort((a, b) => b.wonValue - a.wonValue)
+                .map((member, rank) => {
+                  const quotaPct = Math.round((member.wonValue / member.quota) * 100);
+                  return (
+                    <tr key={member.name} className="border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26]">
+                      <td className="py-3">
+                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                          rank === 0 ? 'bg-[#eab308]/20 text-[#eab308]' : rank === 1 ? 'bg-[#8888a0]/20 text-[#c0c0cc]' : rank === 2 ? 'bg-[#ef9d44]/20 text-[#ef9d44]' : 'bg-[#2a2a3d] text-[#8888a0]'
+                        }`}>
+                          {rank + 1}
+                        </span>
+                      </td>
+                      <td className="py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: TEAM_COLORS[salesTeamMembers.indexOf(member)] + '25', color: TEAM_COLORS[salesTeamMembers.indexOf(member)] }}>
+                            {member.avatar}
+                          </div>
+                          <div>
+                            <p className="font-medium">{member.name}</p>
+                            <p className="text-[10px] text-[#8888a0]">{member.role}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 text-right font-semibold text-[#22c55e]">{formatFullCurrency(member.wonValue)}</td>
+                      <td className="py-3 text-right">{formatCurrency(member.pipelineValue)}</td>
+                      <td className="py-3 text-center">
+                        <div className="flex items-center gap-2 justify-center">
+                          <div className="w-12 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${member.winRate >= 45 ? 'bg-[#22c55e]' : member.winRate >= 35 ? 'bg-[#eab308]' : 'bg-[#ef9d44]'}`} style={{ width: `${member.winRate}%` }} />
+                          </div>
+                          <span className="text-xs">{member.winRate}%</span>
+                        </div>
+                      </td>
+                      <td className="py-3 text-right">{formatCurrency(member.avgDealSize)}</td>
+                      <td className="py-3 text-center">
+                        <Badge variant={quotaPct >= 80 ? 'success' : quotaPct >= 50 ? 'warning' : 'info'}>
+                          {quotaPct}%
+                        </Badge>
+                      </td>
+                      <td className="py-3 text-right text-[#8888a0]">{member.leadSource}</td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Trend */}
@@ -761,9 +1010,10 @@ function SalesDashboardTab() {
               <tr className="border-b border-[#2a2a3d]">
                 <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Project</th>
                 <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Client</th>
+                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Rep</th>
                 <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Value</th>
                 <th className="text-center py-3 text-xs text-[#8888a0] font-medium">Probability</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Weighted Value</th>
+                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Weighted</th>
                 <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Stage</th>
               </tr>
             </thead>
@@ -772,6 +1022,7 @@ function SalesDashboardTab() {
                 <tr key={deal.name} className="border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26]">
                   <td className="py-3 font-medium">{deal.name}</td>
                   <td className="py-3 text-[#8888a0]">{deal.client}</td>
+                  <td className="py-3 text-[#8888a0] text-xs">{deal.rep}</td>
                   <td className="py-3 text-right font-semibold">{formatFullCurrency(deal.value)}</td>
                   <td className="py-3 text-center">
                     <div className="flex items-center gap-2 justify-center">
