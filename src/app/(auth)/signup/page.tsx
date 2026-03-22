@@ -33,7 +33,10 @@ export default function SignupPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+          data: {
+            full_name: fullName,
+            company_name: companyName,
+          },
         },
       });
 
@@ -51,33 +54,36 @@ export default function SignupPage() {
 
       const userId = authData.user.id;
 
-      // Step 2: Create organization record
+      // Step 2: Create organization record and get back the ID
       const slug = generateSlug(companyName);
-      const { error: orgError } = await (supabase as any)
+      const { data: orgData, error: orgError } = await (supabase as any)
         .from('organizations')
         .insert({
           name: companyName,
           slug,
-          owner_id: userId,
-        });
+        })
+        .select('id')
+        .single();
 
-      if (orgError) {
-        setError('Failed to create organization');
+      if (orgError || !orgData) {
+        setError('Failed to create organization: ' + (orgError?.message || 'Unknown error'));
         setLoading(false);
         return;
       }
 
-      // Step 3: Create profile record
+      // Step 3: Create profile record linked to the organization
       const { error: profileError } = await (supabase as any)
         .from('profiles')
         .insert({
-          user_id: userId,
-          full_name: fullName,
+          id: userId,
           email,
+          full_name: fullName,
+          organization_id: orgData.id,
+          role: 'owner',
         });
 
       if (profileError) {
-        setError('Failed to create user profile');
+        setError('Failed to create user profile: ' + profileError.message);
         setLoading(false);
         return;
       }
