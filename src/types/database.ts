@@ -57,6 +57,7 @@ export type Database = {
           full_name: string | null;
           organization_id: string | null;
           role: "owner" | "admin" | "viewer";
+          platform_role: "user" | "admin" | "superadmin";
           avatar_url: string | null;
           created_at: string;
         };
@@ -66,6 +67,7 @@ export type Database = {
           full_name?: string | null;
           organization_id?: string | null;
           role?: "owner" | "admin" | "viewer";
+          platform_role?: "user" | "admin" | "superadmin";
           avatar_url?: string | null;
           created_at?: string;
         };
@@ -75,6 +77,7 @@ export type Database = {
           full_name?: string | null;
           organization_id?: string | null;
           role?: "owner" | "admin" | "viewer";
+          platform_role?: "user" | "admin" | "superadmin";
           avatar_url?: string | null;
           created_at?: string;
         };
@@ -302,6 +305,93 @@ export type Database = {
           external_id: string;
           name: string;
           [key: string]: any;
+        };
+        Update: {
+          [key: string]: any;
+        };
+      };
+      error_logs: {
+        Row: {
+          id: string;
+          organization_id: string;
+          error_type: string;
+          severity: "info" | "warning" | "error" | "critical";
+          title: string;
+          message: string | null;
+          metadata: Record<string, any>;
+          provider: string | null;
+          resolved: boolean;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          error_type: string;
+          severity?: "info" | "warning" | "error" | "critical";
+          title: string;
+          message?: string | null;
+          metadata?: Record<string, any>;
+          provider?: string | null;
+          resolved?: boolean;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          resolved?: boolean;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+      };
+      platform_metrics: {
+        Row: {
+          id: string;
+          metric_date: string;
+          total_organizations: number;
+          active_subscriptions: number;
+          mrr: number;
+          total_errors_unresolved: number;
+          syncs_today: number;
+          failures_today: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          metric_date: string;
+          total_organizations: number;
+          active_subscriptions: number;
+          mrr: number;
+          total_errors_unresolved: number;
+          syncs_today: number;
+          failures_today: number;
+          created_at?: string;
+        };
+        Update: {
+          [key: string]: any;
+        };
+      };
+      admin_audit_log: {
+        Row: {
+          id: string;
+          admin_id: string;
+          action: string;
+          target_type: string;
+          target_id: string | null;
+          organization_id: string | null;
+          details: Record<string, any>;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          admin_id: string;
+          action: string;
+          target_type: string;
+          target_id?: string | null;
+          organization_id?: string | null;
+          details?: Record<string, any>;
+          created_at?: string;
         };
         Update: {
           [key: string]: any;

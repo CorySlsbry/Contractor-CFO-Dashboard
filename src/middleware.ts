@@ -13,6 +13,8 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === "/auth/callback";
 
   const isDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard");
+  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin") ||
+    request.nextUrl.pathname.startsWith("/api/admin");
 
   // Redirect authenticated users away from auth pages
   if (isAuthRoute && user) {
@@ -20,7 +22,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect unauthenticated users trying to access protected routes
-  if (isDashboardRoute && !user) {
+  if ((isDashboardRoute || isAdminRoute) && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
