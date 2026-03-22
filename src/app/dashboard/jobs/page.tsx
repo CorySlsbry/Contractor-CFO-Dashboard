@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatCompactCurrency } from '@/lib/utils';
 
 interface Job {
   id: string;
@@ -142,7 +143,7 @@ export default function JobsPage() {
           <p className="text-[#8888a0]">
             {totalActiveJobs} active jobs | Total Estimated Value:{' '}
             <span className="text-[#6366f1] font-semibold">
-              ${(totalEstimatedValue / 1000000).toFixed(2)}M
+              {formatCompactCurrency(totalEstimatedValue)}
             </span>
           </p>
         </div>
@@ -214,8 +215,8 @@ export default function JobsPage() {
                 />
               </div>
               <div className="flex justify-between text-xs text-[#8888a0] mt-2">
-                <span>Actual: ${(job.actualCost / 1000).toFixed(0)}k</span>
-                <span>Estimated: ${(job.estimatedCost / 1000).toFixed(0)}k</span>
+                <span>Actual: {formatCompactCurrency(job.actualCost)}</span>
+                <span>Estimated: {formatCompactCurrency(job.estimatedCost)}</span>
               </div>
             </div>
 
@@ -224,25 +225,25 @@ export default function JobsPage() {
               <div className="bg-[#1a1a26] p-3 rounded-lg">
                 <p className="text-xs text-[#8888a0] mb-1">Estimated Cost</p>
                 <p className="text-lg font-bold">
-                  ${(job.estimatedCost / 1000).toFixed(0)}k
+                  {formatCompactCurrency(job.estimatedCost)}
                 </p>
               </div>
               <div className="bg-[#1a1a26] p-3 rounded-lg">
                 <p className="text-xs text-[#8888a0] mb-1">Actual Cost</p>
                 <p className="text-lg font-bold">
-                  ${(job.actualCost / 1000).toFixed(0)}k
+                  {formatCompactCurrency(job.actualCost)}
                 </p>
               </div>
               <div className="bg-[#1a1a26] p-3 rounded-lg">
                 <p className="text-xs text-[#8888a0] mb-1">Billed</p>
                 <p className="text-lg font-bold">
-                  ${(job.billed / 1000).toFixed(0)}k
+                  {formatCompactCurrency(job.billed)}
                 </p>
               </div>
               <div className="bg-[#1a1a26] p-3 rounded-lg">
                 <p className="text-xs text-[#8888a0] mb-1">Remaining</p>
                 <p className="text-lg font-bold">
-                  ${((job.estimatedCost - job.actualCost) / 1000).toFixed(0)}k
+                  {formatCompactCurrency(job.estimatedCost - job.actualCost)}
                 </p>
               </div>
               <div className="bg-[#1a1a26] p-3 rounded-lg">
@@ -268,7 +269,7 @@ export default function JobsPage() {
                     >
                       <span className="text-sm text-[#8888a0]">{item.label}</span>
                       <span className="text-sm font-semibold">
-                        ${(item.value / 1000).toFixed(0)}k
+                        {formatCompactCurrency(item.value)}
                       </span>
                     </div>
                   ))}

@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CashFlowChart } from '@/components/charts/cashflow-chart';
 import { AlertCircle, TrendingUp } from 'lucide-react';
+import { formatCompactCurrency } from '@/lib/utils';
 
 interface Payment {
   id: string;
@@ -209,7 +210,7 @@ export default function CashFlowPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Upcoming Payments</h2>
             <span className="text-sm font-bold text-[#ef4444]">
-              ${(totalUpcomingPayments / 1000).toFixed(0)}k total
+              {formatCompactCurrency(totalUpcomingPayments)} total
             </span>
           </div>
 
@@ -241,7 +242,7 @@ export default function CashFlowPage() {
                       {payment.vendor}
                     </td>
                     <td className="py-3 px-2 text-right text-[#e8e8f0] font-semibold">
-                      ${(payment.amount / 1000).toFixed(0)}k
+                      {formatCompactCurrency(payment.amount)}
                     </td>
                     <td className="py-3 px-2 text-right text-[#8888a0]">
                       {new Date(payment.dueDate).toLocaleDateString('en-US', {
@@ -272,7 +273,7 @@ export default function CashFlowPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Upcoming Receivables</h2>
             <span className="text-sm font-bold text-[#22c55e]">
-              ${(totalUpcomingReceivables / 1000).toFixed(0)}k total
+              {formatCompactCurrency(totalUpcomingReceivables)} total
             </span>
           </div>
 
@@ -304,7 +305,7 @@ export default function CashFlowPage() {
                       {receivable.customer}
                     </td>
                     <td className="py-3 px-2 text-right text-[#e8e8f0] font-semibold">
-                      ${(receivable.amount / 1000).toFixed(0)}k
+                      {formatCompactCurrency(receivable.amount)}
                     </td>
                     <td className="py-3 px-2 text-right text-[#8888a0]">
                       {new Date(receivable.expectedDate).toLocaleDateString('en-US', {
@@ -350,7 +351,7 @@ export default function CashFlowPage() {
                     />
                   </div>
                   <span className="text-sm font-bold text-[#e8e8f0] min-w-fit">
-                    ${(item.balance / 1000).toFixed(0)}k
+                    {formatCompactCurrency(item.balance)}
                   </span>
                 </div>
               </div>

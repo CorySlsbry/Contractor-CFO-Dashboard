@@ -1,7 +1,7 @@
 'use client';
 
 import { Inter } from 'next/font/google';
-import { useState, ReactNode } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import {
   LayoutDashboard,
   Hammer,
@@ -15,11 +15,13 @@ import {
   RefreshCw,
   Plug,
   LogOut,
+  Brain,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/button';
+import { getInitials } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -35,6 +37,7 @@ const navItems: NavItem[] = [
   { label: 'Cash Flow', href: '/dashboard/cashflow', icon: TrendingUp },
   { label: 'Invoices', href: '/dashboard/invoices', icon: FileText },
   { label: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+  { label: 'CFO Advisor', href: '/dashboard/advisor', icon: Brain },
   { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -45,14 +48,42 @@ export default function DashboardLayoutClient({
   children: ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [userProfile, setUserProfile] = useState<{
+    fullName: string;
+    companyName: string;
+    initials: string;
+  }>({ fullName: '', companyName: '', initials: '?' });
   const pathname = usePathname();
   const router = useRouter();
 
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, organizations(name)')
+        .eq('id', user.id)
+        .single();
+      if (profile) {
+        const name = (profile as any).full_name || user.user_metadata?.full_name || user.email || '';
+        const org = (profile as any).organizations?.name || user.user_metadata?.company_name || '';
+        setUserProfile({
+          fullName: name,
+          companyName: org,
+          initials: getInitials(name),
+        });
+      }
+    };
+    fetchProfile();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleLogout = async () => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
     await supabase.auth.signOut();
     router.push('/login');
   };
@@ -117,13 +148,13 @@ export default function DashboardLayoutClient({
             }`}
           >
             <div className="w-10 h-10 rounded-full bg-[#6366f1] flex items-center justify-center font-semibold text-sm flex-shrink-0">
-              JD
+              {userProfile.initials}
             </div>
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold truncate">John Doe</div>
+                <div className="text-sm font-semibold truncate">{userProfile.fullName || 'Loading...'}</div>
                 <div className="text-xs text-[#8888a0] truncate">
-                  Summit Ridge Construction
+                  {userProfile.companyName}
                 </div>
               </div>
             )}

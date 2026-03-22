@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { formatCompactCurrency } from '@/lib/utils';
 import {
   LineChart,
   Line,
@@ -292,11 +293,7 @@ const salesTeamMembers = [
 const TEAM_COLORS = ['#6366f1', '#22c55e', '#eab308', '#a855f7'];
 
 // ── Utility Functions ───────────────────────────────────
-const formatCurrency = (val: number) => {
-  if (Math.abs(val) >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
-  if (Math.abs(val) >= 1000) return `$${(val / 1000).toFixed(0)}k`;
-  return `$${val.toLocaleString()}`;
-};
+const formatCurrency = (val: number) => formatCompactCurrency(val);
 
 const formatFullCurrency = (val: number) =>
   val < 0

@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
+import { formatCompactCurrency } from '@/lib/utils';
 
 interface Invoice {
   id: string;
@@ -236,7 +237,7 @@ export default function InvoicesPage() {
         <p className="text-[#8888a0]">
           {invoicesData.length} invoices | Total Outstanding:{' '}
           <span className="text-[#ef4444] font-semibold">
-            ${(stats.outstanding / 1000).toFixed(0)}k
+            {formatCompactCurrency(stats.outstanding)}
           </span>
         </p>
       </div>
@@ -246,7 +247,7 @@ export default function InvoicesPage() {
         <Card className="p-4">
           <p className="text-xs text-[#8888a0] mb-1">Total Outstanding</p>
           <p className="text-2xl font-bold mb-2">
-            ${(stats.outstanding / 1000).toFixed(0)}k
+            {formatCompactCurrency(stats.outstanding)}
           </p>
           <div className="h-2 bg-[#2a2a3d] rounded-full overflow-hidden">
             <div
@@ -260,7 +261,7 @@ export default function InvoicesPage() {
         <Card className="p-4 border-[#ef4444]/30">
           <p className="text-xs text-[#8888a0] mb-1">Overdue Amount</p>
           <p className="text-2xl font-bold text-[#ef4444] mb-2">
-            ${(stats.overdue / 1000).toFixed(0)}k
+            {formatCompactCurrency(stats.overdue)}
           </p>
           <p className="text-xs text-[#ef4444]">
             {invoicesData.filter((inv) => inv.status === 'Overdue').length} invoices
@@ -269,7 +270,7 @@ export default function InvoicesPage() {
         <Card className="p-4">
           <p className="text-xs text-[#8888a0] mb-1">Paid This Month</p>
           <p className="text-2xl font-bold text-[#22c55e] mb-2">
-            ${(stats.paidThisMonth / 1000).toFixed(0)}k
+            {formatCompactCurrency(stats.paidThisMonth)}
           </p>
           <p className="text-xs text-[#8888a0]">This calendar month</p>
         </Card>
@@ -362,7 +363,7 @@ export default function InvoicesPage() {
                     {invoice.customer}
                   </td>
                   <td className="py-4 px-4 text-right font-semibold text-[#e8e8f0]">
-                    ${(invoice.amount / 1000).toFixed(0)}k
+                    {formatCompactCurrency(invoice.amount)}
                   </td>
                   <td className="py-4 px-4 text-center text-[#8888a0]">
                     {new Date(invoice.issueDate).toLocaleDateString('en-US', {

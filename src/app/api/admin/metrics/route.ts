@@ -10,14 +10,13 @@ import { createClient } from '@/lib/supabase/server';
 
 async function verifyAdminAccess(supabase: any, userId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('platform_role')
-      .eq('id', userId)
-      .single();
-
-    if (error || !data) return false;
-    return data.platform_role === 'admin' || data.platform_role === 'superadmin';
+    // Use the is_platform_admin() RPC function (SECURITY DEFINER, bypasses RLS)
+    const { data, error } = await supabase.rpc('is_platform_admin');
+    if (error) {
+      console.error('is_platform_admin RPC error:', error);
+      return false;
+    }
+    return data === true;
   } catch {
     return false;
   }

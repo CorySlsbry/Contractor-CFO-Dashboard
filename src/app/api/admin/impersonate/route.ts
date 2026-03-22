@@ -10,14 +10,12 @@ import { createClient } from '@/lib/supabase/server';
 
 async function verifyAdminAccess(supabase: any, userId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('platform_role')
-      .eq('id', userId)
-      .single();
-
-    if (error || !data) return false;
-    return data.platform_role === 'admin' || data.platform_role === 'superadmin';
+    const { data, error } = await supabase.rpc('is_platform_admin');
+    if (error) {
+      console.error('is_platform_admin RPC error:', error);
+      return false;
+    }
+    return data === true;
   } catch {
     return false;
   }
@@ -118,11 +116,9 @@ export async function GET(request: NextRequest) {
       .insert({
         admin_id: user.id,
         action: 'impersonate',
-        target_type: 'organization',
-        target_id: orgId,
-        organization_id: orgId,
+        target_organization_id: orgId,
+        ip_address: request.headers.get('x-forwarded-for') || 'unknown',
         details: {
-          ip_address: request.headers.get('x-forwarded-for') || 'unknown',
           user_agent: request.headers.get('user-agent') || 'unknown',
         },
       });

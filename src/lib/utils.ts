@@ -25,12 +25,14 @@ export function formatCurrency(
 
   const { minimumFractionDigits = 2, maximumFractionDigits = 2, compact = false } = options || {};
 
-  if (compact && Math.abs(value) >= 1000000) {
+  if (compact) {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       notation: "compact",
       compactDisplay: "short",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 1,
     }).format(value);
   }
 
@@ -40,6 +42,20 @@ export function formatCurrency(
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(value);
+}
+
+/**
+ * Format a number as compact USD (e.g., $156K, $1.6M, $2.3B)
+ * Smart abbreviation: K for thousands, M for millions, B for billions
+ */
+export function formatCompactCurrency(value: number | null | undefined): string {
+  if (value === null || value === undefined || value === 0) return "$0";
+  const abs = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+  if (abs >= 1_000_000_000) return `${sign}$${(abs / 1_000_000_000).toFixed(1)}B`;
+  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(0)}K`;
+  return `${sign}$${abs.toFixed(0)}`;
 }
 
 /**
