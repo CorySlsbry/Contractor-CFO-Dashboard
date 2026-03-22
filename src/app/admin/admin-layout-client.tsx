@@ -2,7 +2,8 @@
 
 import { useState, ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
 import {
   LayoutDashboard,
   Users,
@@ -12,6 +13,7 @@ import {
   Menu,
   X,
   ArrowLeft,
+  LogOut,
 } from 'lucide-react';
 
 interface NavItem {
@@ -35,6 +37,16 @@ export default function AdminLayoutClient({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   const isActive = (href: string) => {
     if (href === '/admin') {
@@ -97,14 +109,21 @@ export default function AdminLayoutClient({
           })}
         </nav>
 
-        {/* Back to Dashboard Link */}
-        <div className="border-t border-[#2a2a3d] p-3">
+        {/* Back to Dashboard & Logout */}
+        <div className="border-t border-[#2a2a3d] p-3 space-y-2">
           <Link href="/dashboard">
             <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#e8e8f0] hover:bg-[#2a2a3d] transition-all duration-200">
               <ArrowLeft size={20} />
               {sidebarOpen && <span>Back to Dashboard</span>}
             </button>
           </Link>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all duration-200"
+          >
+            <LogOut size={20} />
+            {sidebarOpen && <span>Sign Out</span>}
+          </button>
         </div>
       </div>
 

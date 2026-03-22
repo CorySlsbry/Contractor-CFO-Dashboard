@@ -14,9 +14,11 @@ import {
   Bell,
   RefreshCw,
   Plug,
+  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/button';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -44,6 +46,16 @@ export default function DashboardLayoutClient({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -97,8 +109,8 @@ export default function DashboardLayoutClient({
           })}
         </nav>
 
-        {/* User Profile */}
-        <div className="border-t border-[#2a2a3d] p-3">
+        {/* User Profile & Logout */}
+        <div className="border-t border-[#2a2a3d] p-3 space-y-2">
           <div
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
               sidebarOpen ? 'bg-[#1a1a26]' : ''
@@ -116,6 +128,13 @@ export default function DashboardLayoutClient({
               </div>
             )}
           </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all duration-200"
+          >
+            <LogOut size={20} />
+            {sidebarOpen && <span>Sign Out</span>}
+          </button>
         </div>
       </div>
 
