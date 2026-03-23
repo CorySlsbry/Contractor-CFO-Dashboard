@@ -119,7 +119,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Cash Flow Chart Mock — Overlapping Bars with Gradients */}
+              {/* Cash Flow Chart Mock — Overlapping Bars */}
               <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
                 <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Cash Flow Forecast</div>
                 <div className="flex items-end gap-3 h-28">
@@ -130,33 +130,27 @@ export default function LandingPage() {
                     { week: 'W4', inflow: 90, outflow: 76 },
                   ].map((w) => {
                     const isPositive = w.inflow >= w.outflow;
-                    const outerGrad = isPositive
-                      ? 'linear-gradient(90deg, #4ade80 0%, #166534 30%, #14532d 50%, #166534 70%, #4ade80 100%)'
-                      : 'linear-gradient(90deg, #f87171 0%, #991b1b 30%, #7f1d1d 50%, #991b1b 70%, #f87171 100%)';
-                    const innerGrad = isPositive
-                      ? 'linear-gradient(90deg, #f87171 0%, #991b1b 30%, #7f1d1d 50%, #991b1b 70%, #f87171 100%)'
-                      : 'linear-gradient(90deg, #4ade80 0%, #166534 30%, #14532d 50%, #166534 70%, #4ade80 100%)';
-                    const outerGlow = isPositive
-                      ? '0 0 12px rgba(74,222,128,0.3), inset 0 0 8px rgba(74,222,128,0.15)'
-                      : '0 0 12px rgba(248,113,113,0.3), inset 0 0 8px rgba(248,113,113,0.15)';
                     return (
                       <div key={w.week} className="flex-1 flex flex-col items-center gap-1.5">
                         <div className="w-full relative h-24 flex items-end justify-center">
-                          {/* Outer bar (larger value) — gradient with bright edges, dark center */}
+                          {/* Outer bar — dark fill, light colored edge */}
                           <div
                             className="absolute bottom-0 left-1 right-1 rounded-t-md"
                             style={{
                               height: `${Math.max(w.inflow, w.outflow)}%`,
-                              background: outerGrad,
-                              boxShadow: outerGlow,
+                              backgroundColor: isPositive ? '#14532d' : '#7f1d1d',
+                              border: `1.5px solid ${isPositive ? '#4ade80' : '#f87171'}`,
+                              borderBottom: 'none',
                             }}
                           />
-                          {/* Inner bar (smaller value) — same width, overlaid */}
+                          {/* Inner bar — dark fill, light colored edge */}
                           <div
                             className="absolute bottom-0 left-1 right-1 rounded-t-sm"
                             style={{
                               height: `${Math.min(w.inflow, w.outflow)}%`,
-                              background: innerGrad,
+                              backgroundColor: isPositive ? '#7f1d1d' : '#14532d',
+                              border: `1.5px solid ${isPositive ? '#f87171' : '#4ade80'}`,
+                              borderBottom: 'none',
                             }}
                           />
                           {/* Net indicator */}
@@ -172,8 +166,8 @@ export default function LandingPage() {
                   })}
                 </div>
                 <div className="flex gap-4 mt-3 justify-center">
-                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ background: 'linear-gradient(90deg, #4ade80, #14532d, #4ade80)' }} /><span className="text-[9px] text-[#b0b0c8]">Cash In</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ background: 'linear-gradient(90deg, #f87171, #7f1d1d, #f87171)' }} /><span className="text-[9px] text-[#b0b0c8]">Cash Out</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#14532d', border: '1.5px solid #4ade80' }} /><span className="text-[9px] text-[#b0b0c8]">Cash In</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#7f1d1d', border: '1.5px solid #f87171' }} /><span className="text-[9px] text-[#b0b0c8]">Cash Out</span></div>
                 </div>
               </div>
             </div>
