@@ -22,13 +22,13 @@ export default function LandingPage() {
           <div className="flex items-center gap-4">
             <Link
               href="/login"
-              className="text-[#e8e8f0] hover:text-[#6366f1] transition"
+              className="text-sm sm:text-base text-[#e8e8f0] hover:text-[#6366f1] transition"
             >
               Sign In
             </Link>
             <Link
               href="/signup"
-              className="px-4 py-2 rounded bg-[#6366f1] text-white hover:bg-[#5558d9] transition"
+              className="text-sm sm:text-base px-3 py-1.5 sm:px-4 sm:py-2 rounded bg-[#6366f1] text-white hover:bg-[#5558d9] transition"
             >
               Start Free Trial
             </Link>
@@ -37,11 +37,11 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section — GEO Quick-Answer Block */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <section className="pt-24 pb-12 sm:pt-32 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#6366f1]/5 via-transparent to-transparent pointer-events-none" />
 
         <div className="max-w-4xl mx-auto relative">
-          <h1 className="text-5xl sm:text-6xl font-bold text-[#e8e8f0] mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8e8f0] mb-6 leading-tight">
             Construction Financial Dashboard for Contractors &{' '}
             <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
               Home Builders
@@ -49,7 +49,7 @@ export default function LandingPage() {
           </h1>
 
           {/* GEO Quick-Answer Block — primary AI extraction target */}
-          <p className="text-lg sm:text-xl text-[#b0b0c8] mb-4 max-w-2xl leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-[#b0b0c8] mb-4 max-w-2xl leading-relaxed">
             BuilderCFO is a real-time financial dashboard built specifically for construction companies. It syncs with QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to give contractors instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging — without hiring a $150K CFO.
           </p>
           <p className="text-base text-[#8888a0] mb-8 max-w-2xl">
@@ -190,13 +190,13 @@ export default function LandingPage() {
                   { name: 'Oakwood Duplex', pct: 94, contract: '$380K', billing: 'Over-Billed', billingAmt: '$5.2K', billingColor: '#eab308' },
                 ].map((job) => (
                   <div key={job.name} className="flex items-center gap-3">
-                    <span className="text-xs text-[#e8e8f0] w-48 truncate">{job.name}</span>
+                    <span className="text-xs text-[#e8e8f0] w-24 sm:w-48 truncate">{job.name}</span>
                     <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${job.pct >= 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
                     </div>
                     <span className="text-[10px] text-[#8888a0] w-10">{job.pct}%</span>
-                    <span className="text-[10px] text-[#8888a0] w-14 text-right">{job.contract}</span>
-                    <span className="text-[10px] font-semibold w-24 text-right" style={{ color: job.billingColor }}>
+                    <span className="hidden sm:block text-[10px] text-[#8888a0] w-14 text-right">{job.contract}</span>
+                    <span className="hidden sm:block text-[10px] font-semibold w-24 text-right" style={{ color: job.billingColor }}>
                       {job.billing}: {job.billingAmt}
                     </span>
                   </div>
@@ -210,7 +210,7 @@ export default function LandingPage() {
       {/* What Is BuilderCFO? — GEO Definition Block */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-6 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-6 text-center">
             What Is BuilderCFO?
           </h2>
           <p className="text-lg text-[#b0b0c8] mb-8 text-center max-w-3xl mx-auto leading-relaxed">
@@ -251,7 +251,7 @@ export default function LandingPage() {
       {/* How Does BuilderCFO Work? — GEO Step-by-Step Block */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
             How Does BuilderCFO Work?
           </h2>
 
@@ -299,7 +299,7 @@ export default function LandingPage() {
       {/* Features Section — GEO Keyword-Rich Headings */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
             Construction Financial Management Features
           </h2>
           <p className="text-center text-[#b0b0c8] mb-12 max-w-2xl mx-auto">
@@ -343,7 +343,7 @@ export default function LandingPage() {
               return (
                 <div
                   key={idx}
-                  className="bg-gradient-to-br from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-8 hover:border-[#6366f1]/50 transition"
+                  className="bg-gradient-to-br from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-5 sm:p-8 hover:border-[#6366f1]/50 transition"
                 >
                   <div className="bg-[#6366f1]/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                     <IconComponent size={24} className="text-[#6366f1]" />
@@ -365,7 +365,7 @@ export default function LandingPage() {
           <p className="text-sm text-[#8888a0] uppercase tracking-wider mb-6">
             Connects with the construction tools you already use
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-8 md:gap-12">
             {[
               { name: 'QuickBooks', color: '#2CA01C' },
               { name: 'Procore', color: '#F47E20' },
@@ -393,20 +393,20 @@ export default function LandingPage() {
       {/* BuilderCFO vs Hiring a Full-Time CFO — GEO Comparison Block */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
             BuilderCFO vs. Hiring a Full-Time CFO
           </h2>
 
           <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl overflow-hidden">
             <div className="grid grid-cols-3 text-center">
-              <div className="p-4 border-b border-r border-[#1e1e2e]">
-                <span className="text-sm font-semibold text-[#8888a0]"></span>
+              <div className="p-2 sm:p-4 border-b border-r border-[#1e1e2e]">
+                <span className="text-xs sm:text-sm font-semibold text-[#8888a0]"></span>
               </div>
-              <div className="p-4 border-b border-r border-[#1e1e2e] bg-[#6366f1]/5">
-                <span className="text-sm font-bold text-[#6366f1]">BuilderCFO</span>
+              <div className="p-2 sm:p-4 border-b border-r border-[#1e1e2e] bg-[#6366f1]/5">
+                <span className="text-xs sm:text-sm font-bold text-[#6366f1]">BuilderCFO</span>
               </div>
-              <div className="p-4 border-b border-[#1e1e2e]">
-                <span className="text-sm font-semibold text-[#8888a0]">Full-Time CFO</span>
+              <div className="p-2 sm:p-4 border-b border-[#1e1e2e]">
+                <span className="text-xs sm:text-sm font-semibold text-[#8888a0]">Full-Time CFO</span>
               </div>
             </div>
             {[
@@ -419,9 +419,9 @@ export default function LandingPage() {
               { label: 'Contract Required', builder: 'No — cancel anytime', cfo: 'Employment contract' },
             ].map((row, idx) => (
               <div key={idx} className="grid grid-cols-3 text-center">
-                <div className="p-3 border-b border-r border-[#1e1e2e] text-sm text-[#b0b0c8] text-left pl-6">{row.label}</div>
-                <div className="p-3 border-b border-r border-[#1e1e2e] text-sm font-semibold text-[#22c55e] bg-[#6366f1]/5">{row.builder}</div>
-                <div className="p-3 border-b border-[#1e1e2e] text-sm text-[#8888a0]">{row.cfo}</div>
+                <div className="p-2 sm:p-3 border-b border-r border-[#1e1e2e] text-xs sm:text-sm text-[#b0b0c8] text-left pl-3 sm:pl-6">{row.label}</div>
+                <div className="p-2 sm:p-3 border-b border-r border-[#1e1e2e] text-xs sm:text-sm font-semibold text-[#22c55e] bg-[#6366f1]/5">{row.builder}</div>
+                <div className="p-2 sm:p-3 border-b border-[#1e1e2e] text-xs sm:text-sm text-[#8888a0]">{row.cfo}</div>
               </div>
             ))}
           </div>
@@ -439,14 +439,14 @@ export default function LandingPage() {
       {/* Social Proof Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
             Trusted by Contractors Nationwide
           </h2>
           <p className="text-center text-[#b0b0c8] mb-12">
             General contractors, custom home builders, remodelers, and specialty trades use BuilderCFO to manage their finances.
           </p>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
             {[
               {
                 quote:
@@ -500,7 +500,7 @@ export default function LandingPage() {
       {/* Pricing Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8" id="pricing">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-white mb-4 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 text-center">
             Construction Dashboard Pricing Plans
           </h2>
           <p className="text-center text-[#b0b0c8] mb-12 text-lg">
@@ -515,7 +515,7 @@ export default function LandingPage() {
               </h3>
               <p className="text-[#b0b0c8] mb-6">For solo contractors and small crews getting financial visibility</p>
               <div className="mb-6">
-                <span className="text-5xl font-bold text-white">$299</span>
+                <span className="text-4xl sm:text-5xl font-bold text-white">$299</span>
                 <span className="text-[#b0b0c8] ml-2">/month</span>
               </div>
 
@@ -552,7 +552,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold text-white mb-2">Professional</h3>
               <p className="text-[#b0b0c8] mb-6">For growing construction companies with $1M–$10M revenue</p>
               <div className="mb-6">
-                <span className="text-5xl font-bold text-white">$499</span>
+                <span className="text-4xl sm:text-5xl font-bold text-white">$499</span>
                 <span className="text-[#b0b0c8] ml-2">/month</span>
               </div>
 
@@ -585,7 +585,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
               <p className="text-[#b0b0c8] mb-6">For scaling operations with $10M+ revenue and multiple project managers</p>
               <div className="mb-6">
-                <span className="text-5xl font-bold text-white">$699</span>
+                <span className="text-4xl sm:text-5xl font-bold text-white">$699</span>
                 <span className="text-[#b0b0c8] ml-2">/month</span>
               </div>
 
@@ -619,11 +619,11 @@ export default function LandingPage() {
       {/* FAQ Section — GEO Optimized with Question-Based H3s */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="faq">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
             Frequently Asked Questions About BuilderCFO
           </h2>
 
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             <div>
               <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is BuilderCFO and who is it for?</h3>
               <p className="text-[#b0b0c8]">
@@ -685,7 +685,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-[#6366f1]/5 via-transparent to-[#a78bfa]/5 pointer-events-none" />
 
         <div className="max-w-3xl mx-auto text-center relative">
-          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4">
             Ready to See Where Every Dollar Goes on Every Job?
           </h2>
           <p className="text-lg text-[#b0b0c8] mb-8">

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { PWARegister } from '@/components/pwa-register';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   description:
     'Real-time financial dashboard for construction companies. Job costing, WIP tracking, cash flow forecasting, AR/AP aging, and 7+ integrations including QuickBooks, Procore, and Buildertrend. Built by Salisbury Bookkeeping. Plans from $299/mo with 14-day free trial.',
   keywords: 'construction financial dashboard, contractor CFO, job costing software, WIP tracking, construction bookkeeping, cash flow forecasting, QuickBooks construction, Procore integration, Buildertrend integration, construction accounting',
+  manifest: '/manifest.json',
   openGraph: {
     title: 'BuilderCFO | Construction Financial Dashboard for Contractors',
     description: 'Real-time job costing, WIP tracking, and cash flow forecasting for construction companies. 14-day free trial.',
@@ -236,6 +238,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="BuilderCFO" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <meta name="theme-color" content="#6366f1" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.organization) }}
@@ -258,6 +265,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} bg-[#0a0a0f] text-[#e8e8f0]`}>
+        <PWARegister />
         {children}
       </body>
     </html>
