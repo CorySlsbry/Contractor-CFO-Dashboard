@@ -33,18 +33,10 @@ const baseData = [
   { month: 'Mar*', inflows: 380000, outflows: 265000, net: 115000, isForecast: true },
 ];
 
-// Transform data for stacked visualization:
-// - Keep inflows as the full bar height
-// - Outflows start at 0 (will stack on top to show consumption)
-const data = baseData.map((d) => ({
-  ...d,
-  inflowsDisplay: d.inflows,
-  outflowsDisplay: d.outflows,
-}));
+const maxValue = Math.max(...baseData.map((d) => Math.max(d.inflows, d.outflows)));
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
-    // Find the original data point
     const month = payload[0]?.payload?.month;
     const dataPoint = baseData.find((d) => d.month === month);
 
@@ -63,10 +55,10 @@ const CustomTooltip = ({ active, payload }: any) => {
         <p style={{ color: '#e8e8f0', marginBottom: '0.5rem', fontWeight: 'bold' }}>
           {dataPoint.month} {dataPoint.isForecast && '(Forecast)'}
         </p>
-        <p style={{ color: '#22c55e', marginBottom: '0.25rem' }}>
+        <p style={{ color: '#4ade80', marginBottom: '0.25rem' }}>
           Money In: ${(dataPoint.inflows / 1000).toFixed(0)}k
         </p>
-        <p style={{ color: '#ef4444', marginBottom: '0.25rem' }}>
+        <p style={{ color: '#f87171', marginBottom: '0.25rem' }}>
           Money Out: ${(dataPoint.outflows / 1000).toFixed(0)}k
         </p>
         <p style={{ color: '#6366f1', marginTop: '0.5rem' }}>
@@ -81,131 +73,92 @@ const CustomTooltip = ({ active, payload }: any) => {
 export const CashFlowChart = () => {
   return (
     <div className="w-full h-full">
-      <ResponsiveContainer width="100%" height={380}>
-        <ComposedChart
-          data={data}
-          margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-        >
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="#2a2a3d"
-            vertical={false}
-          />
-          <XAxis
-            dataKey="month"
-            stroke="#8888a0"
-            style={{ fontSize: '0.875rem' }}
-            tick={(props: any) => {
-              const { x, y, payload } = props;
-              const dataPoint = baseData.find((d) => d.month === payload.value);
-              const isForecast = dataPoint?.isForecast;
+      {/* Overlapping bar chart — same style as landing page */}
+      <div className="flex items-end gap-2 sm:gap-3" style={{ height: 340, padding: '20px 16px 0' }}>
+        {baseData.map((d) => {
+          const inflowPct = (d.inflows / maxValue) * 100;
+          const outflowPct = (d.outflows / maxValue) * 100;
+          const isPositive = d.inflows >= d.outflows;
+          const forecastOpacity = d.isForecast ? 0.55 : 1;
 
-              return (
-                <text
-                  x={x}
-                  y={y + 10}
-                  textAnchor="middle"
-                  fill="#8888a0"
-                  fontSize="0.875rem"
-                  opacity={isForecast ? 0.6 : 1}
-                  fontWeight={isForecast ? '400' : '500'}
-                >
-                  {payload.value}
-                </text>
-              );
-            }}
-          />
-          <YAxis
-            stroke="#8888a0"
-            style={{ fontSize: '0.875rem' }}
-            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend
-            wrapperStyle={{ paddingTop: '1.5rem', fontSize: '0.875rem' }}
-            formatter={(value) => {
-              const labels: Record<string, string> = {
-                inflowsDisplay: 'Money In (Green)',
-                outflowsDisplay: 'Money Out (Red)',
-                net: 'Net Cash Flow (Line)',
-              };
-              return labels[value] || value;
-            }}
-          />
-
-          {/* Inflow bar - represents full cash inflow (green with lighter outline) */}
-          <Bar
-            dataKey="inflowsDisplay"
-            fill="#22c55e"
-            name="inflowsDisplay"
-            radius={[8, 8, 0, 0]}
-            isAnimationActive={true}
-          >
-            {data.map((entry, index) => (
-              <Cell
-                key={`inflow-${index}`}
-                fill={entry.isForecast ? '#4ade80' : '#22c55e'}
-                stroke={entry.isForecast ? '#22c55e' : '#4ade80'}
-                strokeWidth={2}
-                opacity={entry.isForecast ? 0.5 : 1}
-              />
-            ))}
-          </Bar>
-
-          {/* Outflow bar - stacked on inflows, showing money being consumed (red creeping up from bottom) */}
-          <Bar
-            dataKey="outflowsDisplay"
-            stackId="cashStack"
-            fill="#ef4444"
-            name="outflowsDisplay"
-            radius={[0, 0, 0, 0]}
-            isAnimationActive={true}
-          >
-            {data.map((entry, index) => (
-              <Cell
-                key={`outflow-${index}`}
-                fill={entry.isForecast ? '#fca5a5' : '#ef4444'}
-                opacity={entry.isForecast ? 0.5 : 1}
-              />
-            ))}
-          </Bar>
-
-          {/* Net cash flow line - overlay showing true net position */}
-          <Line
-            type="monotone"
-            dataKey="net"
-            stroke="#6366f1"
-            strokeWidth={3}
-            name="net"
-            dot={(props: any) => {
-              const { cx, cy, payload } = props;
-              const dataPoint = baseData.find((d) => d.month === payload?.month);
-              const isForecast = dataPoint?.isForecast;
-
-              return (
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  r={isForecast ? 3 : 4}
-                  fill="#6366f1"
-                  opacity={isForecast ? 0.5 : 1}
+          return (
+            <div key={d.month} className="flex-1 flex flex-col items-center gap-1.5 group relative">
+              <div className="w-full relative flex items-end justify-center" style={{ height: 280 }}>
+                {/* Taller bar (behind) */}
+                <div
+                  className="absolute bottom-0 left-0.5 right-0.5 rounded-t-md transition-all"
+                  style={{
+                    height: `${Math.max(inflowPct, outflowPct)}%`,
+                    backgroundColor: isPositive ? '#14532d' : '#7f1d1d',
+                    border: `1.5px solid ${isPositive ? '#4ade80' : '#f87171'}`,
+                    borderBottom: 'none',
+                    opacity: forecastOpacity,
+                  }}
                 />
-              );
-            }}
-            activeDot={{ r: 6, fill: '#6366f1' }}
-            isAnimationActive={true}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+                {/* Shorter bar (in front, overlapping) */}
+                <div
+                  className="absolute bottom-0 left-0.5 right-0.5 rounded-t-sm transition-all"
+                  style={{
+                    height: `${Math.min(inflowPct, outflowPct)}%`,
+                    backgroundColor: isPositive ? '#7f1d1d' : '#14532d',
+                    border: `1.5px solid ${isPositive ? '#f87171' : '#4ade80'}`,
+                    borderBottom: 'none',
+                    opacity: forecastOpacity,
+                  }}
+                />
+                {/* Net indicator on top */}
+                <div className="absolute -top-5 left-0 right-0 text-center">
+                  <span
+                    className="text-[9px] sm:text-[10px] font-bold"
+                    style={{
+                      color: isPositive ? '#4ade80' : '#f87171',
+                      opacity: forecastOpacity,
+                    }}
+                  >
+                    {isPositive ? '+' : '-'}${(Math.abs(d.net) / 1000).toFixed(0)}k
+                  </span>
+                </div>
 
-      {/* Legend explanation */}
-      <div className="mt-4 px-4 py-3 rounded border border-gray-700" style={{ borderColor: '#2a2a3d' }}>
-        <p className="text-xs" style={{ color: '#8888a0' }}>
-          <span style={{ color: '#22c55e', fontWeight: 'bold' }}>●</span> Green bar = Total Money In |{' '}
-          <span style={{ color: '#ef4444', fontWeight: 'bold' }}>●</span> Red bar = Money Out (consuming green) |{' '}
-          <span style={{ color: '#6366f1', fontWeight: 'bold' }}>━</span> Net Cash Flow |{' '}
-          <span style={{ opacity: 0.6 }}>Months with * = 3-month forecast based on AR/AP projections</span>
-        </p>
+                {/* Hover tooltip */}
+                <div className="hidden group-hover:block absolute -top-24 left-1/2 -translate-x-1/2 z-20 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-2.5 text-xs whitespace-nowrap shadow-xl">
+                  <p className="text-[#e8e8f0] font-bold mb-1">
+                    {d.month} {d.isForecast && '(Forecast)'}
+                  </p>
+                  <p style={{ color: '#4ade80' }}>In: ${(d.inflows / 1000).toFixed(0)}k</p>
+                  <p style={{ color: '#f87171' }}>Out: ${(d.outflows / 1000).toFixed(0)}k</p>
+                  <p style={{ color: '#6366f1' }} className="mt-1">Net: ${(d.net / 1000).toFixed(0)}k</p>
+                </div>
+              </div>
+              <span
+                className="text-[9px] sm:text-xs"
+                style={{
+                  color: '#8888a0',
+                  opacity: d.isForecast ? 0.6 : 1,
+                  fontWeight: d.isForecast ? 400 : 500,
+                }}
+              >
+                {d.month}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Legend */}
+      <div className="mt-4 px-4 py-3 rounded border" style={{ borderColor: '#2a2a3d' }}>
+        <div className="flex flex-wrap gap-4 justify-center items-center">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#14532d', border: '1.5px solid #4ade80' }} />
+            <span className="text-xs" style={{ color: '#b0b0c8' }}>Cash In</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#7f1d1d', border: '1.5px solid #f87171' }} />
+            <span className="text-xs" style={{ color: '#b0b0c8' }}>Cash Out</span>
+          </div>
+          <span className="text-xs" style={{ color: '#8888a0', opacity: 0.7 }}>
+            Months with * = 3-month forecast
+          </span>
+        </div>
       </div>
     </div>
   );
