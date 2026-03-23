@@ -119,13 +119,16 @@ export default function SignupPage() {
       <div className="bg-[#12121a] rounded-lg border border-[#1e1e2e] p-8 shadow-2xl">
         {/* Branding */}
         <div className="mb-6 text-center">
-          <h1 className="text-sm font-semibold text-[#8888a0] mb-2">
-            SALISBURY BOOKKEEPING
+          <h1 className="font-bold text-2xl tracking-tight mb-1">
+            <span className="text-[#6366f1]">Builder</span><span className="text-[#e8e8f0]">CFO</span>
           </h1>
-          <h2 className="text-2xl font-bold text-[#e8e8f0]">
+          <p className="text-sm text-[#8888a0] mb-3">
+            by Salisbury Bookkeeping
+          </p>
+          <h2 className="text-lg font-semibold text-[#e8e8f0]">
             Start Your 14-Day Free Trial
           </h2>
-          <p className="text-sm text-[#b0b0c8] mt-2">
+          <p className="text-sm text-[#b0b0c8] mt-1">
             No charge for 14 days. Cancel anytime.
           </p>
         </div>

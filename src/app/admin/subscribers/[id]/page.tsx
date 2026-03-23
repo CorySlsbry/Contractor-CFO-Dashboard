@@ -1,7 +1,7 @@
 import SubscriberDetail from './subscriber-detail';
 
 export const metadata = {
-  title: 'Subscriber Details | Admin | Contractor CFO Dashboard',
+  title: 'Subscriber Details | Admin | BuilderCFO',
 };
 
 export default function SubscriberDetailPage() {

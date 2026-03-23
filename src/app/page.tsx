@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug } from 'lucide-react';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock } from 'lucide-react';
 import { useState } from 'react';
+import Head from 'next/head';
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<'starter' | 'professional' | 'enterprise'>('professional');
@@ -12,8 +13,11 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-[#0a0a0f]/80 backdrop-blur border-b border-[#1e1e2e] z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <div className="text-sm font-semibold text-[#8888a0]">
-            SALISBURY BOOKKEEPING
+          <div className="flex items-center gap-3">
+            <div className="font-bold text-lg tracking-tight">
+              <span className="text-[#6366f1]">Builder</span><span className="text-[#e8e8f0]">CFO</span>
+            </div>
+            <span className="text-[10px] text-[#8888a0] hidden sm:inline">by <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">Salisbury Bookkeeping</a></span>
           </div>
           <div className="flex items-center gap-4">
             <Link
@@ -32,23 +36,28 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero Section — GEO Quick-Answer Block */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#6366f1]/5 via-transparent to-transparent pointer-events-none" />
 
         <div className="max-w-4xl mx-auto relative">
           <h1 className="text-5xl sm:text-6xl font-bold text-[#e8e8f0] mb-6 leading-tight">
-            Your Construction Company's{' '}
+            Construction Financial Dashboard for Contractors &{' '}
             <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
-              Financial Command Center
+              Home Builders
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-[#b0b0c8] mb-8 max-w-2xl leading-relaxed">
-            Real-time dashboards that turn your QuickBooks data into actionable
-            insights. Know exactly where every dollar goes on every job —
-            without hiring a $150K CFO.
+          {/* GEO Quick-Answer Block — primary AI extraction target */}
+          <p className="text-lg sm:text-xl text-[#b0b0c8] mb-4 max-w-2xl leading-relaxed">
+            BuilderCFO is a real-time financial dashboard built specifically for construction companies. It syncs with QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to give contractors instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging — without hiring a $150K CFO.
+          </p>
+          <p className="text-base text-[#8888a0] mb-8 max-w-2xl">
+            Built by{' '}
+            <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
+              Salisbury Bookkeeping
+            </a>
+            , a fractional controller firm serving construction companies nationwide. Plans start at $299/month with a 14-day free trial.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
@@ -56,7 +65,7 @@ export default function LandingPage() {
               href="/signup"
               className="px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2"
             >
-              Start Free Trial <ChevronRight size={18} />
+              Start 14-Day Free Trial <ChevronRight size={18} />
             </Link>
             <Link
               href="/dashboard"
@@ -133,7 +142,6 @@ export default function LandingPage() {
                     return (
                       <div key={w.week} className="flex-1 flex flex-col items-center gap-1.5">
                         <div className="w-full relative h-24 flex items-end justify-center">
-                          {/* Outer bar — dark fill, light colored edge */}
                           <div
                             className="absolute bottom-0 left-1 right-1 rounded-t-md"
                             style={{
@@ -143,7 +151,6 @@ export default function LandingPage() {
                               borderBottom: 'none',
                             }}
                           />
-                          {/* Inner bar — dark fill, light colored edge */}
                           <div
                             className="absolute bottom-0 left-1 right-1 rounded-t-sm"
                             style={{
@@ -153,7 +160,6 @@ export default function LandingPage() {
                               borderBottom: 'none',
                             }}
                           />
-                          {/* Net indicator */}
                           <div className="absolute -top-3.5 left-0 right-0 text-center">
                             <span className="text-[8px] font-bold" style={{ color: isPositive ? '#4ade80' : '#f87171' }}>
                               {isPositive ? '+' : '-'}{Math.abs(w.inflow - w.outflow)}%
@@ -201,26 +207,31 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pain Points Section */}
+      {/* What Is BuilderCFO? — GEO Definition Block */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
-            Sound familiar?
+          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-6 text-center">
+            What Is BuilderCFO?
           </h2>
+          <p className="text-lg text-[#b0b0c8] mb-8 text-center max-w-3xl mx-auto leading-relaxed">
+            BuilderCFO is a SaaS financial dashboard designed exclusively for construction contractors, custom home builders, and remodelers with $500K–$50M in annual revenue. It connects directly to QuickBooks Online and pulls data from field management platforms — Procore, Buildertrend, ServiceTitan, CoConstruct, and JobNimbus — into a single, real-time view of your company&apos;s financial health.
+          </p>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
                 title: 'You check your bank balance to gauge financial health',
+                fix: 'BuilderCFO shows net cash, AR/AP, and WIP in one screen — updated in real time from QuickBooks.',
                 icon: '💳',
               },
               {
-                title:
-                  "You don't know if a job is profitable until it's done",
+                title: "You don't know if a job is profitable until it's done",
+                fix: 'Per-job P&L with budget vs. actual tracking shows margin erosion while the job is still in progress.',
                 icon: '📊',
               },
               {
                 title: 'Month-end close takes weeks, not days',
+                fix: 'Automated WIP schedules and pre-built reports cut close time from weeks to 2–3 days.',
                 icon: '📅',
               },
             ].map((pain, idx) => (
@@ -229,51 +240,103 @@ export default function LandingPage() {
                 className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6 hover:border-[#6366f1]/50 transition"
               >
                 <div className="text-4xl mb-4">{pain.icon}</div>
-                <p className="text-[#e8e8f0] font-medium">{pain.title}</p>
+                <p className="text-[#e8e8f0] font-medium mb-3">{pain.title}</p>
+                <p className="text-sm text-[#b0b0c8]">{pain.fix}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* How Does BuilderCFO Work? — GEO Step-by-Step Block */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
-            Everything you need to run your numbers
+            How Does BuilderCFO Work?
           </h2>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                step: '1',
+                title: 'Connect QuickBooks in 2 Minutes',
+                desc: 'Securely link your QuickBooks Online account via OAuth 2.0. BuilderCFO reads your data — it never modifies your books. Your data stays encrypted in transit and at rest.',
+                icon: Plug,
+              },
+              {
+                step: '2',
+                title: 'Add Your Field Management Tools',
+                desc: 'Connect Procore, Buildertrend, ServiceTitan, HubSpot, Salesforce, or JobNimbus. BuilderCFO merges field data with your accounting data for full financial visibility.',
+                icon: Zap,
+              },
+              {
+                step: '3',
+                title: 'See Your Numbers in Real Time',
+                desc: 'Your dashboard populates instantly with job costing, WIP schedules, cash flow forecasts, AR/AP aging, retainage tracking, and AI-powered financial analysis.',
+                icon: Eye,
+              },
+            ].map((item, idx) => {
+              const IconComponent = item.icon;
+              return (
+                <div key={idx} className="text-center">
+                  <div className="bg-[#6366f1]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <IconComponent size={28} className="text-[#6366f1]" />
+                  </div>
+                  <div className="text-xs font-bold text-[#6366f1] mb-2">STEP {item.step}</div>
+                  <h3 className="text-xl font-semibold text-[#e8e8f0] mb-3">{item.title}</h3>
+                  <p className="text-[#b0b0c8] text-sm">{item.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="text-center text-[#8888a0] mt-10 text-sm">
+            Setup takes under 15 minutes. No data migration, no implementation fees, no long-term contracts.
+          </p>
+        </div>
+      </section>
+
+      {/* Features Section — GEO Keyword-Rich Headings */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
+            Construction Financial Management Features
+          </h2>
+          <p className="text-center text-[#b0b0c8] mb-12 max-w-2xl mx-auto">
+            Every feature is purpose-built for how construction companies actually operate — project-based accounting, progress billing, retainage, and percentage-of-completion reporting.
+          </p>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
                 title: 'Real-Time Financial Dashboard',
-                desc: 'Auto-syncs with QuickBooks. See your complete financial picture in real-time.',
+                desc: 'Auto-syncs with QuickBooks Online every hour. See revenue, expenses, net cash, AR/AP, and WIP across all active jobs in a single view.',
                 icon: Zap,
               },
               {
-                title: 'Job Costing Visibility',
-                desc: 'Per-job P&L, budget vs actual spend. Know exactly where money is going.',
+                title: 'Job Costing & WIP Tracking',
+                desc: 'Per-job profit & loss with budget vs. actual spend. Automated WIP schedules show over-billing and under-billing by job — critical for construction percentage-of-completion accounting.',
                 icon: Eye,
               },
               {
                 title: 'Cash Flow Forecasting',
-                desc: 'See 30/60/90 days ahead. Plan payroll and equipment purchases with confidence.',
+                desc: 'See 30, 60, and 90 days ahead based on scheduled draws, open invoices, and committed AP. Plan payroll, equipment purchases, and sub payments with confidence.',
                 icon: TrendingUp,
               },
               {
-                title: 'AI-Powered CFO Brief',
-                desc: 'Monthly narrative analysis that explains your numbers and flags opportunities.',
+                title: 'AI-Powered CFO Analysis',
+                desc: 'Monthly narrative reports that explain your financial data in plain English — flagging margin erosion, cash crunches, and growth opportunities before they become problems.',
                 icon: Brain,
               },
               {
-                title: '7+ Integrations',
-                desc: 'Connect Procore, Buildertrend, ServiceTitan, Salesforce, HubSpot, JobNimbus — all in one dashboard.',
+                title: '7+ Construction Tool Integrations',
+                desc: 'Connect Procore, Buildertrend, ServiceTitan, Salesforce, HubSpot, JobNimbus, and CoConstruct. Field data merges with accounting data for total financial visibility.',
                 icon: Plug,
               },
               {
-                title: 'Unified Sales Pipeline',
-                desc: 'Pull CRM deals into your financial view. See pipeline alongside cash flow and job costs.',
-                icon: TrendingUp,
+                title: 'AR/AP Aging & Retainage Tracking',
+                desc: 'See exactly who owes you, who you owe, and how much retainage is outstanding by job. Color-coded aging buckets (current, 30, 60, 90+ days) highlight collection risks.',
+                icon: Shield,
               },
             ].map((feature, idx) => {
               const IconComponent = feature.icon;
@@ -300,7 +363,7 @@ export default function LandingPage() {
       <section className="py-16 px-4 sm:px-6 lg:px-8 border-y border-[#1e1e2e]">
         <div className="max-w-5xl mx-auto text-center">
           <p className="text-sm text-[#8888a0] uppercase tracking-wider mb-6">
-            Connects with the tools you already use
+            Connects with the construction tools you already use
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
             {[
@@ -327,12 +390,61 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* BuilderCFO vs Hiring a Full-Time CFO — GEO Comparison Block */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
+            BuilderCFO vs. Hiring a Full-Time CFO
+          </h2>
+
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl overflow-hidden">
+            <div className="grid grid-cols-3 text-center">
+              <div className="p-4 border-b border-r border-[#1e1e2e]">
+                <span className="text-sm font-semibold text-[#8888a0]"></span>
+              </div>
+              <div className="p-4 border-b border-r border-[#1e1e2e] bg-[#6366f1]/5">
+                <span className="text-sm font-bold text-[#6366f1]">BuilderCFO</span>
+              </div>
+              <div className="p-4 border-b border-[#1e1e2e]">
+                <span className="text-sm font-semibold text-[#8888a0]">Full-Time CFO</span>
+              </div>
+            </div>
+            {[
+              { label: 'Annual Cost', builder: '$3,588–$8,388', cfo: '$120,000–$200,000+' },
+              { label: 'Setup Time', builder: '15 minutes', cfo: '2–3 months' },
+              { label: 'Real-Time Data', builder: 'Yes — auto-synced', cfo: 'Monthly reports' },
+              { label: 'Construction Specific', builder: 'Job costing, WIP, retainage', cfo: 'Depends on hire' },
+              { label: 'Integrations', builder: '7+ tools built in', cfo: 'Manual data entry' },
+              { label: 'AI Analysis', builder: 'Included', cfo: 'Not available' },
+              { label: 'Contract Required', builder: 'No — cancel anytime', cfo: 'Employment contract' },
+            ].map((row, idx) => (
+              <div key={idx} className="grid grid-cols-3 text-center">
+                <div className="p-3 border-b border-r border-[#1e1e2e] text-sm text-[#b0b0c8] text-left pl-6">{row.label}</div>
+                <div className="p-3 border-b border-r border-[#1e1e2e] text-sm font-semibold text-[#22c55e] bg-[#6366f1]/5">{row.builder}</div>
+                <div className="p-3 border-b border-[#1e1e2e] text-sm text-[#8888a0]">{row.cfo}</div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-[#8888a0] mt-6 text-sm">
+            BuilderCFO gives you CFO-level financial visibility at a fraction of the cost. For contractors who need hands-on advisory,{' '}
+            <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
+              Salisbury Bookkeeping
+            </a>{' '}
+            offers fractional controller services that pair perfectly with the dashboard.
+          </p>
+        </div>
+      </section>
+
       {/* Social Proof Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
-            Trusted by contractors nationwide
+          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
+            Trusted by Contractors Nationwide
           </h2>
+          <p className="text-center text-[#b0b0c8] mb-12">
+            General contractors, custom home builders, remodelers, and specialty trades use BuilderCFO to manage their finances.
+          </p>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -386,13 +498,13 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-4 sm:px-6 lg:px-8" id="pricing">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-bold text-white mb-4 text-center">
-            Simple, transparent pricing
+            Construction Dashboard Pricing Plans
           </h2>
           <p className="text-center text-[#b0b0c8] mb-12 text-lg">
-            14-day free trial on every plan. No credit card required.
+            14-day free trial on every plan. Enter a card to start — you won&apos;t be charged until day 15.
           </p>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -401,7 +513,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold text-white mb-2">
                 Starter
               </h3>
-              <p className="text-[#b0b0c8] mb-6">For solo contractors getting organized</p>
+              <p className="text-[#b0b0c8] mb-6">For solo contractors and small crews getting financial visibility</p>
               <div className="mb-6">
                 <span className="text-5xl font-bold text-white">$299</span>
                 <span className="text-[#b0b0c8] ml-2">/month</span>
@@ -409,11 +521,11 @@ export default function LandingPage() {
 
               <ul className="space-y-3 mb-8 flex-1">
                 {[
-                  'Financial dashboard',
+                  'Real-time financial dashboard',
                   'Job costing & WIP tracking',
-                  'Cash flow forecasting',
+                  'Cash flow forecasting (30/60/90 day)',
                   'QuickBooks Online sync',
-                  'Monthly CFO brief',
+                  'Monthly AI CFO brief',
                   'Email support',
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-3">
@@ -438,7 +550,7 @@ export default function LandingPage() {
               </div>
 
               <h3 className="text-2xl font-bold text-white mb-2">Professional</h3>
-              <p className="text-[#b0b0c8] mb-6">For growing construction companies</p>
+              <p className="text-[#b0b0c8] mb-6">For growing construction companies with $1M–$10M revenue</p>
               <div className="mb-6">
                 <span className="text-5xl font-bold text-white">$499</span>
                 <span className="text-[#b0b0c8] ml-2">/month</span>
@@ -447,10 +559,10 @@ export default function LandingPage() {
               <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Everything in Starter',
-                  'Buildertrend + HubSpot + JobNimbus',
+                  'Buildertrend + HubSpot + JobNimbus integrations',
                   'Sales pipeline dashboard',
                   'AI-powered CFO advisor',
-                  'AR/AP aging reports',
+                  'AR/AP aging reports by job',
                   'Priority support',
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-3">
@@ -471,7 +583,7 @@ export default function LandingPage() {
             {/* Enterprise Tier */}
             <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-8 flex flex-col">
               <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
-              <p className="text-[#b0b0c8] mb-6">For scaling operations</p>
+              <p className="text-[#b0b0c8] mb-6">For scaling operations with $10M+ revenue and multiple project managers</p>
               <div className="mb-6">
                 <span className="text-5xl font-bold text-white">$699</span>
                 <span className="text-[#b0b0c8] ml-2">/month</span>
@@ -480,10 +592,10 @@ export default function LandingPage() {
               <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Everything in Professional',
-                  'Procore + Salesforce + ServiceTitan',
+                  'Procore + Salesforce + ServiceTitan integrations',
                   'All 7+ integrations included',
                   'Crew utilization tracking',
-                  'Quarterly strategy call',
+                  'Quarterly strategy call with Salisbury Bookkeeping',
                   'Dedicated account manager',
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-3">
@@ -504,49 +616,66 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
+      {/* FAQ Section — GEO Optimized with Question-Based H3s */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="faq">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
-            Frequently asked questions
+            Frequently Asked Questions About BuilderCFO
           </h2>
 
-          <div className="space-y-6">
-            {[
-              {
-                q: 'How does it connect to QuickBooks?',
-                a: 'We use OAuth 2.0 to securely connect to your QuickBooks account. We only read your data—we never modify anything. Connection is fast and your data stays encrypted.',
-              },
-              {
-                q: 'How long does setup take?',
-                a: 'Under 15 minutes. Connect QuickBooks, invite your team, and start exploring your data. No data migration required.',
-              },
-              {
-                q: 'Is my financial data secure?',
-                a: 'Yes. Your data is encrypted in transit and at rest. We use Supabase for secure database hosting and Stripe for payment processing. Both are SOC 2 compliant.',
-              },
-              {
-                q: 'Can my accountant or bookkeeper access it too?',
-                a: 'Yes. Invite unlimited users and assign roles (admin, analyst, viewer). Your team stays aligned without sharing passwords.',
-              },
-              {
-                q: 'What if I want to cancel?',
-                a: 'Cancel anytime. No contracts, no cancellation fees. You keep access until your billing cycle ends.',
-              },
-            ].map((faq, idx) => (
-              <details
-                key={idx}
-                className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6 group cursor-pointer"
-              >
-                <summary className="flex items-center justify-between font-semibold text-[#e8e8f0]">
-                  {faq.q}
-                  <span className="ml-4 transition group-open:rotate-180">
-                    <ChevronRight size={20} />
-                  </span>
-                </summary>
-                <p className="mt-4 text-[#b0b0c8]">{faq.a}</p>
-              </details>
-            ))}
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is BuilderCFO and who is it for?</h3>
+              <p className="text-[#b0b0c8]">
+                BuilderCFO is a real-time financial dashboard built specifically for construction contractors, custom home builders, and remodelers. It connects to QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to provide instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging. It is designed for construction companies with $500K–$50M in annual revenue who need CFO-level financial insight without the CFO-level salary.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How does BuilderCFO connect to QuickBooks Online?</h3>
+              <p className="text-[#b0b0c8]">
+                BuilderCFO uses OAuth 2.0 to securely connect to your QuickBooks Online account. The connection is read-only — BuilderCFO never modifies your books. Your financial data is encrypted in transit and at rest using industry-standard AES-256 encryption. Setup takes under 2 minutes.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is WIP tracking and why does it matter for contractors?</h3>
+              <p className="text-[#b0b0c8]">
+                WIP (Work in Progress) tracking compares the percentage of work completed on a job against the percentage billed. If you&apos;ve completed 60% of a job but billed 80%, you&apos;re over-billed by 20% — which means you may owe money back or face cash flow problems when the job finishes. BuilderCFO automates WIP schedule calculations using QuickBooks data and field management progress reports, giving you accurate over/under billing figures for every active job.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How much does BuilderCFO cost compared to a full-time CFO?</h3>
+              <p className="text-[#b0b0c8]">
+                BuilderCFO starts at $299/month (Starter), $499/month (Professional), or $699/month (Enterprise). A full-time construction CFO typically costs $120,000–$200,000+ per year in salary and benefits. BuilderCFO provides real-time dashboards, automated WIP, and AI analysis for $3,588–$8,388 per year — roughly 3–5% the cost of a dedicated hire. Every plan includes a 14-day free trial.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Who built BuilderCFO?</h3>
+              <p className="text-[#b0b0c8]">
+                BuilderCFO was built by{' '}
+                <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
+                  Salisbury Bookkeeping
+                </a>
+                , a fractional controller and construction bookkeeping firm that works with custom home builders, general contractors, and remodelers nationwide. The dashboard was created from real client needs — the same WIP schedules, job costing reports, and cash flow forecasts that Salisbury&apos;s controllers build manually for clients, now automated and available in real time.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Is my financial data secure?</h3>
+              <p className="text-[#b0b0c8]">
+                Yes. BuilderCFO uses Supabase for secure database hosting with row-level security policies, and Stripe for PCI-compliant payment processing. All data is encrypted in transit (TLS 1.3) and at rest (AES-256). The QuickBooks connection is read-only — BuilderCFO cannot create, modify, or delete any data in your accounting system.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Can I cancel my BuilderCFO subscription at any time?</h3>
+              <p className="text-[#b0b0c8]">
+                Yes. There are no long-term contracts, no cancellation fees, and no setup fees. You can cancel your subscription at any time and retain access through the end of your current billing cycle. Every plan starts with a 14-day free trial — you enter a card upfront but are not charged until day 15.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -557,18 +686,23 @@ export default function LandingPage() {
 
         <div className="max-w-3xl mx-auto text-center relative">
           <h2 className="text-4xl font-bold text-[#e8e8f0] mb-4">
-            Ready to take control of your numbers?
+            Ready to See Where Every Dollar Goes on Every Job?
           </h2>
           <p className="text-lg text-[#b0b0c8] mb-8">
-            Join hundreds of contractors nationwide who are making smarter
-            financial decisions with Contractor CFO Dashboard.
+            Join contractors nationwide who use BuilderCFO to track job costs, forecast cash flow, and make smarter financial decisions — starting with a free 14-day trial.
           </p>
           <Link
             href="/signup"
             className="inline-flex items-center gap-2 px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition"
           >
-            Start Free Trial <ChevronRight size={18} />
+            Start 14-Day Free Trial <ChevronRight size={18} />
           </Link>
+          <p className="text-sm text-[#8888a0] mt-4">
+            No charge for 14 days. Cancel anytime. Built by{' '}
+            <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
+              Salisbury Bookkeeping
+            </a>.
+          </p>
         </div>
       </section>
 
@@ -587,8 +721,13 @@ export default function LandingPage() {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                  <a href="#pricing" className="text-[#e8e8f0] hover:text-[#6366f1]">
                     Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#faq" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    FAQ
                   </a>
                 </li>
               </ul>
@@ -599,13 +738,13 @@ export default function LandingPage() {
               </h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="#" className="text-[#e8e8f0] hover:text-[#6366f1]">
-                    About
+                  <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    Salisbury Bookkeeping
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-[#e8e8f0] hover:text-[#6366f1]">
-                    Blog
+                  <a href="https://salisburybookkeeping.com/about" target="_blank" rel="noopener noreferrer" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    About Us
                   </a>
                 </li>
               </ul>
@@ -617,12 +756,12 @@ export default function LandingPage() {
               <ul className="space-y-2">
                 <li>
                   <a href="#" className="text-[#e8e8f0] hover:text-[#6366f1]">
-                    Privacy
+                    Privacy Policy
                   </a>
                 </li>
                 <li>
                   <a href="#" className="text-[#e8e8f0] hover:text-[#6366f1]">
-                    Terms
+                    Terms of Service
                   </a>
                 </li>
               </ul>
@@ -634,10 +773,15 @@ export default function LandingPage() {
               <ul className="space-y-2">
                 <li>
                   <a
-                    href="mailto:support@contractorcfo.com"
+                    href="mailto:support@topbuildercfo.com"
                     className="text-[#e8e8f0] hover:text-[#6366f1]"
                   >
-                    Support
+                    support@topbuildercfo.com
+                  </a>
+                </li>
+                <li>
+                  <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    Salisbury Bookkeeping
                   </a>
                 </li>
               </ul>
@@ -646,10 +790,10 @@ export default function LandingPage() {
 
           <div className="border-t border-[#1e1e2e] pt-8 flex flex-col md:flex-row items-center justify-between">
             <div className="text-sm text-[#8888a0]">
-              © 2024 Salisbury Bookkeeping. All rights reserved.
+              © 2025 BuilderCFO. All rights reserved.
             </div>
             <div className="text-sm text-[#8888a0] mt-4 md:mt-0">
-              Powered by Salisbury Bookkeeping
+              Built by <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">Salisbury Bookkeeping</a> — Fractional Controllers for Construction Companies
             </div>
           </div>
         </div>

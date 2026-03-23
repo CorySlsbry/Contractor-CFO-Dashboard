@@ -68,7 +68,7 @@ export default function AdminLayoutClient({
           {sidebarOpen ? (
             <div className="flex items-center gap-2">
               <div className="font-bold text-lg tracking-tight">
-                <span className="text-[#6366f1]">Salisbury</span>
+                <span className="text-[#6366f1]">Builder</span><span className="text-[#e8e8f0]">CFO</span>
               </div>
               <span className="px-2 py-1 bg-[#ef4444] text-white text-xs font-bold rounded">
                 ADMIN

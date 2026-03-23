@@ -107,13 +107,13 @@ export default function DashboardLayoutClient({
         <div className="h-16 border-b border-[#2a2a3d] flex items-center justify-center px-4">
           {sidebarOpen && (
             <div className="font-bold text-lg tracking-tight">
-              <span className="text-[#6366f1]">Salisbury</span>
-              <div className="text-xs text-[#8888a0] font-normal">Bookkeeping</div>
+              <span className="text-[#6366f1]">Builder</span><span className="text-[#e8e8f0]">CFO</span>
+              <div className="text-[10px] text-[#8888a0] font-normal">by Salisbury Bookkeeping</div>
             </div>
           )}
           {!sidebarOpen && (
             <div className="w-10 h-10 rounded-lg bg-[#6366f1] flex items-center justify-center font-bold text-sm">
-              SB
+              BC
             </div>
           )}
         </div>

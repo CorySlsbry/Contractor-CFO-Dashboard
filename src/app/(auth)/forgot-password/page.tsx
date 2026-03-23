@@ -44,9 +44,12 @@ export default function ForgotPasswordPage() {
       <div className="bg-[#12121a] rounded-lg border border-[#1e1e2e] p-8 shadow-2xl">
         {/* Branding */}
         <div className="mb-8 text-center">
-          <h1 className="text-sm font-semibold text-[#8888a0] mb-2">
-            SALISBURY BOOKKEEPING
+          <h1 className="font-bold text-2xl tracking-tight mb-1">
+            <span className="text-[#6366f1]">Builder</span><span className="text-[#e8e8f0]">CFO</span>
           </h1>
+          <p className="text-sm text-[#8888a0] mb-2">
+            by Salisbury Bookkeeping
+          </p>
           <h2 className="text-2xl font-bold text-[#e8e8f0]">
             Reset Password
           </h2>

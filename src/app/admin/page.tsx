@@ -1,7 +1,7 @@
 import AdminDashboard from './admin-dashboard';
 
 export const metadata = {
-  title: 'Admin - Platform Overview | Contractor CFO Dashboard',
+  title: 'Admin - Platform Overview | BuilderCFO',
 };
 
 export default function AdminPage() {
