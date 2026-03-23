@@ -100,9 +100,10 @@ function SignupContent() {
         // Redirect to Stripe Checkout
         window.location.href = checkoutData.data.url;
       } else {
-        // Checkout failed — show error, don't skip to dashboard
-        console.error('Checkout creation failed:', checkoutData);
-        setError('Account created but billing setup failed. Please sign in and set up billing in Settings.');
+        // Checkout failed — show the actual error
+        console.error('Checkout creation failed:', checkoutRes.status, checkoutData);
+        const serverError = checkoutData?.error || 'Unknown error';
+        setError(`Billing setup failed: ${serverError}. Please sign in and set up billing in Settings.`);
         setLoading(false);
         setLoadingStep('');
       }

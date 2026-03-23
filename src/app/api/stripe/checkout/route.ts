@@ -48,8 +48,9 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
+      console.error("Checkout auth error:", userError?.message);
       return NextResponse.json<ApiResponse<null>>(
-        { success: false, error: "Unauthorized" },
+        { success: false, error: `Unauthorized: ${userError?.message || 'No user session'}` },
         { status: 401 }
       );
     }
@@ -62,8 +63,9 @@ export async function POST(request: NextRequest) {
       .single() as any;
 
     if (profileError || !profile?.organization_id) {
+      console.error("Checkout profile error:", profileError?.message, "user:", user.id);
       return NextResponse.json<ApiResponse<null>>(
-        { success: false, error: "Organization not found" },
+        { success: false, error: `Profile not found: ${profileError?.message || 'No organization_id'}` },
         { status: 400 }
       );
     }
@@ -113,6 +115,7 @@ export async function POST(request: NextRequest) {
 
     // Create checkout session
     try {
+      console.log("Creating checkout:", { customerId, plan: body.plan, orgId: (org as any).id });
       const session = await stripeService.createCheckoutSession(
         customerId,
         body.plan,
@@ -132,15 +135,15 @@ export async function POST(request: NextRequest) {
         },
         { status: 200 }
       );
-    } catch (error) {
-      console.error("Failed to create checkout session:", error);
+    } catch (error: any) {
+      console.error("Failed to create checkout session:", error?.message || error);
       return NextResponse.json<ApiResponse<null>>(
-        { success: false, error: "Failed to create checkout session" },
+        { success: false, error: `Checkout failed: ${error?.message || 'Unknown stripe error'}` },
         { status: 500 }
       );
     }
-  } catch (error) {
-    console.error("Stripe Checkout Error:", error);
+  } catch (error: any) {
+    console.error("Stripe Checkout Error:", error?.message || error);
     return NextResponse.json<ApiResponse<null>>(
       { success: false, error: "Internal server error" },
       { status: 500 }
