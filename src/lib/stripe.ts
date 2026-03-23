@@ -9,23 +9,29 @@ export class StripeService {
   private stripe: Stripe;
   private basicPriceId: string;
   private proPriceId: string;
+  private enterprisePriceId: string;
 
   constructor(
     apiKey: string = process.env.STRIPE_SECRET_KEY || "",
     basicPriceId: string = process.env.STRIPE_PRICE_ID_BASIC || "",
-    proPriceId: string = process.env.STRIPE_PRICE_ID_PRO || ""
+    proPriceId: string = process.env.STRIPE_PRICE_ID_PRO || "",
+    enterprisePriceId: string = process.env.STRIPE_PRICE_ID_ENTERPRISE || ""
   ) {
     this.stripe = new Stripe(apiKey, {
       apiVersion: "2026-02-25.clover",
     });
     this.basicPriceId = basicPriceId;
     this.proPriceId = proPriceId;
+    this.enterprisePriceId = enterprisePriceId;
   }
 
   /**
    * Gets the price ID for a given plan
    */
-  private getPriceId(plan: "basic" | "pro"): string {
+  private getPriceId(plan: "basic" | "pro" | "enterprise"): string {
+    if (plan === "enterprise") {
+      return this.enterprisePriceId;
+    }
     if (plan === "pro") {
       return this.proPriceId;
     }
@@ -77,7 +83,7 @@ export class StripeService {
    */
   async createCheckoutSession(
     customerId: string,
-    plan: "basic" | "pro",
+    plan: "basic" | "pro" | "enterprise",
     orgId: string
   ): Promise<Stripe.Checkout.Session> {
     const priceId = this.getPriceId(plan);
@@ -161,7 +167,10 @@ export class StripeService {
   /**
    * Gets the plan from a price ID
    */
-  getPlanFromPriceId(priceId: string): "basic" | "pro" | null {
+  getPlanFromPriceId(priceId: string): "basic" | "pro" | "enterprise" | null {
+    if (priceId === this.enterprisePriceId) {
+      return "enterprise";
+    }
     if (priceId === this.proPriceId) {
       return "pro";
     }

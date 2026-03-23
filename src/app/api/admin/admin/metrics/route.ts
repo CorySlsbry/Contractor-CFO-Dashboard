@@ -61,9 +61,9 @@ export async function GET(request: NextRequest) {
       .in('subscription_status', ['active', 'trialing']);
 
     const planPricing: Record<string, number> = {
-      basic: 497,
-      pro: 697,
-      enterprise: 1497,
+      basic: 299,
+      pro: 499,
+      enterprise: 699,
     };
 
     const mrr = (orgsByPlan || []).reduce((total: number, org: any) => {

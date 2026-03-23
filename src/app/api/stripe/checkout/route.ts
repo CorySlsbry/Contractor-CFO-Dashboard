@@ -12,7 +12,7 @@ import { stripeService } from "@/lib/stripe";
 import type { ApiResponse } from "@/types";
 
 interface CheckoutRequest {
-  plan: "basic" | "pro";
+  plan: "basic" | "pro" | "enterprise";
 }
 
 interface CheckoutResponse {
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate plan
-    if (!body.plan || !["basic", "pro"].includes(body.plan)) {
+    if (!body.plan || !["basic", "pro", "enterprise"].includes(body.plan)) {
       return NextResponse.json<ApiResponse<null>>(
         { success: false, error: "Invalid plan" },
         { status: 400 }

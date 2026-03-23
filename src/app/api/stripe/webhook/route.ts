@@ -25,7 +25,7 @@ function mapSubscriptionStatus(
  */
 async function getPlanFromSubscription(
   subscription: Stripe.Subscription
-): Promise<"basic" | "pro"> {
+): Promise<"basic" | "pro" | "enterprise"> {
   if (!subscription.items.data[0]?.price.id) {
     return "basic";
   }

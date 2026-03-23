@@ -174,18 +174,38 @@ const invoicesData: Invoice[] = [
 type SortField = 'number' | 'customer' | 'amount' | 'dueDate' | 'status';
 type SortOrder = 'asc' | 'desc';
 
+const statusPriority: Record<string, number> = {
+  Overdue: 0,
+  Open: 1,
+  Paid: 2,
+};
+
 export default function InvoicesPage() {
   const [filterStatus, setFilterStatus] = useState<'All' | 'Paid' | 'Open' | 'Overdue'>(
     'All'
   );
-  const [sortField, setSortField] = useState<SortField>('dueDate');
+  const [sortField, setSortField] = useState<SortField>('status');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   const filteredAndSorted = useMemo(() => {
-    let filtered = invoicesData;
+    let filtered = [...invoicesData];
 
     if (filterStatus !== 'All') {
       filtered = filtered.filter((inv) => inv.status === filterStatus);
+    }
+
+    // Default sort: status priority (Overdue > Open > Paid), then days overdue descending
+    if (sortField === 'status') {
+      return filtered.sort((a, b) => {
+        const aPriority = statusPriority[a.status] ?? 3;
+        const bPriority = statusPriority[b.status] ?? 3;
+        if (sortOrder === 'desc') {
+          if (aPriority !== bPriority) return bPriority - aPriority;
+          return (a.daysOverdue || 0) - (b.daysOverdue || 0);
+        }
+        if (aPriority !== bPriority) return aPriority - bPriority;
+        return (b.daysOverdue || 0) - (a.daysOverdue || 0);
+      });
     }
 
     return filtered.sort((a, b) => {

@@ -155,8 +155,8 @@ export default function SubscribersContent() {
             className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg px-4 py-2 text-[#e8e8f0] focus:outline-none focus:border-[#6366f1]"
           >
             <option value="all">All Plans</option>
-            <option value="basic">Basic</option>
-            <option value="pro">Pro</option>
+            <option value="basic">Starter</option>
+            <option value="pro">Professional</option>
             <option value="enterprise">Enterprise</option>
           </select>
         </div>
@@ -185,7 +185,7 @@ export default function SubscribersContent() {
                     <td className="py-3 px-4">{subscriber.name}</td>
                     <td className="py-3 px-4">
                       <Badge variant={getPlanColor(subscriber.plan)}>
-                        {subscriber.plan.charAt(0).toUpperCase() + subscriber.plan.slice(1)}
+                        {subscriber.plan === 'basic' ? 'Starter' : subscriber.plan === 'pro' ? 'Professional' : 'Enterprise'}
                       </Badge>
                     </td>
                     <td className="py-3 px-4">

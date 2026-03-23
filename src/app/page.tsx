@@ -5,7 +5,7 @@ import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug } from 'lucide-r
 import { useState } from 'react';
 
 export default function LandingPage() {
-  const [activeTab, setActiveTab] = useState<'essential' | 'pro'>('essential');
+  const [activeTab, setActiveTab] = useState<'starter' | 'professional' | 'enterprise'>('professional');
 
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0]">
@@ -45,7 +45,7 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-[#8888a0] mb-8 max-w-2xl leading-relaxed">
+          <p className="text-lg sm:text-xl text-[#b0b0c8] mb-8 max-w-2xl leading-relaxed">
             Real-time dashboards that turn your QuickBooks data into actionable
             insights. Know exactly where every dollar goes on every job —
             without hiring a $150K CFO.
@@ -261,7 +261,7 @@ export default function LandingPage() {
                   <h3 className="text-xl font-semibold text-[#e8e8f0] mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-[#8888a0]">{feature.desc}</p>
+                  <p className="text-[#b0b0c8]">{feature.desc}</p>
                 </div>
               );
             })}
@@ -347,7 +347,7 @@ export default function LandingPage() {
               },
             ].map((testimonial, idx) => (
               <div key={idx} className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6">
-                <p className="text-[#8888a0] italic mb-4">{testimonial.quote}</p>
+                <p className="text-[#b0b0c8] italic mb-4">{testimonial.quote}</p>
                 <div>
                   <p className="text-[#e8e8f0] font-semibold">{testimonial.author}</p>
                   <p className="text-[#8888a0] text-sm">{testimonial.title}</p>
@@ -360,80 +360,115 @@ export default function LandingPage() {
 
       {/* Pricing Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl font-bold text-white mb-4 text-center">
             Simple, transparent pricing
           </h2>
+          <p className="text-center text-[#b0b0c8] mb-12 text-lg">
+            14-day free trial on every plan. No credit card required.
+          </p>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Essential Tier */}
-            <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-8">
-              <h3 className="text-2xl font-bold text-[#e8e8f0] mb-2">
-                Essential
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Starter Tier */}
+            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-8 flex flex-col">
+              <h3 className="text-2xl font-bold text-white mb-2">
+                Starter
               </h3>
-              <p className="text-[#8888a0] mb-6">For growing construction companies</p>
+              <p className="text-[#b0b0c8] mb-6">For solo contractors getting organized</p>
               <div className="mb-6">
-                <span className="text-5xl font-bold text-[#e8e8f0]">$497</span>
-                <span className="text-[#8888a0] ml-2">/month</span>
+                <span className="text-5xl font-bold text-white">$299</span>
+                <span className="text-[#b0b0c8] ml-2">/month</span>
               </div>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Financial dashboard',
                   'Job costing & WIP tracking',
                   'Cash flow forecasting',
-                  'QuickBooks + Buildertrend + HubSpot + JobNimbus',
+                  'QuickBooks Online sync',
                   'Monthly CFO brief',
                   'Email support',
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-3">
-                    <Check size={20} className="text-[#6366f1]" />
-                    <span className="text-[#e8e8f0]">{feature}</span>
+                    <Check size={18} className="text-[#6366f1] flex-shrink-0" />
+                    <span className="text-[#d0d0e0]">{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <Link
-                href="/signup"
-                className="w-full px-4 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-center block"
+                href="/signup?plan=basic"
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#2a2a3d] hover:bg-[#3a3a4d] transition text-center block"
               >
                 Start Free Trial
               </Link>
             </div>
 
-            {/* Pro Tier */}
-            <div className="bg-gradient-to-br from-[#6366f1]/10 to-transparent border border-[#6366f1]/50 rounded-lg p-8 relative">
-              <div className="absolute -top-3 left-6 bg-[#6366f1] text-white text-xs font-semibold px-3 py-1 rounded-full">
+            {/* Professional Tier */}
+            <div className="bg-gradient-to-br from-[#6366f1]/10 to-transparent border-2 border-[#6366f1]/60 rounded-xl p-8 relative flex flex-col shadow-lg shadow-[#6366f1]/10">
+              <div className="absolute -top-3 left-6 bg-[#6366f1] text-white text-xs font-bold px-4 py-1 rounded-full tracking-wide">
                 MOST POPULAR
               </div>
 
-              <h3 className="text-2xl font-bold text-[#e8e8f0] mb-2">Pro</h3>
-              <p className="text-[#8888a0] mb-6">For scaling operations</p>
+              <h3 className="text-2xl font-bold text-white mb-2">Professional</h3>
+              <p className="text-[#b0b0c8] mb-6">For growing construction companies</p>
               <div className="mb-6">
-                <span className="text-5xl font-bold text-[#e8e8f0]">$697</span>
-                <span className="text-[#8888a0] ml-2">/month</span>
+                <span className="text-5xl font-bold text-white">$499</span>
+                <span className="text-[#b0b0c8] ml-2">/month</span>
               </div>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-3 mb-8 flex-1">
                 {[
-                  'Everything in Essential',
-                  'Procore + Salesforce + ServiceTitan',
+                  'Everything in Starter',
+                  'Buildertrend + HubSpot + JobNimbus',
                   'Sales pipeline dashboard',
-                  'All 7+ integrations included',
-                  'Crew utilization tracking',
+                  'AI-powered CFO advisor',
+                  'AR/AP aging reports',
                   'Priority support',
-                  'Quarterly strategy call',
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-3">
-                    <Check size={20} className="text-[#6366f1]" />
-                    <span className="text-[#e8e8f0]">{feature}</span>
+                    <Check size={18} className="text-[#6366f1] flex-shrink-0" />
+                    <span className="text-[#d0d0e0]">{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <Link
-                href="/signup"
-                className="w-full px-4 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-center block"
+                href="/signup?plan=pro"
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-center block"
+              >
+                Start Free Trial
+              </Link>
+            </div>
+
+            {/* Enterprise Tier */}
+            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-8 flex flex-col">
+              <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
+              <p className="text-[#b0b0c8] mb-6">For scaling operations</p>
+              <div className="mb-6">
+                <span className="text-5xl font-bold text-white">$699</span>
+                <span className="text-[#b0b0c8] ml-2">/month</span>
+              </div>
+
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  'Everything in Professional',
+                  'Procore + Salesforce + ServiceTitan',
+                  'All 7+ integrations included',
+                  'Crew utilization tracking',
+                  'Quarterly strategy call',
+                  'Dedicated account manager',
+                ].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-3">
+                    <Check size={18} className="text-[#6366f1] flex-shrink-0" />
+                    <span className="text-[#d0d0e0]">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/signup?plan=enterprise"
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#2a2a3d] hover:bg-[#3a3a4d] transition text-center block"
               >
                 Start Free Trial
               </Link>
@@ -482,7 +517,7 @@ export default function LandingPage() {
                     <ChevronRight size={20} />
                   </span>
                 </summary>
-                <p className="mt-4 text-[#8888a0]">{faq.a}</p>
+                <p className="mt-4 text-[#b0b0c8]">{faq.a}</p>
               </details>
             ))}
           </div>
@@ -497,7 +532,7 @@ export default function LandingPage() {
           <h2 className="text-4xl font-bold text-[#e8e8f0] mb-4">
             Ready to take control of your numbers?
           </h2>
-          <p className="text-lg text-[#8888a0] mb-8">
+          <p className="text-lg text-[#b0b0c8] mb-8">
             Join hundreds of contractors nationwide who are making smarter
             financial decisions with Contractor CFO Dashboard.
           </p>
