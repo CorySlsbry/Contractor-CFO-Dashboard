@@ -85,7 +85,7 @@ export default function DashboardLayoutClient({
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/login');
+    window.location.href = '/';
   };
 
   const isActive = (href: string) => {
