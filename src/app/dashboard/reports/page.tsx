@@ -1024,7 +1024,18 @@ function CashFlowContent({ data }: { data: any }) {
   );
 }
 
+function sortByAgingPriority(items: any[]) {
+  const statusPriority: Record<string, number> = { 'Past Due': 0, 'Overdue': 1, 'Current': 2 };
+  return [...items].sort((a, b) => {
+    const aPriority = statusPriority[a.status] ?? 3;
+    const bPriority = statusPriority[b.status] ?? 3;
+    if (aPriority !== bPriority) return aPriority - bPriority;
+    return (b.days || 0) - (a.days || 0);
+  });
+}
+
 function ARAgingContent({ data }: { data: any[] }) {
+  const sorted = sortByAgingPriority(data);
   const totalAR = data.reduce((sum, item) => sum + item.amount, 0);
   const currentAR = data.filter((item) => item.status === 'Current').reduce((sum, item) => sum + item.amount, 0);
   const overdueAR = data.filter((item) => item.status === 'Overdue').reduce((sum, item) => sum + item.amount, 0);
@@ -1067,7 +1078,7 @@ function ARAgingContent({ data }: { data: any[] }) {
               </tr>
             </thead>
             <tbody>
-              {data.map((item, idx) => (
+              {sorted.map((item, idx) => (
                 <tr key={idx} className="border-b border-[#2a2a3d] last:border-0">
                   <td className="px-4 py-3 text-[#e8e8f0]">{item.customer}</td>
                   <td className="px-4 py-3 text-[#8888a0]">{item.invoice}</td>
@@ -1091,6 +1102,7 @@ function ARAgingContent({ data }: { data: any[] }) {
 }
 
 function APAgingContent({ data }: { data: any[] }) {
+  const sorted = sortByAgingPriority(data);
   const totalAP = data.reduce((sum, item) => sum + item.amount, 0);
   const currentAP = data.filter((item) => item.status === 'Current').reduce((sum, item) => sum + item.amount, 0);
   const overdueAP = data.filter((item) => item.status === 'Overdue').reduce((sum, item) => sum + item.amount, 0);
@@ -1133,7 +1145,7 @@ function APAgingContent({ data }: { data: any[] }) {
               </tr>
             </thead>
             <tbody>
-              {data.map((item, idx) => (
+              {sorted.map((item, idx) => (
                 <tr key={idx} className="border-b border-[#2a2a3d] last:border-0">
                   <td className="px-4 py-3 text-[#e8e8f0]">{item.vendor}</td>
                   <td className="px-4 py-3 text-[#8888a0]">{item.invoiceNum}</td>
