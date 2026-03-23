@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserClient } from '@/lib/supabase/client';
@@ -28,7 +28,7 @@ const plans = [
   },
 ];
 
-export default function SignupPage() {
+function SignupContent() {
   const searchParams = useSearchParams();
   const [selectedPlan, setSelectedPlan] = useState('pro');
   const [fullName, setFullName] = useState('');
@@ -278,5 +278,19 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full max-w-2xl">
+        <div className="bg-[#12121a] rounded-lg border border-[#1e1e2e] p-8 shadow-2xl text-center">
+          <div className="text-[#8888a0]">Loading...</div>
+        </div>
+      </div>
+    }>
+      <SignupContent />
+    </Suspense>
   );
 }
