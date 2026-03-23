@@ -2,10 +2,101 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Settings, Plug, ArrowRight } from 'lucide-react';
+import { Plug, ArrowRight, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function SettingsPage() {
+  const [managingBilling, setManagingBilling] = useState(false);
+  const [billingError, setBillingError] = useState<string | null>(null);
+
+  // Cancel subscription state
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelMessage, setCancelMessage] = useState<string | null>(null);
+
+  // Delete account state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleManageBilling = async () => {
+    setManagingBilling(true);
+    setBillingError(null);
+
+    try {
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.data?.url) {
+        window.location.href = data.data.url;
+      } else {
+        setBillingError(data.error || 'Unable to open billing portal. Please try again.');
+        setManagingBilling(false);
+      }
+    } catch {
+      setBillingError('Unable to open billing portal. Please try again.');
+      setManagingBilling(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    setCancelling(true);
+    setCancelMessage(null);
+
+    try {
+      const res = await fetch('/api/stripe/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setCancelMessage('Your subscription has been cancelled. You will retain access until the end of your current billing period.');
+        setShowCancelConfirm(false);
+      } else {
+        setCancelMessage(data.error || 'Failed to cancel subscription. Please try again.');
+      }
+    } catch {
+      setCancelMessage('Failed to cancel subscription. Please try again.');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const res = await fetch('/api/auth/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Account deleted — redirect to home
+        window.location.href = '/';
+      } else {
+        setDeleteError(data.error || 'Failed to delete account. Please contact support.');
+        setDeleting(false);
+      }
+    } catch {
+      setDeleteError('Failed to delete account. Please contact support.');
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -34,9 +125,73 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between p-4 bg-[#1a1a26] rounded-lg">
             <div>
               <p className="text-sm font-medium text-[#e8e8f0]">Plan</p>
-              <p className="text-[#8888a0]">Professional ($299/month)</p>
+              <p className="text-[#8888a0]">Professional ($499/month)</p>
             </div>
-            <Button variant="secondary" size="sm">Manage</Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleManageBilling}
+              disabled={managingBilling}
+            >
+              {managingBilling ? 'Opening...' : 'Manage Billing'}
+            </Button>
+          </div>
+          {billingError && (
+            <div className="bg-red-900/20 border border-red-700/50 rounded px-4 py-2 text-sm text-red-400">
+              {billingError}
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Subscription Management */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-4">Subscription</h2>
+
+        {cancelMessage && (
+          <div className={`rounded px-4 py-3 text-sm mb-4 ${
+            cancelMessage.includes('cancelled')
+              ? 'bg-green-900/20 border border-green-700/50 text-green-400'
+              : 'bg-red-900/20 border border-red-700/50 text-red-400'
+          }`}>
+            {cancelMessage}
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-[#1a1a26] rounded-lg">
+            <div>
+              <p className="text-sm font-medium text-[#e8e8f0]">Cancel Subscription</p>
+              <p className="text-xs text-[#8888a0]">You&apos;ll keep access until the end of your current billing period</p>
+            </div>
+            {!showCancelConfirm ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowCancelConfirm(true)}
+                className="text-red-400 hover:text-red-300"
+              >
+                Cancel Plan
+              </Button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowCancelConfirm(false)}
+                  disabled={cancelling}
+                >
+                  Keep Plan
+                </Button>
+                <button
+                  onClick={handleCancelSubscription}
+                  disabled={cancelling}
+                  className="px-3 py-1.5 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 transition"
+                >
+                  {cancelling ? 'Cancelling...' : 'Yes, Cancel'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </Card>
@@ -122,6 +277,63 @@ export default function SettingsPage() {
               <option>Manual only</option>
             </select>
           </div>
+        </div>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card className="p-6 border-red-900/30">
+        <div className="flex items-center gap-2 mb-4">
+          <AlertTriangle size={18} className="text-red-400" />
+          <h2 className="text-lg font-semibold text-red-400">Danger Zone</h2>
+        </div>
+
+        {deleteError && (
+          <div className="bg-red-900/20 border border-red-700/50 rounded px-4 py-2 text-sm text-red-400 mb-4">
+            {deleteError}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between p-4 bg-red-900/10 border border-red-900/30 rounded-lg">
+          <div>
+            <p className="text-sm font-medium text-[#e8e8f0]">Delete Account</p>
+            <p className="text-xs text-[#8888a0]">Permanently delete your account, all data, and cancel your subscription immediately. This cannot be undone.</p>
+          </div>
+          {!showDeleteConfirm ? (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-red-600 text-red-400 hover:bg-red-600 hover:text-white transition whitespace-nowrap"
+            >
+              Delete Account
+            </button>
+          ) : (
+            <div className="flex flex-col items-end gap-2 min-w-[200px]">
+              <p className="text-xs text-red-400">Type DELETE to confirm:</p>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="DELETE"
+                className="w-full px-3 py-1.5 text-sm rounded-lg bg-[#0a0a0f] border border-red-900/50 text-[#e8e8f0] placeholder-[#8888a0] focus:outline-none focus:border-red-500"
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                  disabled={deleting}
+                >
+                  Cancel
+                </Button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleting || deleteConfirmText !== 'DELETE'}
+                  className="px-3 py-1.5 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  {deleting ? 'Deleting...' : 'Permanently Delete'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
     </div>

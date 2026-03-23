@@ -100,10 +100,11 @@ function SignupContent() {
         // Redirect to Stripe Checkout
         window.location.href = checkoutData.data.url;
       } else {
-        // If Stripe checkout fails, still send them to dashboard
-        // They can set up billing later
+        // Checkout failed — show error, don't skip to dashboard
         console.error('Checkout creation failed:', checkoutData);
-        window.location.href = '/dashboard';
+        setError('Account created but billing setup failed. Please sign in and set up billing in Settings.');
+        setLoading(false);
+        setLoadingStep('');
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');

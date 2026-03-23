@@ -13,7 +13,7 @@ export class StripeService {
 
   constructor(
     apiKey: string = process.env.STRIPE_SECRET_KEY || "",
-    basicPriceId: string = process.env.STRIPE_PRICE_ID_BASIC || "",
+    basicPriceId: string = process.env.STRIPE_PRICE_ID_ESSENTIAL || "",
     proPriceId: string = process.env.STRIPE_PRICE_ID_PRO || "",
     enterprisePriceId: string = process.env.STRIPE_PRICE_ID_ENTERPRISE || ""
   ) {
@@ -119,7 +119,7 @@ export class StripeService {
   async createPortalSession(customerId: string): Promise<Stripe.BillingPortal.Session> {
     return this.stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing`,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`,
     });
   }
 
