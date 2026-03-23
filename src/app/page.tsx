@@ -119,28 +119,62 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Cash Flow Chart Mock */}
+              {/* Cash Flow Chart Mock — Overlapping Bars */}
               <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
                 <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Cash Flow Forecast</div>
-                <div className="flex items-end gap-2 h-24">
+                <div className="flex items-end gap-3 h-28">
                   {[
                     { week: 'W1', inflow: 72, outflow: 55 },
-                    { week: 'W2', inflow: 82, outflow: 68 },
+                    { week: 'W2', inflow: 68, outflow: 82 },
                     { week: 'W3', inflow: 65, outflow: 47 },
                     { week: 'W4', inflow: 90, outflow: 76 },
-                  ].map((w) => (
-                    <div key={w.week} className="flex-1 flex flex-col items-center gap-1">
-                      <div className="w-full flex gap-0.5 items-end h-20">
-                        <div className="flex-1 rounded-t" style={{ height: `${w.inflow}%`, backgroundColor: '#22c55e', opacity: 0.7 }} />
-                        <div className="flex-1 rounded-t" style={{ height: `${w.outflow}%`, backgroundColor: '#ef4444', opacity: 0.5 }} />
+                  ].map((w) => {
+                    const max = Math.max(w.inflow, w.outflow);
+                    const min = Math.min(w.inflow, w.outflow);
+                    const isPositive = w.inflow >= w.outflow;
+                    const outerColor = isPositive ? '#22c55e' : '#ef4444';
+                    const outerGlow = isPositive ? '0 0 8px rgba(34,197,94,0.4)' : '0 0 8px rgba(239,68,68,0.4)';
+                    const innerColor = isPositive ? '#ef4444' : '#22c55e';
+                    return (
+                      <div key={w.week} className="flex-1 flex flex-col items-center gap-1.5">
+                        <div className="w-full relative h-24 flex items-end justify-center">
+                          {/* Outer bar (larger value) with glowing edge */}
+                          <div
+                            className="absolute bottom-0 left-1 right-1 rounded-t-md"
+                            style={{
+                              height: `${max}%`,
+                              backgroundColor: outerColor,
+                              opacity: 0.85,
+                              boxShadow: outerGlow,
+                              border: `1px solid ${outerColor}`,
+                              borderBottom: 'none',
+                            }}
+                          />
+                          {/* Inner bar (smaller value) overlaid inside */}
+                          <div
+                            className="absolute bottom-0 left-2.5 right-2.5 rounded-t-sm"
+                            style={{
+                              height: `${min}%`,
+                              backgroundColor: innerColor,
+                              opacity: 0.7,
+                            }}
+                          />
+                          {/* Net indicator */}
+                          <div className="absolute -top-3.5 left-0 right-0 text-center">
+                            <span className="text-[8px] font-bold" style={{ color: isPositive ? '#4ade80' : '#f87171' }}>
+                              {isPositive ? '+' : '-'}{Math.abs(w.inflow - w.outflow)}%
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[9px] text-[#b0b0c8]">{w.week}</span>
                       </div>
-                      <span className="text-[9px] text-[#8888a0]">{w.week}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
-                <div className="flex gap-4 mt-2 justify-center">
-                  <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#22c55e]" /><span className="text-[9px] text-[#8888a0]">Cash In</span></div>
-                  <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#ef4444]" /><span className="text-[9px] text-[#8888a0]">Cash Out</span></div>
+                <div className="flex gap-4 mt-3 justify-center">
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-[#22c55e]" /><span className="text-[9px] text-[#b0b0c8]">Cash In</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-[#ef4444]" /><span className="text-[9px] text-[#b0b0c8]">Cash Out</span></div>
+                  <div className="flex items-center gap-1.5"><span className="text-[9px] text-[#b0b0c8]">Edge = dominant flow</span></div>
                 </div>
               </div>
             </div>

@@ -30,7 +30,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
       setLoading(false);
