@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
             .from("organizations")
             .update({
               stripe_customer_id: session.customer as string,
+              stripe_subscription_id: session.subscription as string,
               subscription_status: status,
               plan,
               updated_at: new Date().toISOString(),
@@ -119,6 +120,7 @@ export async function POST(request: NextRequest) {
           await (supabase as any)
             .from("organizations")
             .update({
+              stripe_subscription_id: subscription.id,
               subscription_status: status,
               plan,
               updated_at: new Date().toISOString(),

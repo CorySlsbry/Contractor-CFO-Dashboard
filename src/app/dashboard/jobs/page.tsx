@@ -149,6 +149,23 @@ export default function JobsPage() {
         </div>
       </div>
 
+      {/* AI Executive Summary */}
+      <div className="mb-4 p-4 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">AI Executive Summary</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex items-start gap-2">
+            <span className="text-green-400 text-sm mt-0.5">▲</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-green-400">Win:</span> Overall portfolio at 94% budget efficiency across active jobs</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-amber-400 text-sm mt-0.5">▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-amber-400">Watch:</span> Mountain View Remodel trending 18% over budget — review material costs</p>
+          </div>
+        </div>
+      </div>
+
       {/* Filter Tabs */}
       <div className="flex gap-2 flex-wrap">
         {(['All', 'Active', 'Completed', 'Over Budget'] as const).map((filter) => (

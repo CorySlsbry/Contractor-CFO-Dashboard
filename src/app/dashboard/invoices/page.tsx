@@ -262,6 +262,23 @@ export default function InvoicesPage() {
         </p>
       </div>
 
+      {/* AI Executive Summary */}
+      <div className="mb-4 p-4 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">AI Executive Summary</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex items-start gap-2">
+            <span className="text-green-400 text-sm mt-0.5">▲</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-green-400">Win:</span> 87% of invoices collected within 30 days — strong payment velocity</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-amber-400 text-sm mt-0.5">▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-amber-400">Watch:</span> $499k in invoices over 60 days past due — follow up on 3 aging accounts</p>
+          </div>
+        </div>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4">

@@ -19,6 +19,7 @@ create table organizations (
 
   -- Stripe integration
   stripe_customer_id text,
+  stripe_subscription_id text,
   subscription_status text default 'trialing' check (subscription_status in ('trialing', 'active', 'past_due', 'canceled')),
   plan text default 'basic' check (plan in ('basic', 'pro', 'enterprise')),
 
@@ -28,6 +29,7 @@ create table organizations (
 );
 
 create index organizations_stripe_customer_id_idx on organizations(stripe_customer_id);
+create index organizations_stripe_subscription_id_idx on organizations(stripe_subscription_id);
 create index organizations_slug_idx on organizations(slug);
 
 -- ============================================================================

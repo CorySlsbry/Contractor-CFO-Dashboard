@@ -187,6 +187,23 @@ export default function CashFlowPage() {
 
   return (
     <div className="space-y-6">
+      {/* AI Executive Summary */}
+      <div className="mb-4 p-4 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">AI Executive Summary</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex items-start gap-2">
+            <span className="text-green-400 text-sm mt-0.5">▲</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-green-400">Win:</span> Net positive cash flow for 12 consecutive months, averaging +$134k/mo</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-amber-400 text-sm mt-0.5">▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-amber-400">Watch:</span> Q2 forecast shows seasonal dip — Q1 inflows projected down 40% from peak</p>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Card - Current Cash Position */}
       <Card className="p-8 bg-gradient-to-br from-[#6366f1]/10 to-[#1a1a26] border-[#6366f1]/20">
         <p className="text-[#8888a0] text-sm mb-2">Current Cash Position</p>

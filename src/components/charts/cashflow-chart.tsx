@@ -86,7 +86,7 @@ export const CashFlowChart = () => {
               <div className="w-full relative flex items-end justify-center" style={{ height: 280 }}>
                 {/* Taller bar (behind) */}
                 <div
-                  className="absolute bottom-0 left-0.5 right-0.5 rounded-t-md transition-all"
+                  className="absolute bottom-0 left-2 right-2 rounded-t-md transition-all"
                   style={{
                     height: `${Math.max(inflowPct, outflowPct)}%`,
                     backgroundColor: isPositive ? '#14532d' : '#7f1d1d',
@@ -97,7 +97,7 @@ export const CashFlowChart = () => {
                 />
                 {/* Shorter bar (in front, overlapping) */}
                 <div
-                  className="absolute bottom-0 left-0.5 right-0.5 rounded-t-sm transition-all"
+                  className="absolute bottom-0 left-2 right-2 rounded-t-sm transition-all"
                   style={{
                     height: `${Math.min(inflowPct, outflowPct)}%`,
                     backgroundColor: isPositive ? '#7f1d1d' : '#14532d',

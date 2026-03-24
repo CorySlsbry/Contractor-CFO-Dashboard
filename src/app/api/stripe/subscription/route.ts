@@ -1,21 +1,25 @@
 /**
- * Stripe Billing Portal Endpoint
- * POST /api/stripe/portal
- * Creates a Stripe billing portal session
+ * Get Current Subscription Info Endpoint
+ * GET /api/stripe/subscription
+ * Returns the current subscription details for the authenticated user's organization
  */
 
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 import { createClient } from "@/lib/supabase/server";
-import { stripeService } from "@/lib/stripe";
+import { getPlanName, getPlanPrice } from "@/lib/plan-features";
 import type { ApiResponse } from "@/types";
 
-interface PortalResponse {
-  url: string;
+interface SubscriptionInfo {
+  plan: 'basic' | 'pro' | 'enterprise';
+  planName: string;
+  price: number;
+  status: string;
+  includesAiToolkit: boolean;
 }
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Ensure user is authenticated
     const supabase = await createClient();
@@ -45,10 +49,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get organization
+    // Get organization with subscription details
     const { data: org, error: orgError } = await supabase
       .from("organizations")
-      .select("*")
+      .select("plan, subscription_status")
       .eq("id", (profile as any).organization_id)
       .single() as any;
 
@@ -59,42 +63,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!(org as any).stripe_customer_id) {
-      return NextResponse.json<ApiResponse<null>>(
-        { success: false, error: "No Stripe customer found" },
-        { status: 400 }
-      );
-    }
+    const plan = (org as any).plan || 'basic';
+    const planName = getPlanName(plan);
+    const price = getPlanPrice(plan);
+    const includesAiToolkit = plan === 'pro' || plan === 'enterprise';
 
-    try {
-      // Create portal session scoped to the CFO Dashboard subscription
-      const session = await stripeService.createPortalSession(
-        (org as any).stripe_customer_id,
-        (org as any).stripe_subscription_id
-      );
+    const subscriptionInfo: SubscriptionInfo = {
+      plan,
+      planName,
+      price,
+      status: (org as any).subscription_status || 'trialing',
+      includesAiToolkit,
+    };
 
-      if (!session.url) {
-        throw new Error("No portal URL returned");
-      }
-
-      return NextResponse.json<ApiResponse<PortalResponse>>(
-        {
-          success: true,
-          data: {
-            url: session.url,
-          },
-        },
-        { status: 200 }
-      );
-    } catch (error) {
-      console.error("Failed to create portal session:", error);
-      return NextResponse.json<ApiResponse<null>>(
-        { success: false, error: "Failed to create billing portal session" },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json<ApiResponse<SubscriptionInfo>>(
+      {
+        success: true,
+        data: subscriptionInfo,
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("Stripe Portal Error:", error);
+    console.error("Subscription info error:", error);
     return NextResponse.json<ApiResponse<null>>(
       { success: false, error: "Internal server error" },
       { status: 500 }

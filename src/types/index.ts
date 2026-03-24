@@ -15,6 +15,7 @@ export interface Organization {
   qbo_refresh_token: string | null;
   qbo_token_expires_at: string | null;
   stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
   subscription_status: "trialing" | "active" | "past_due" | "canceled";
   plan: "basic" | "pro" | "enterprise";
   created_at: string;

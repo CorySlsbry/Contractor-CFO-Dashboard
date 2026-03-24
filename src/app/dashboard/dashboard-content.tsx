@@ -156,6 +156,12 @@ const retainageData = [
   { job: 'Heritage Park Commercial', contractAmount: 1450000, retainagePercent: 10, retainageReceivable: 97500, retainagePayable: 52100, netRetainage: 45400, releaseDate: '2024-09-30', status: 'Held' },
   { job: 'Cedar Heights Addition', contractAmount: 210000, retainagePercent: 5, retainageReceivable: 7000, retainagePayable: 4200, netRetainage: 2800, releaseDate: '2024-05-01', status: 'Due Soon' },
   { job: 'Oakwood Duplex', contractAmount: 380000, retainagePercent: 10, retainageReceivable: 35200, retainagePayable: 18500, netRetainage: 16700, releaseDate: '2024-03-30', status: 'Ready to Release' },
+  { job: 'Lakeside Office Park', contractAmount: 520000, retainagePercent: 10, retainageReceivable: 28500, retainagePayable: 15600, netRetainage: 12900, releaseDate: '2023-12-15', status: 'Overdue' },
+  { job: 'Westfield Community Center', contractAmount: 680000, retainagePercent: 10, retainageReceivable: 31200, retainagePayable: 18900, netRetainage: 12300, releaseDate: '2023-11-20', status: 'Overdue' },
+  { job: 'Sunset Hills Renovations', contractAmount: 240000, retainagePercent: 5, retainageReceivable: 8500, retainagePayable: 4100, netRetainage: 4400, releaseDate: '2024-01-10', status: 'Overdue' },
+  { job: 'Pinnacle Tower Interiors', contractAmount: 890000, retainagePercent: 10, retainageReceivable: 65200, retainagePayable: 42100, netRetainage: 23100, releaseDate: '2023-10-30', status: 'Paid' },
+  { job: 'Summit Plaza Finishes', contractAmount: 445000, retainagePercent: 10, retainageReceivable: 18800, retainagePayable: 11200, netRetainage: 7600, releaseDate: '2023-09-15', status: 'Paid' },
+  { job: 'Riverfront Lofts', contractAmount: 620000, retainagePercent: 10, retainageReceivable: 22400, retainagePayable: 14300, netRetainage: 8100, releaseDate: '2023-08-20', status: 'Paid' },
 ];
 
 // Sales Dashboard Data
@@ -442,27 +448,27 @@ function ARByJobTab() {
 
   const totalAR = arByJob.reduce((s, i) => s + i.amount, 0);
   const pastDueAR = arByJob.filter(i => i.daysPastDue > 0).reduce((s, i) => s + i.amount, 0);
+  const currentAR = totalAR - pastDueAR;
+  const percentPastDue = totalAR > 0 ? Math.round((pastDueAR / totalAR) * 100) : 0;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total AR</p>
-          <p className="text-2xl font-bold mt-1">{formatFullCurrency(totalAR)}</p>
-        </Card>
-        <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Past Due AR</p>
-          <p className="text-2xl font-bold mt-1 text-[#ef4444]">{formatFullCurrency(pastDueAR)}</p>
-        </Card>
-        <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Current AR</p>
-          <p className="text-2xl font-bold mt-1 text-[#22c55e]">{formatFullCurrency(totalAR - pastDueAR)}</p>
-        </Card>
+      {/* Compact Summary */}
+      <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d] text-sm">
+        <span className="text-[#c8c8d8]">
+          Total AR: <span className="font-semibold text-[#e8e8f0]">{formatFullCurrency(totalAR)}</span> · Past Due: <span className="font-semibold text-red-400">{formatFullCurrency(pastDueAR)} ({percentPastDue}%)</span> · Current: <span className="font-semibold text-green-400">{formatFullCurrency(currentAR)}</span>
+        </span>
       </div>
 
       {Object.entries(grouped).map(([jobName, invoices]) => {
         const jobTotal = invoices.reduce((s, i) => s + i.amount, 0);
         const jobPastDue = invoices.filter(i => i.daysPastDue > 0).reduce((s, i) => s + i.amount, 0);
+        // Sort invoices: past due first
+        const sortedInvoices = [...invoices].sort((a, b) => {
+          if (a.daysPastDue > 0 && b.daysPastDue === 0) return -1;
+          if (a.daysPastDue === 0 && b.daysPastDue > 0) return 1;
+          return b.daysPastDue - a.daysPastDue;
+        });
         return (
           <Card key={jobName} className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -491,7 +497,7 @@ function ARByJobTab() {
                   </tr>
                 </thead>
                 <tbody>
-                  {invoices.map((inv) => (
+                  {sortedInvoices.map((inv) => (
                     <tr key={inv.invoiceNum} className={`border-b border-[#2a2a3d]/50 ${inv.daysPastDue > 0 ? 'bg-[#ef4444]/5' : ''}`}>
                       <td className="py-2.5 font-mono text-xs">{inv.invoiceNum}</td>
                       <td className={`py-2.5 text-right font-semibold ${inv.daysPastDue > 0 ? 'text-[#ef4444]' : ''}`}>
@@ -527,27 +533,27 @@ function APByJobTab() {
 
   const totalAP = apByJob.reduce((s, i) => s + i.amount, 0);
   const pastDueAP = apByJob.filter(i => i.daysPastDue > 0).reduce((s, i) => s + i.amount, 0);
+  const currentAP = totalAP - pastDueAP;
+  const percentPastDue = totalAP > 0 ? Math.round((pastDueAP / totalAP) * 100) : 0;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total AP</p>
-          <p className="text-2xl font-bold mt-1">{formatFullCurrency(totalAP)}</p>
-        </Card>
-        <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Past Due AP</p>
-          <p className="text-2xl font-bold mt-1 text-[#ef4444]">{formatFullCurrency(pastDueAP)}</p>
-        </Card>
-        <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Current AP</p>
-          <p className="text-2xl font-bold mt-1 text-[#22c55e]">{formatFullCurrency(totalAP - pastDueAP)}</p>
-        </Card>
+      {/* Compact Summary */}
+      <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d] text-sm">
+        <span className="text-[#c8c8d8]">
+          Total AP: <span className="font-semibold text-[#e8e8f0]">{formatFullCurrency(totalAP)}</span> · Past Due: <span className="font-semibold text-red-400">{formatFullCurrency(pastDueAP)} ({percentPastDue}%)</span> · Current: <span className="font-semibold text-green-400">{formatFullCurrency(currentAP)}</span>
+        </span>
       </div>
 
       {Object.entries(grouped).map(([jobName, bills]) => {
         const jobTotal = bills.reduce((s, i) => s + i.amount, 0);
         const jobPastDue = bills.filter(i => i.daysPastDue > 0).reduce((s, i) => s + i.amount, 0);
+        // Sort bills: past due first
+        const sortedBills = [...bills].sort((a, b) => {
+          if (a.daysPastDue > 0 && b.daysPastDue === 0) return -1;
+          if (a.daysPastDue === 0 && b.daysPastDue > 0) return 1;
+          return b.daysPastDue - a.daysPastDue;
+        });
         return (
           <Card key={jobName} className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -574,7 +580,7 @@ function APByJobTab() {
                   </tr>
                 </thead>
                 <tbody>
-                  {bills.map((bill) => (
+                  {sortedBills.map((bill) => (
                     <tr key={bill.invoiceNum} className={`border-b border-[#2a2a3d]/50 ${bill.daysPastDue > 0 ? 'bg-[#ef4444]/5' : ''}`}>
                       <td className="py-2.5">{bill.vendor}</td>
                       <td className="py-2.5 font-mono text-xs">{bill.invoiceNum}</td>
@@ -606,9 +612,30 @@ function WIPTrackingTab() {
   const totalOverBilled = wipData.filter(w => w.overUnderBilled < 0).reduce((s, w) => s + Math.abs(w.overUnderBilled), 0);
   const totalUnderBilled = wipData.filter(w => w.overUnderBilled > 0).reduce((s, w) => s + w.overUnderBilled, 0);
   const totalContractValue = wipData.reduce((s, w) => s + w.contractAmount, 0);
+  const totalGrossProfit = wipData.reduce((s, w) => s + w.estGrossProfit, 0);
+  const portfolioMargin = totalContractValue > 0 ? ((totalGrossProfit / totalContractValue) * 100).toFixed(1) : '0';
+  const overBilledProjects = wipData.filter(w => w.overUnderBilled > 0);
+  const biggestUnderBill = overBilledProjects.length > 0 ? overBilledProjects.reduce((max, w) => w.overUnderBilled > max.overUnderBilled ? w : max) : null;
 
   return (
     <div className="space-y-6">
+      {/* AI Summary Card */}
+      <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">AI Summary</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="flex items-start gap-2">
+            <span className="text-green-400 text-sm">▲</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-green-400">Win:</span> Portfolio gross margin holding at {portfolioMargin}% across {wipData.length} active projects</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-amber-400 text-sm">▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-amber-400">Watch:</span> {biggestUnderBill ? `${biggestUnderBill.job} is $${Math.round(biggestUnderBill.overUnderBilled / 1000)}k under-billed — submit draw request to maintain cash position` : 'All projects within billing targets'}</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Contract Value</p>
@@ -701,22 +728,45 @@ function RetainageTab() {
   const totalReceivable = retainageData.reduce((s, r) => s + r.retainageReceivable, 0);
   const totalPayable = retainageData.reduce((s, r) => s + r.retainagePayable, 0);
   const totalNet = retainageData.reduce((s, r) => s + r.netRetainage, 0);
+  const heldRetainage = retainageData.filter(r => r.status === 'Held' || r.status === 'Due Soon' || r.status === 'Ready to Release').reduce((s, r) => s + r.retainageReceivable, 0);
+  const paidRetainage = retainageData.filter(r => r.status === 'Paid').reduce((s, r) => s + r.retainageReceivable, 0);
+  const overdueRetainage = retainageData.filter(r => r.status === 'Overdue').reduce((s, r) => s + r.retainageReceivable, 0);
+
+  // Sort by status priority
+  const statusOrder: Record<string, number> = { 'Overdue': 0, 'Due Soon': 1, 'Held': 2, 'Ready to Release': 3, 'Paid': 4 };
+  const sortedData = [...retainageData].sort((a, b) => (statusOrder[a.status] ?? 999) - (statusOrder[b.status] ?? 999));
+
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'Overdue': return 'danger';
+      case 'Due Soon': return 'warning';
+      case 'Held': return 'default';
+      case 'Ready to Release': return 'success';
+      case 'Paid': return 'info';
+      default: return 'default';
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Retainage Receivable</p>
-          <p className="text-2xl font-bold mt-1 text-[#22c55e]">{formatFullCurrency(totalReceivable)}</p>
-          <p className="text-xs text-[#8888a0] mt-1">Owed to you by owners</p>
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Held</p>
+          <p className="text-2xl font-bold mt-1 text-[#22c55e]">{formatFullCurrency(heldRetainage)}</p>
+          <p className="text-xs text-[#8888a0] mt-1">Active retainage</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Retainage Payable</p>
-          <p className="text-2xl font-bold mt-1 text-[#ef9d44]">{formatFullCurrency(totalPayable)}</p>
-          <p className="text-xs text-[#8888a0] mt-1">Owed to your subs</p>
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Overdue</p>
+          <p className="text-2xl font-bold mt-1 text-[#ef4444]">{formatFullCurrency(overdueRetainage)}</p>
+          <p className="text-xs text-[#8888a0] mt-1">Past release date</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Net Retainage Position</p>
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Paid</p>
+          <p className="text-2xl font-bold mt-1 text-[#6366f1]">{formatFullCurrency(paidRetainage)}</p>
+          <p className="text-xs text-[#8888a0] mt-1">Released to subs</p>
+        </Card>
+        <Card variant="metric" className="p-5">
+          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Net Position</p>
           <p className="text-2xl font-bold mt-1 text-[#6366f1]">{formatFullCurrency(totalNet)}</p>
           <p className="text-xs text-[#8888a0] mt-1">Cash impact on release</p>
         </Card>
@@ -739,8 +789,8 @@ function RetainageTab() {
               </tr>
             </thead>
             <tbody>
-              {retainageData.map((r) => (
-                <tr key={r.job} className="border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26]">
+              {sortedData.map((r) => (
+                <tr key={r.job} className={`border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26] ${r.status === 'Overdue' ? 'bg-[#ef4444]/5' : r.status === 'Paid' ? 'bg-[#6366f1]/5' : ''}`}>
                   <td className="py-3 font-medium">{r.job}</td>
                   <td className="py-3 text-right">{formatFullCurrency(r.contractAmount)}</td>
                   <td className="py-3 text-center">{r.retainagePercent}%</td>
@@ -749,7 +799,7 @@ function RetainageTab() {
                   <td className="py-3 text-right text-[#6366f1] font-semibold">{formatFullCurrency(r.netRetainage)}</td>
                   <td className="py-3 text-right text-[#8888a0]">{r.releaseDate}</td>
                   <td className="py-3 text-right">
-                    <Badge variant={r.status === 'Ready to Release' ? 'success' : r.status === 'Due Soon' ? 'warning' : 'info'}>
+                    <Badge variant={getStatusVariant(r.status)}>
                       {r.status}
                     </Badge>
                   </td>
@@ -759,7 +809,7 @@ function RetainageTab() {
             <tfoot>
               <tr className="border-t-2 border-[#6366f1]/30 font-semibold">
                 <td className="py-3">TOTALS</td>
-                <td className="py-3 text-right">{formatFullCurrency(retainageData.reduce((s, r) => s + r.contractAmount, 0))}</td>
+                <td className="py-3 text-right">{formatFullCurrency(sortedData.reduce((s, r) => s + r.contractAmount, 0))}</td>
                 <td className="py-3 text-center">—</td>
                 <td className="py-3 text-right text-[#22c55e]">{formatFullCurrency(totalReceivable)}</td>
                 <td className="py-3 text-right text-[#ef9d44]">{formatFullCurrency(totalPayable)}</td>

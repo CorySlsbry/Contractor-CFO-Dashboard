@@ -115,12 +115,25 @@ export class StripeService {
 
   /**
    * Creates a Stripe billing portal session
+   * Optionally scoped to a specific subscription using flow_data
    */
-  async createPortalSession(customerId: string): Promise<Stripe.BillingPortal.Session> {
-    return this.stripe.billingPortal.sessions.create({
+  async createPortalSession(customerId: string, subscriptionId?: string): Promise<Stripe.BillingPortal.Session> {
+    const params: Stripe.BillingPortal.SessionCreateParams = {
       customer: customerId,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`,
-    });
+    };
+
+    // If we have a specific subscription ID, scope the portal to it
+    if (subscriptionId) {
+      params.flow_data = {
+        type: 'subscription_update',
+        subscription_update: {
+          subscription: subscriptionId,
+        },
+      };
+    }
+
+    return this.stripe.billingPortal.sessions.create(params);
   }
 
   /**

@@ -2,13 +2,25 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plug, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Plug, ArrowRight, AlertTriangle, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+interface SubscriptionData {
+  plan: 'basic' | 'pro' | 'enterprise';
+  planName: string;
+  price: number;
+  status: string;
+  includesAiToolkit: boolean;
+}
 
 export default function SettingsPage() {
   const [managingBilling, setManagingBilling] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
+
+  // Subscription state
+  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
 
   // Cancel subscription state
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -20,6 +32,32 @@ export default function SettingsPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Fetch subscription info on mount
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const res = await fetch('/api/stripe/subscription', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.data) {
+          setSubscription(data.data);
+        } else {
+          console.error('Failed to fetch subscription:', data.error);
+        }
+      } catch (error) {
+        console.error('Error fetching subscription:', error);
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    };
+
+    fetchSubscription();
+  }, []);
 
   const handleManageBilling = async () => {
     setManagingBilling(true);
@@ -125,7 +163,21 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between p-4 bg-[#1a1a26] rounded-lg">
             <div>
               <p className="text-sm font-medium text-[#e8e8f0]">Plan</p>
-              <p className="text-[#8888a0]">Professional ($499/month)</p>
+              {subscriptionLoading ? (
+                <p className="text-[#8888a0]">Loading...</p>
+              ) : subscription ? (
+                <div>
+                  <p className="text-[#8888a0]">{subscription.planName} (${subscription.price}/month)</p>
+                  {subscription.includesAiToolkit && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <Zap size={12} className="text-yellow-400" />
+                      <span className="text-xs text-yellow-400">AI Toolkit included</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-[#8888a0]">No active plan</p>
+              )}
             </div>
             <Button
               variant="secondary"

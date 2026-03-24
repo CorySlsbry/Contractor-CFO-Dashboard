@@ -486,6 +486,11 @@ export default function LandingPage() {
               },
             ].map((testimonial, idx) => (
               <div key={idx} className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6">
+                <div className="flex gap-0.5 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400 text-lg">★</span>
+                  ))}
+                </div>
                 <p className="text-[#b0b0c8] italic mb-4">{testimonial.quote}</p>
                 <div>
                   <p className="text-[#e8e8f0] font-semibold">{testimonial.author}</p>
@@ -561,7 +566,7 @@ export default function LandingPage() {
                   'Everything in Starter',
                   'Buildertrend + HubSpot + JobNimbus integrations',
                   'Sales pipeline dashboard',
-                  'AI-powered CFO advisor',
+                  'AI Bookkeeper Toolkit included',
                   'AR/AP aging reports by job',
                   'Priority support',
                 ].map((feature, idx) => (
@@ -594,6 +599,7 @@ export default function LandingPage() {
                   'Everything in Professional',
                   'Procore + Salesforce + ServiceTitan integrations',
                   'All 7+ integrations included',
+                  'Advanced AI Bookkeeper features',
                   'Crew utilization tracking',
                   'Quarterly strategy call with Salisbury Bookkeeping',
                   'Dedicated account manager',
