@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatCompactCurrency } from '@/lib/utils';
+import { useChartTheme } from '@/components/chart-theme-provider';
 import {
   LineChart,
   Line,
@@ -33,6 +34,7 @@ import {
   Building2,
   ArrowUpRight,
   ArrowDownRight,
+  Eye,
 } from 'lucide-react';
 
 // ── Tab Navigation ──────────────────────────────────────
@@ -339,6 +341,10 @@ const KPICard = ({ title, value, change, positive, icon: Icon }: {
 // ── Tab Content Components ──────────────────────────────
 
 function OverviewTab() {
+  const { theme } = useChartTheme();
+  const tc = theme.colors;
+  const ch = theme.chart;
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -349,19 +355,19 @@ function OverviewTab() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <FileText size={20} className="text-[#6366f1]" /> AR Aging Summary
+            <FileText size={20} style={{ color: tc.primary }} /> AR Aging Summary
           </h2>
           <div className="space-y-3">
             {[
-              { range: 'Current', amount: 310000, color: '#22c55e' },
-              { range: '1-30 Days', amount: 85000, color: '#eab308' },
-              { range: '31-60 Days', amount: 63500, color: '#ef9d44' },
-              { range: '61-90 Days', amount: 28700, color: '#ef4444' },
+              { range: 'Current', amount: 310000, color: tc.positive },
+              { range: '1-30 Days', amount: 85000, color: tc.warning },
+              { range: '31-60 Days', amount: 63500, color: tc.tertiary },
+              { range: '61-90 Days', amount: 28700, color: tc.negative },
             ].map((item) => (
               <div key={item.range} className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
                 <span className="text-sm text-[#8888a0] w-24">{item.range}</span>
-                <div className="flex-1 h-2 bg-[#2a2a3d] rounded-full overflow-hidden">
+                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: ch.gridColor }}>
                   <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${(item.amount / 310000) * 100}%` }} />
                 </div>
                 <span className="text-sm font-semibold w-20 text-right">{formatCurrency(item.amount)}</span>
@@ -372,7 +378,7 @@ function OverviewTab() {
 
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Building2 size={20} className="text-[#6366f1]" /> Cash Flow Forecast (4 Weeks)
+            <Building2 size={20} style={{ color: tc.primary }} /> Cash Flow Forecast (4 Weeks)
           </h2>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={[
@@ -381,12 +387,26 @@ function OverviewTab() {
               { week: 'Week 3', inflow: 165000, outflow: 120000 },
               { week: 'Week 4', inflow: 230000, outflow: 195000 },
             ]}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3d" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
               <XAxis dataKey="week" stroke="#8888a0" style={{ fontSize: '0.7rem' }} />
               <YAxis stroke="#8888a0" style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
-              <Tooltip contentStyle={{ backgroundColor: '#1a1a26', border: '1px solid #2a2a3d', borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => formatFullCurrency(Number(v))} />
-              <Area type="monotone" dataKey="inflow" stroke="#22c55e" fill="#22c55e" fillOpacity={0.15} name="Cash In" />
-              <Area type="monotone" dataKey="outflow" stroke="#ef4444" fill="#ef4444" fillOpacity={0.15} name="Cash Out" />
+              <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+              <defs>
+                {ch.gradientFills && (
+                  <>
+                    <linearGradient id="inflowGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={tc.positive} stopOpacity={0.4} />
+                      <stop offset="100%" stopColor={tc.positive} stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="outflowGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={tc.negative} stopOpacity={0.4} />
+                      <stop offset="100%" stopColor={tc.negative} stopOpacity={0} />
+                    </linearGradient>
+                  </>
+                )}
+              </defs>
+              <Area type="monotone" dataKey="inflow" stroke={tc.positive} fill={ch.gradientFills ? 'url(#inflowGrad)' : tc.positive} fillOpacity={ch.gradientFills ? 1 : ch.areaOpacity} strokeWidth={ch.strokeWidth} name="Cash In" />
+              <Area type="monotone" dataKey="outflow" stroke={tc.negative} fill={ch.gradientFills ? 'url(#outflowGrad)' : tc.negative} fillOpacity={ch.gradientFills ? 1 : ch.areaOpacity} strokeWidth={ch.strokeWidth} name="Cash Out" />
             </AreaChart>
           </ResponsiveContainer>
         </Card>
@@ -826,6 +846,9 @@ function RetainageTab() {
 }
 
 function SalesDashboardTab() {
+  const { theme } = useChartTheme();
+  const tc = theme.colors;
+  const ch = theme.chart;
   const totalPipeline = salesPipelineData.reduce((s, p) => s + p.value, 0);
   const wonDeals = recentDeals.filter(d => d.stage === 'Won');
   const wonValue = wonDeals.reduce((s, d) => s + d.value, 0);
@@ -1011,12 +1034,12 @@ function SalesDashboardTab() {
           <h2 className="text-lg font-semibold mb-4">Closed vs Pipeline (Monthly)</h2>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={salesByMonth}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3d" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
               <XAxis dataKey="month" stroke="#8888a0" style={{ fontSize: '0.7rem' }} />
               <YAxis stroke="#8888a0" style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
-              <Tooltip contentStyle={{ backgroundColor: '#1a1a26', border: '1px solid #2a2a3d', borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => formatFullCurrency(Number(v))} />
-              <Bar dataKey="closed" fill="#22c55e" radius={[4, 4, 0, 0]} name="Closed" />
-              <Bar dataKey="pipeline" fill="#6366f1" radius={[4, 4, 0, 0]} name="Pipeline" opacity={0.5} />
+              <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+              <Bar dataKey="closed" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Closed" />
+              <Bar dataKey="pipeline" fill={tc.primary} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Pipeline" opacity={0.5} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -1029,16 +1052,16 @@ function SalesDashboardTab() {
               <PieChart>
                 <Pie data={leadSourceData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                   {leadSourceData.map((_, i) => (
-                    <Cell key={i} fill={LEAD_COLORS[i]} />
+                    <Cell key={i} fill={theme.series[i] || '#8888a0'} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#1a1a26', border: '1px solid #2a2a3d', borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => `${v}%`} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => `${v}%`} />
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-2 flex-1">
               {leadSourceData.map((source, i) => (
                 <div key={source.name} className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: LEAD_COLORS[i] }} />
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: theme.series[i] || '#8888a0' }} />
                   <span className="text-sm text-[#8888a0] flex-1">{source.name}</span>
                   <span className="text-sm font-semibold">{source.value}%</span>
                 </div>
@@ -1100,12 +1123,48 @@ function SalesDashboardTab() {
   );
 }
 
+// ── Demo Banner Component ───────────────────────────────
+function DemoBanner({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div className="relative bg-gradient-to-r from-[#6366f1]/10 via-[#1a1a26] to-[#6366f1]/10 border border-[#6366f1]/30 rounded-xl p-5 mb-2">
+      <button
+        onClick={onDismiss}
+        className="absolute top-3 right-3 text-[#8888a0] hover:text-[#e8e8f0] transition"
+        aria-label="Dismiss banner"
+      >
+        ✕
+      </button>
+      <div className="flex items-start gap-3">
+        <div className="bg-[#6366f1]/20 rounded-lg p-2 flex-shrink-0 mt-0.5">
+          <Eye size={20} className="text-[#a5b4fc]" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-[#e8e8f0] mb-1">Welcome! You&apos;re viewing sample data.</p>
+          <p className="text-sm text-[#b0b0c8] leading-relaxed">
+            Once your platforms are connected, this dashboard becomes your real-time financial command center.
+            One thing to keep in mind — the accuracy of your dashboard depends on the accuracy of your books.
+            If anything looks off or you want help getting your data dialed in, our team at{' '}
+            <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition font-medium">
+              SalisburyBookkeeping.com
+            </a>{' '}
+            has your back.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Dashboard Component ────────────────────────────
 export default function DashboardContent() {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
+  const [showDemoBanner, setShowDemoBanner] = useState(true);
 
   return (
     <div className="space-y-6">
+      {/* Demo Data Banner */}
+      {showDemoBanner && <DemoBanner onDismiss={() => setShowDemoBanner(false)} />}
+
       {/* Tab Navigation */}
       <div className="flex gap-1 overflow-x-auto pb-1 border-b border-[#2a2a3d]">
         {tabs.map((tab) => (

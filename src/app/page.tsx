@@ -5,8 +5,11 @@ import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock }
 import { useState } from 'react';
 import Head from 'next/head';
 
+type DemoTab = 'overview' | 'ar' | 'ap' | 'wip' | 'retainage' | 'sales';
+
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<'starter' | 'professional' | 'enterprise'>('professional');
+  const [demoTab, setDemoTab] = useState<DemoTab>('overview');
 
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0]">
@@ -67,141 +70,443 @@ export default function LandingPage() {
             >
               Start 14-Day Free Trial <ChevronRight size={18} />
             </Link>
-            <Link
-              href="/dashboard"
+            <a
+              href="#live-demo"
               className="px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center"
             >
               See It In Action
-            </Link>
+            </a>
           </div>
 
-          {/* Dashboard Mock — Rich Preview */}
-          <div className="bg-gradient-to-b from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 sm:p-6 shadow-2xl overflow-hidden">
-            {/* Tab bar */}
+          {/* Interactive Dashboard Demo */}
+          <div id="live-demo" className="bg-gradient-to-b from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 sm:p-6 shadow-2xl overflow-hidden scroll-mt-24">
+            {/* Interactive Tab bar */}
             <div className="flex gap-1 mb-4 border-b border-[#2a2a3d] pb-2 overflow-x-auto">
-              {['Overview', 'AR by Job', 'AP by Job', 'WIP', 'Retainage', 'Sales'].map((tab, i) => (
-                <div key={tab} className={`px-3 py-1.5 text-xs font-medium rounded-t whitespace-nowrap ${i === 0 ? 'bg-[#6366f1]/15 text-[#a5b4fc] border-b-2 border-[#6366f1]' : 'text-[#8888a0]'}`}>
-                  {tab}
-                </div>
+              {([
+                { key: 'overview', label: 'Overview' },
+                { key: 'ar', label: 'AR by Job' },
+                { key: 'ap', label: 'AP by Job' },
+                { key: 'wip', label: 'WIP' },
+                { key: 'retainage', label: 'Retainage' },
+                { key: 'sales', label: 'Sales' },
+              ] as { key: DemoTab; label: string }[]).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setDemoTab(tab.key)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-t whitespace-nowrap transition-all cursor-pointer ${
+                    demoTab === tab.key
+                      ? 'bg-[#6366f1]/15 text-[#a5b4fc] border-b-2 border-[#6366f1]'
+                      : 'text-[#8888a0] hover:text-[#e8e8f0]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
               ))}
             </div>
 
-            {/* KPI Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
-              {[
-                { label: 'Revenue (YTD)', value: '$2.85M', change: '+12.3%', up: true },
-                { label: 'AR Outstanding', value: '$487.2K', change: '+3.1%', up: false },
-                { label: 'AP Outstanding', value: '$312.8K', change: '-8.2%', up: true },
-                { label: 'Net Cash', value: '$744.3K', change: '+26.1%', up: true },
-                { label: 'WIP Over-Billing', value: '$82.4K', change: '-12.5%', up: true },
-                { label: 'Retainage Held', value: '$196.5K', change: '+4.3%', up: false },
-              ].map((kpi) => (
-                <div key={kpi.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
-                  <div className="text-[#8888a0] text-[10px] uppercase tracking-wide mb-1">{kpi.label}</div>
-                  <div className="text-lg font-bold text-[#e8e8f0]">{kpi.value}</div>
-                  <div className={`text-[10px] font-semibold ${kpi.up ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{kpi.change}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Two Column: AR Aging + Cash Flow */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
-              {/* AR Aging */}
-              <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
-                <div className="text-sm font-semibold text-[#e8e8f0] mb-3">AR Aging Summary</div>
-                <div className="space-y-2">
+            {/* ── OVERVIEW TAB ── */}
+            {demoTab === 'overview' && (
+              <>
+                {/* KPI Row */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
                   {[
-                    { range: 'Current', amount: '$310K', pct: 64, color: '#22c55e' },
-                    { range: '1-30 Days', amount: '$85K', pct: 17, color: '#eab308' },
-                    { range: '31-60 Days', amount: '$63.5K', pct: 13, color: '#ef9d44' },
-                    { range: '61-90 Days', amount: '$28.7K', pct: 6, color: '#ef4444' },
-                  ].map((item) => (
-                    <div key={item.range} className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                      <span className="text-[10px] text-[#8888a0] w-16">{item.range}</span>
-                      <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
-                        <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${item.pct}%` }} />
-                      </div>
-                      <span className="text-[10px] font-semibold text-[#e8e8f0] w-12 text-right">{item.amount}</span>
+                    { label: 'Revenue (YTD)', value: '$2.85M', change: '+12.3%', up: true },
+                    { label: 'AR Outstanding', value: '$487.2K', change: '+3.1%', up: false },
+                    { label: 'AP Outstanding', value: '$312.8K', change: '-8.2%', up: true },
+                    { label: 'Net Cash', value: '$744.3K', change: '+26.1%', up: true },
+                    { label: 'WIP Over-Billing', value: '$82.4K', change: '-12.5%', up: true },
+                    { label: 'Retainage Held', value: '$196.5K', change: '+4.3%', up: false },
+                  ].map((kpi) => (
+                    <div key={kpi.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
+                      <div className="text-[#8888a0] text-[10px] uppercase tracking-wide mb-1">{kpi.label}</div>
+                      <div className="text-lg font-bold text-[#e8e8f0]">{kpi.value}</div>
+                      <div className={`text-[10px] font-semibold ${kpi.up ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{kpi.change}</div>
                     </div>
                   ))}
                 </div>
-              </div>
 
-              {/* Cash Flow Chart Mock — Overlapping Bars */}
-              <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
-                <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Cash Flow Forecast</div>
-                <div className="flex items-end gap-3 h-28">
-                  {[
-                    { week: 'W1', inflow: 72, outflow: 55 },
-                    { week: 'W2', inflow: 68, outflow: 82 },
-                    { week: 'W3', inflow: 65, outflow: 47 },
-                    { week: 'W4', inflow: 90, outflow: 76 },
-                  ].map((w) => {
-                    const isPositive = w.inflow >= w.outflow;
-                    return (
-                      <div key={w.week} className="flex-1 flex flex-col items-center gap-1.5">
-                        <div className="w-full relative h-24 flex items-end justify-center">
-                          <div
-                            className="absolute bottom-0 left-1 right-1 rounded-t-md"
-                            style={{
-                              height: `${Math.max(w.inflow, w.outflow)}%`,
-                              backgroundColor: isPositive ? '#14532d' : '#7f1d1d',
-                              border: `1.5px solid ${isPositive ? '#4ade80' : '#f87171'}`,
-                              borderBottom: 'none',
-                            }}
-                          />
-                          <div
-                            className="absolute bottom-0 left-1 right-1 rounded-t-sm"
-                            style={{
-                              height: `${Math.min(w.inflow, w.outflow)}%`,
-                              backgroundColor: isPositive ? '#7f1d1d' : '#14532d',
-                              border: `1.5px solid ${isPositive ? '#f87171' : '#4ade80'}`,
-                              borderBottom: 'none',
-                            }}
-                          />
-                          <div className="absolute -top-3.5 left-0 right-0 text-center">
-                            <span className="text-[8px] font-bold" style={{ color: isPositive ? '#4ade80' : '#f87171' }}>
-                              {isPositive ? '+' : '-'}{Math.abs(w.inflow - w.outflow)}%
-                            </span>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+                  {/* AR Aging */}
+                  <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                    <div className="text-sm font-semibold text-[#e8e8f0] mb-3">AR Aging Summary</div>
+                    <div className="space-y-2">
+                      {[
+                        { range: 'Current', amount: '$310K', pct: 64, color: '#22c55e' },
+                        { range: '1-30 Days', amount: '$85K', pct: 17, color: '#eab308' },
+                        { range: '31-60 Days', amount: '$63.5K', pct: 13, color: '#ef9d44' },
+                        { range: '61-90 Days', amount: '$28.7K', pct: 6, color: '#ef4444' },
+                      ].map((item) => (
+                        <div key={item.range} className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                          <span className="text-[10px] text-[#8888a0] w-16">{item.range}</span>
+                          <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                            <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${item.pct}%` }} />
                           </div>
+                          <span className="text-[10px] font-semibold text-[#e8e8f0] w-12 text-right">{item.amount}</span>
                         </div>
-                        <span className="text-[9px] text-[#b0b0c8]">{w.week}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex gap-4 mt-3 justify-center">
-                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#14532d', border: '1.5px solid #4ade80' }} /><span className="text-[9px] text-[#b0b0c8]">Cash In</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#7f1d1d', border: '1.5px solid #f87171' }} /><span className="text-[9px] text-[#b0b0c8]">Cash Out</span></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Job WIP Row */}
-            <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
-              <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Active Jobs — WIP Status</div>
-              <div className="space-y-2">
-                {[
-                  { name: 'Riverside Estate Custom Home', pct: 82, contract: '$950K', billing: 'Over-Billed', billingAmt: '$69K', billingColor: '#eab308' },
-                  { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', billing: 'Over-Billed', billingAmt: '$141.5K', billingColor: '#eab308' },
-                  { name: 'Mountain View Remodel', pct: 100, contract: '$165K', billing: 'Under-Billed', billingAmt: '$39.5K', billingColor: '#6366f1' },
-                  { name: 'Cedar Heights Addition', pct: 93, contract: '$210K', billing: 'Under-Billed', billingAmt: '$55.3K', billingColor: '#6366f1' },
-                  { name: 'Oakwood Duplex', pct: 94, contract: '$380K', billing: 'Over-Billed', billingAmt: '$5.2K', billingColor: '#eab308' },
-                ].map((job) => (
-                  <div key={job.name} className="flex items-center gap-3">
-                    <span className="text-xs text-[#e8e8f0] w-24 sm:w-48 truncate">{job.name}</span>
-                    <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${job.pct >= 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
+                      ))}
                     </div>
-                    <span className="text-[10px] text-[#8888a0] w-10">{job.pct}%</span>
-                    <span className="hidden sm:block text-[10px] text-[#8888a0] w-14 text-right">{job.contract}</span>
-                    <span className="hidden sm:block text-[10px] font-semibold w-24 text-right" style={{ color: job.billingColor }}>
-                      {job.billing}: {job.billingAmt}
-                    </span>
+                  </div>
+
+                  {/* Cash Flow */}
+                  <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                    <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Cash Flow Forecast</div>
+                    <div className="flex items-end gap-3 h-28">
+                      {[
+                        { week: 'W1', inflow: 72, outflow: 55 },
+                        { week: 'W2', inflow: 68, outflow: 82 },
+                        { week: 'W3', inflow: 65, outflow: 47 },
+                        { week: 'W4', inflow: 90, outflow: 76 },
+                      ].map((w) => {
+                        const isPositive = w.inflow >= w.outflow;
+                        return (
+                          <div key={w.week} className="flex-1 flex flex-col items-center gap-1.5">
+                            <div className="w-full relative h-24 flex items-end justify-center">
+                              <div className="absolute bottom-0 left-1 right-1 rounded-t-md" style={{ height: `${Math.max(w.inflow, w.outflow)}%`, backgroundColor: isPositive ? '#14532d' : '#7f1d1d', border: `1.5px solid ${isPositive ? '#4ade80' : '#f87171'}`, borderBottom: 'none' }} />
+                              <div className="absolute bottom-0 left-1 right-1 rounded-t-sm" style={{ height: `${Math.min(w.inflow, w.outflow)}%`, backgroundColor: isPositive ? '#7f1d1d' : '#14532d', border: `1.5px solid ${isPositive ? '#f87171' : '#4ade80'}`, borderBottom: 'none' }} />
+                              <div className="absolute -top-3.5 left-0 right-0 text-center">
+                                <span className="text-[8px] font-bold" style={{ color: isPositive ? '#4ade80' : '#f87171' }}>
+                                  {isPositive ? '+' : '-'}{Math.abs(w.inflow - w.outflow)}%
+                                </span>
+                              </div>
+                            </div>
+                            <span className="text-[9px] text-[#b0b0c8]">{w.week}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex gap-4 mt-3 justify-center">
+                      <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#14532d', border: '1.5px solid #4ade80' }} /><span className="text-[9px] text-[#b0b0c8]">Cash In</span></div>
+                      <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#7f1d1d', border: '1.5px solid #f87171' }} /><span className="text-[9px] text-[#b0b0c8]">Cash Out</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* WIP Summary */}
+                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                  <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Active Jobs — WIP Status</div>
+                  <div className="space-y-2">
+                    {[
+                      { name: 'Riverside Estate Custom Home', pct: 82, contract: '$950K', billing: 'Over-Billed', billingAmt: '$69K', billingColor: '#eab308' },
+                      { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', billing: 'Over-Billed', billingAmt: '$141.5K', billingColor: '#eab308' },
+                      { name: 'Mountain View Remodel', pct: 100, contract: '$165K', billing: 'Under-Billed', billingAmt: '$39.5K', billingColor: '#6366f1' },
+                      { name: 'Cedar Heights Addition', pct: 93, contract: '$210K', billing: 'Under-Billed', billingAmt: '$55.3K', billingColor: '#6366f1' },
+                      { name: 'Oakwood Duplex', pct: 94, contract: '$380K', billing: 'Over-Billed', billingAmt: '$5.2K', billingColor: '#eab308' },
+                    ].map((job) => (
+                      <div key={job.name} className="flex items-center gap-3">
+                        <span className="text-xs text-[#e8e8f0] w-24 sm:w-48 truncate">{job.name}</span>
+                        <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${job.pct >= 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
+                        </div>
+                        <span className="text-[10px] text-[#8888a0] w-10">{job.pct}%</span>
+                        <span className="hidden sm:block text-[10px] text-[#8888a0] w-14 text-right">{job.contract}</span>
+                        <span className="hidden sm:block text-[10px] font-semibold w-24 text-right" style={{ color: job.billingColor }}>
+                          {job.billing}: {job.billingAmt}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── AR BY JOB TAB ── */}
+            {demoTab === 'ar' && (
+              <div className="space-y-3">
+                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] text-[10px] sm:text-xs">
+                  <span className="text-[#c8c8d8]">Total AR: <span className="font-semibold text-[#e8e8f0]">$487,200</span> · Past Due: <span className="font-semibold text-[#ef4444]">$177,200 (36%)</span> · Current: <span className="font-semibold text-[#22c55e]">$310,000</span></span>
+                </div>
+                {[
+                  { job: 'Oakwood Duplex', customer: 'Oakwood Investments', total: '$28,700', pastDue: '$28,700', items: [
+                    { inv: 'INV-2024-133', amount: '$28,700', due: '2023-11-30', days: 92, status: 'Past Due' },
+                  ]},
+                  { job: 'Heritage Park Commercial', customer: 'Heritage Park LLC', total: '$170,000', pastDue: '$45,000', items: [
+                    { inv: 'INV-2024-149', amount: '$45,000', due: '2024-12-15', days: 62, status: 'Past Due' },
+                    { inv: 'INV-2024-155', amount: '$125,000', due: '2024-03-05', days: 0, status: 'Current' },
+                  ]},
+                  { job: 'Mountain View Remodel', customer: 'Jennifer Pratt', total: '$50,500', pastDue: '$18,500', items: [
+                    { inv: 'INV-2024-147', amount: '$18,500', due: '2024-01-10', days: 36, status: 'Past Due' },
+                    { inv: 'INV-2024-151', amount: '$32,000', due: '2024-02-28', days: 0, status: 'Current' },
+                  ]},
+                ].map((group) => (
+                  <div key={group.job} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3 sm:p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <div className="text-xs sm:text-sm font-semibold text-[#e8e8f0]">{group.job}</div>
+                        <div className="text-[10px] text-[#8888a0]">{group.customer}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs font-semibold text-[#e8e8f0]">{group.total}</div>
+                        {group.pastDue !== '$0' && <div className="text-[10px] text-[#ef4444]">{group.pastDue} past due</div>}
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[10px] sm:text-xs">
+                        <thead><tr className="border-b border-[#2a2a3d]">
+                          <th className="text-left py-1 text-[#8888a0]">Invoice</th>
+                          <th className="text-right py-1 text-[#8888a0]">Amount</th>
+                          <th className="text-right py-1 text-[#8888a0]">Due</th>
+                          <th className="text-right py-1 text-[#8888a0]">Days</th>
+                          <th className="text-right py-1 text-[#8888a0]">Status</th>
+                        </tr></thead>
+                        <tbody>
+                          {group.items.map((item) => (
+                            <tr key={item.inv} className={`border-b border-[#2a2a3d]/30 ${item.days > 0 ? 'bg-[#ef4444]/5' : ''}`}>
+                              <td className="py-1.5 font-mono">{item.inv}</td>
+                              <td className={`py-1.5 text-right font-semibold ${item.days > 0 ? 'text-[#ef4444]' : 'text-[#e8e8f0]'}`}>{item.amount}</td>
+                              <td className="py-1.5 text-right text-[#8888a0]">{item.due}</td>
+                              <td className={`py-1.5 text-right font-semibold ${item.days > 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>{item.days || '—'}</td>
+                              <td className="py-1.5 text-right">
+                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${item.status === 'Past Due' ? 'bg-[#ef4444]/15 text-[#ef4444]' : 'bg-[#22c55e]/15 text-[#22c55e]'}`}>{item.status}</span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 ))}
               </div>
+            )}
+
+            {/* ── AP BY JOB TAB ── */}
+            {demoTab === 'ap' && (
+              <div className="space-y-3">
+                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] text-[10px] sm:text-xs">
+                  <span className="text-[#c8c8d8]">Total AP: <span className="font-semibold text-[#e8e8f0]">$296,600</span> · Past Due: <span className="font-semibold text-[#ef4444]">$129,000 (43%)</span> · Current: <span className="font-semibold text-[#22c55e]">$167,600</span></span>
+                </div>
+                {[
+                  { job: 'Riverside Estate Custom Home', total: '$95,700', pastDue: '$53,200', items: [
+                    { vendor: 'Rocky Mtn Concrete', bill: 'BILL-4477', amount: '$35,000', days: 41, status: 'Past Due' },
+                    { vendor: 'Wasatch Electric Co', bill: 'BILL-4498', amount: '$18,200', days: 31, status: 'Past Due' },
+                    { vendor: 'Summit Lumber Supply', bill: 'BILL-4521', amount: '$42,500', days: 0, status: 'Current' },
+                  ]},
+                  { job: 'Cedar Heights Addition', total: '$37,500', pastDue: '$22,000', items: [
+                    { vendor: 'Apex Roofing', bill: 'BILL-4488', amount: '$22,000', days: 38, status: 'Past Due' },
+                    { vendor: 'Quality Drywall Inc', bill: 'BILL-4550', amount: '$15,500', days: 0, status: 'Current' },
+                  ]},
+                ].map((group) => (
+                  <div key={group.job} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3 sm:p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-xs sm:text-sm font-semibold text-[#e8e8f0]">{group.job}</div>
+                      <div className="text-right">
+                        <div className="text-xs font-semibold text-[#e8e8f0]">{group.total}</div>
+                        {group.pastDue !== '$0' && <div className="text-[10px] text-[#ef4444]">{group.pastDue} past due</div>}
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[10px] sm:text-xs">
+                        <thead><tr className="border-b border-[#2a2a3d]">
+                          <th className="text-left py-1 text-[#8888a0]">Vendor</th>
+                          <th className="text-left py-1 text-[#8888a0]">Bill #</th>
+                          <th className="text-right py-1 text-[#8888a0]">Amount</th>
+                          <th className="text-right py-1 text-[#8888a0]">Days</th>
+                          <th className="text-right py-1 text-[#8888a0]">Status</th>
+                        </tr></thead>
+                        <tbody>
+                          {group.items.map((item) => (
+                            <tr key={item.bill} className={`border-b border-[#2a2a3d]/30 ${item.days > 0 ? 'bg-[#ef4444]/5' : ''}`}>
+                              <td className="py-1.5">{item.vendor}</td>
+                              <td className="py-1.5 font-mono">{item.bill}</td>
+                              <td className={`py-1.5 text-right font-semibold ${item.days > 0 ? 'text-[#ef4444]' : 'text-[#e8e8f0]'}`}>{item.amount}</td>
+                              <td className={`py-1.5 text-right font-semibold ${item.days > 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>{item.days || '—'}</td>
+                              <td className="py-1.5 text-right">
+                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${item.status === 'Past Due' ? 'bg-[#ef4444]/15 text-[#ef4444]' : 'bg-[#22c55e]/15 text-[#22c55e]'}`}>{item.status}</span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── WIP TAB ── */}
+            {demoTab === 'wip' && (
+              <div className="space-y-3">
+                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d]">
+                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Summary</span></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                    <div className="flex items-start gap-1.5"><span className="text-[#22c55e] text-[10px]">▲</span><p className="text-[10px] text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> Portfolio margin at 18.9% across 5 active jobs</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[#eab308] text-[10px]">▼</span><p className="text-[10px] text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Cedar Heights is $55K under-billed — submit draw request</p></div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { label: 'Total Contract', value: '$3.16M', color: '' },
+                    { label: 'Over-Billed', value: '$215.7K', color: 'text-[#eab308]' },
+                    { label: 'Under-Billed', value: '$94.8K', color: 'text-[#6366f1]' },
+                    { label: 'Net Position', value: 'Over: $120.9K', color: 'text-[#eab308]' },
+                  ].map((m) => (
+                    <div key={m.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-2.5">
+                      <div className="text-[9px] text-[#8888a0] uppercase tracking-wide">{m.label}</div>
+                      <div className={`text-sm sm:text-base font-bold mt-0.5 ${m.color || 'text-[#e8e8f0]'}`}>{m.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {[
+                  { name: 'Riverside Estate Custom Home', pct: 82, contract: '$950K', cost: '$623K', billed: '$710K', overUnder: 'Over-Billed: $69K', color: '#eab308', margin: '20.0%' },
+                  { name: 'Mountain View Remodel', pct: 112, contract: '$165K', cost: '$148K', billed: '$125.5K', overUnder: 'Under-Billed: $39.5K', color: '#6366f1', margin: '-10.3%' },
+                  { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', cost: '$890K', billed: '$975K', overUnder: 'Over-Billed: $141.5K', color: '#eab308', margin: '20.0%' },
+                ].map((job) => (
+                  <div key={job.name} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <div className="text-xs font-semibold text-[#e8e8f0]">{job.name}</div>
+                        <div className="text-[10px] text-[#8888a0]">Contract: {job.contract}</div>
+                      </div>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${job.pct >= 100 ? 'bg-[#ef4444]/15 text-[#ef4444]' : 'bg-[#6366f1]/15 text-[#a5b4fc]'}`}>{job.pct}% Complete</span>
+                    </div>
+                    <div className="h-2 bg-[#2a2a3d] rounded-full overflow-hidden mb-2">
+                      <div className={`h-full rounded-full ${job.pct > 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                      <div className="bg-[#1a1a26] rounded p-1.5"><span className="text-[#8888a0]">Cost to Date</span><div className="font-semibold text-[#e8e8f0]">{job.cost}</div></div>
+                      <div className="bg-[#1a1a26] rounded p-1.5"><span className="text-[#8888a0]">Billed</span><div className="font-semibold text-[#e8e8f0]">{job.billed}</div></div>
+                      <div className="rounded p-1.5" style={{ backgroundColor: job.color + '15' }}><span className="text-[#8888a0]">Billing Status</span><div className="font-semibold" style={{ color: job.color }}>{job.overUnder}</div></div>
+                      <div className="bg-[#1a1a26] rounded p-1.5"><span className="text-[#8888a0]">Margin</span><div className={`font-semibold ${job.margin.startsWith('-') ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>{job.margin}</div></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── RETAINAGE TAB ── */}
+            {demoTab === 'retainage' && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { label: 'Total Held', value: '$223,250', color: 'text-[#22c55e]' },
+                    { label: 'Total Overdue', value: '$68,200', color: 'text-[#ef4444]' },
+                    { label: 'Total Paid', value: '$116,400', color: 'text-[#6366f1]' },
+                    { label: 'Net Position', value: '$171,550', color: 'text-[#6366f1]' },
+                  ].map((m) => (
+                    <div key={m.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-2.5">
+                      <div className="text-[9px] text-[#8888a0] uppercase tracking-wide">{m.label}</div>
+                      <div className={`text-sm sm:text-base font-bold mt-0.5 ${m.color}`}>{m.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3 overflow-x-auto">
+                  <div className="text-xs font-semibold text-[#e8e8f0] mb-2">Retainage by Job</div>
+                  <table className="w-full text-[10px] sm:text-xs">
+                    <thead><tr className="border-b border-[#2a2a3d]">
+                      <th className="text-left py-1 text-[#8888a0]">Job</th>
+                      <th className="text-right py-1 text-[#8888a0]">Receivable</th>
+                      <th className="text-right py-1 text-[#8888a0]">Payable</th>
+                      <th className="text-right py-1 text-[#8888a0]">Net</th>
+                      <th className="text-right py-1 text-[#8888a0]">Status</th>
+                    </tr></thead>
+                    <tbody>
+                      {[
+                        { job: 'Lakeside Office Park', recv: '$28,500', pay: '$15,600', net: '$12,900', status: 'Overdue', statusColor: 'bg-[#ef4444]/15 text-[#ef4444]' },
+                        { job: 'Westfield Community Center', recv: '$31,200', pay: '$18,900', net: '$12,300', status: 'Overdue', statusColor: 'bg-[#ef4444]/15 text-[#ef4444]' },
+                        { job: 'Mountain View Remodel', recv: '$12,550', pay: '$7,400', net: '$5,150', status: 'Due Soon', statusColor: 'bg-[#eab308]/15 text-[#eab308]' },
+                        { job: 'Riverside Estate Custom Home', recv: '$71,000', pay: '$38,200', net: '$32,800', status: 'Held', statusColor: 'bg-[#8888a0]/15 text-[#c8c8d8]' },
+                        { job: 'Oakwood Duplex', recv: '$35,200', pay: '$18,500', net: '$16,700', status: 'Ready', statusColor: 'bg-[#22c55e]/15 text-[#22c55e]' },
+                        { job: 'Pinnacle Tower Interiors', recv: '$65,200', pay: '$42,100', net: '$23,100', status: 'Paid', statusColor: 'bg-[#6366f1]/15 text-[#a5b4fc]' },
+                      ].map((r) => (
+                        <tr key={r.job} className={`border-b border-[#2a2a3d]/30 ${r.status === 'Overdue' ? 'bg-[#ef4444]/5' : ''}`}>
+                          <td className="py-1.5 font-medium">{r.job}</td>
+                          <td className="py-1.5 text-right text-[#22c55e] font-semibold">{r.recv}</td>
+                          <td className="py-1.5 text-right text-[#ef9d44] font-semibold">{r.pay}</td>
+                          <td className="py-1.5 text-right text-[#6366f1] font-semibold">{r.net}</td>
+                          <td className="py-1.5 text-right"><span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${r.statusColor}`}>{r.status}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── SALES TAB ── */}
+            {demoTab === 'sales' && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { label: 'Total Pipeline', value: '$10.6M', color: '' },
+                    { label: 'Won (Quarter)', value: '$78K', color: 'text-[#22c55e]' },
+                    { label: 'Avg Deal Size', value: '$272K', color: '' },
+                    { label: 'Team Quota', value: '78%', color: 'text-[#eab308]' },
+                  ].map((m) => (
+                    <div key={m.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-2.5">
+                      <div className="text-[9px] text-[#8888a0] uppercase tracking-wide">{m.label}</div>
+                      <div className={`text-sm sm:text-base font-bold mt-0.5 ${m.color || 'text-[#e8e8f0]'}`}>{m.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Sales Pipeline Funnel */}
+                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
+                  <div className="text-xs font-semibold text-[#e8e8f0] mb-3">Pipeline Stages</div>
+                  <div className="space-y-2">
+                    {[
+                      { stage: 'Leads', count: 24, value: '$4.2M', pct: 100 },
+                      { stage: 'Proposals', count: 8, value: '$2.85M', pct: 68 },
+                      { stage: 'Negotiation', count: 4, value: '$1.68M', pct: 40 },
+                      { stage: 'Won', count: 3, value: '$1.25M', pct: 30 },
+                    ].map((s) => (
+                      <div key={s.stage} className="flex items-center gap-2">
+                        <span className="text-[10px] text-[#8888a0] w-16 sm:w-20">{s.stage}</span>
+                        <div className="flex-1 h-5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                          <div className="h-full bg-[#6366f1] rounded-full flex items-center justify-end pr-2" style={{ width: `${s.pct}%` }}>
+                            <span className="text-[9px] font-bold text-white">{s.count}</span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-semibold text-[#e8e8f0] w-12 text-right">{s.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Top Deals */}
+                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3 overflow-x-auto">
+                  <div className="text-xs font-semibold text-[#e8e8f0] mb-2">Active Deals</div>
+                  <table className="w-full text-[10px] sm:text-xs">
+                    <thead><tr className="border-b border-[#2a2a3d]">
+                      <th className="text-left py-1 text-[#8888a0]">Project</th>
+                      <th className="text-right py-1 text-[#8888a0]">Value</th>
+                      <th className="text-center py-1 text-[#8888a0]">Prob</th>
+                      <th className="text-right py-1 text-[#8888a0]">Stage</th>
+                    </tr></thead>
+                    <tbody>
+                      {[
+                        { name: 'Silverstone Commercial', value: '$620K', prob: 85, stage: 'Negotiation', stageColor: 'bg-[#eab308]/15 text-[#eab308]' },
+                        { name: 'Meadow Creek Townhomes', value: '$890K', prob: 60, stage: 'Proposal', stageColor: 'bg-[#6366f1]/15 text-[#a5b4fc]' },
+                        { name: 'Summit Ridge Custom', value: '$445K', prob: 90, stage: 'Negotiation', stageColor: 'bg-[#eab308]/15 text-[#eab308]' },
+                        { name: 'Lakewood Kitchen & Bath', value: '$78K', prob: 95, stage: 'Won', stageColor: 'bg-[#22c55e]/15 text-[#22c55e]' },
+                      ].map((d) => (
+                        <tr key={d.name} className="border-b border-[#2a2a3d]/30">
+                          <td className="py-1.5 font-medium">{d.name}</td>
+                          <td className="py-1.5 text-right font-semibold">{d.value}</td>
+                          <td className="py-1.5 text-center">
+                            <div className="flex items-center gap-1 justify-center">
+                              <div className="w-10 h-1 bg-[#2a2a3d] rounded-full overflow-hidden">
+                                <div className={`h-full rounded-full ${d.prob >= 80 ? 'bg-[#22c55e]' : d.prob >= 50 ? 'bg-[#eab308]' : 'bg-[#ef9d44]'}`} style={{ width: `${d.prob}%` }} />
+                              </div>
+                              <span>{d.prob}%</span>
+                            </div>
+                          </td>
+                          <td className="py-1.5 text-right"><span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${d.stageColor}`}>{d.stage}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* CTA under demo */}
+            <div className="mt-4 pt-3 border-t border-[#2a2a3d] text-center">
+              <p className="text-[10px] sm:text-xs text-[#8888a0]">
+                This is sample data. <Link href="/signup" className="text-[#6366f1] hover:text-[#818cf8] font-medium transition">Start your free trial</Link> to see your real numbers.
+              </p>
             </div>
           </div>
         </div>

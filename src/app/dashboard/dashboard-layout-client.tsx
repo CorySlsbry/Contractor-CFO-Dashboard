@@ -22,6 +22,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/button';
 import { getInitials } from '@/lib/utils';
+import { ChartThemeProvider } from '@/components/chart-theme-provider';
+import ChartThemePicker from '@/components/chart-theme-picker';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -104,6 +106,7 @@ export default function DashboardLayoutClient({
   const sidebarOpen = !sidebarCollapsed;
 
   return (
+    <ChartThemeProvider>
     <div style={inter.style} className="bg-[#0a0a0f] text-[#e8e8f0] min-h-screen flex">
       {/* Desktop Sidebar — hidden on mobile */}
       <div
@@ -267,6 +270,7 @@ export default function DashboardLayoutClient({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <ChartThemePicker />
             <Button
               variant="secondary"
               size="sm"
@@ -289,5 +293,6 @@ export default function DashboardLayoutClient({
         </div>
       </div>
     </div>
+    </ChartThemeProvider>
   );
 }
