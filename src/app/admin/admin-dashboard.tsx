@@ -80,8 +80,18 @@ export default function AdminDashboard() {
         const metricsRes = await fetch('/api/admin/metrics');
         if (metricsRes.ok) {
           const metricsData = await metricsRes.json();
-          setKpiData(metricsData.kpi);
-          setMetrics(metricsData.mrrTrend);
+          // Map API response shape to frontend state
+          if (metricsData.current_stats) {
+            setKpiData({
+              totalSubscribers: metricsData.current_stats.total_organizations || 0,
+              activeSubscriptions: metricsData.current_stats.active_subscriptions || 0,
+              mrr: metricsData.current_stats.mrr || 0,
+              unresolvedErrors: metricsData.current_stats.total_errors_unresolved || 0,
+            });
+          } else if (metricsData.kpi) {
+            setKpiData(metricsData.kpi);
+          }
+          setMetrics(metricsData.mrrTrend || metricsData.historical_metrics || []);
         }
 
         // Fetch errors
