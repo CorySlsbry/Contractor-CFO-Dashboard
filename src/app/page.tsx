@@ -695,48 +695,66 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* BuilderCFO vs Hiring a Full-Time CFO — GEO Comparison Block */}
+      {/* Who Is BuilderCFO For? — Audience Block */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
-            BuilderCFO vs. Hiring a Full-Time CFO
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
+            Built for the People Who Build
           </h2>
+          <p className="text-center text-[#b0b0c8] mb-12 max-w-2xl mx-auto">
+            Whether you&apos;re running jobs in the field, managing the books, or advising on financial strategy — BuilderCFO gives you the real-time visibility you need to make better decisions.
+          </p>
 
-          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl overflow-hidden">
-            <div className="grid grid-cols-3 text-center">
-              <div className="p-2 sm:p-4 border-b border-r border-[#1e1e2e]">
-                <span className="text-xs sm:text-sm font-semibold text-[#8888a0]"></span>
-              </div>
-              <div className="p-2 sm:p-4 border-b border-r border-[#1e1e2e] bg-[#6366f1]/5">
-                <span className="text-xs sm:text-sm font-bold text-[#6366f1]">BuilderCFO</span>
-              </div>
-              <div className="p-2 sm:p-4 border-b border-[#1e1e2e]">
-                <span className="text-xs sm:text-sm font-semibold text-[#8888a0]">Full-Time CFO</span>
-              </div>
-            </div>
+          <div className="grid md:grid-cols-3 gap-6">
             {[
-              { label: 'Annual Cost', builder: '$3,588–$8,388', cfo: '$120,000–$200,000+' },
-              { label: 'Setup Time', builder: '15 minutes', cfo: '2–3 months' },
-              { label: 'Real-Time Data', builder: 'Yes — auto-synced', cfo: 'Monthly reports' },
-              { label: 'Construction Specific', builder: 'Job costing, WIP, retainage', cfo: 'Depends on hire' },
-              { label: 'Integrations', builder: '7+ tools built in', cfo: 'Manual data entry' },
-              { label: 'AI Analysis', builder: 'Included', cfo: 'Not available' },
-              { label: 'Contract Required', builder: 'No — cancel anytime', cfo: 'Employment contract' },
-            ].map((row, idx) => (
-              <div key={idx} className="grid grid-cols-3 text-center">
-                <div className="p-2 sm:p-3 border-b border-r border-[#1e1e2e] text-xs sm:text-sm text-[#b0b0c8] text-left pl-3 sm:pl-6">{row.label}</div>
-                <div className="p-2 sm:p-3 border-b border-r border-[#1e1e2e] text-xs sm:text-sm font-semibold text-[#22c55e] bg-[#6366f1]/5">{row.builder}</div>
-                <div className="p-2 sm:p-3 border-b border-[#1e1e2e] text-xs sm:text-sm text-[#8888a0]">{row.cfo}</div>
+              {
+                role: 'Contractors & Builders',
+                desc: 'See job profitability, cash flow, and WIP status across every active project without waiting for your bookkeeper&apos;s month-end reports. Know exactly where your money is — on every job, every day.',
+                items: ['General contractors', 'Custom home builders', 'Remodelers & renovators', 'Commercial contractors'],
+                icon: '🏗️',
+                border: '#6366f1',
+              },
+              {
+                role: 'Specialty Trades',
+                desc: 'Track retainage owed to you, manage sub payments, and see AR aging by project. Purpose-built for how trade contractors actually get paid — progress billing, retainage, and change orders.',
+                items: ['Electricians & plumbers', 'HVAC contractors', 'Concrete & framing', 'Roofing & drywall'],
+                icon: '⚡',
+                border: '#22c55e',
+              },
+              {
+                role: 'CFOs & Controllers',
+                desc: 'Automate the WIP schedules, job cost reports, and cash flow forecasts you&apos;re already building manually. Spend less time pulling data and more time advising your clients or leadership team.',
+                items: ['Fractional CFOs', 'Construction controllers', 'Accounting firms', 'Bookkeeping teams'],
+                icon: '📊',
+                border: '#eab308',
+              },
+            ].map((persona, idx) => (
+              <div
+                key={idx}
+                className="bg-gradient-to-br from-[#12121a] to-[#0a0a0f] border rounded-xl p-6 sm:p-8 hover:shadow-lg transition"
+                style={{ borderColor: persona.border + '40' }}
+              >
+                <div className="text-4xl mb-4">{persona.icon}</div>
+                <h3 className="text-xl font-bold text-[#e8e8f0] mb-3">{persona.role}</h3>
+                <p className="text-[#b0b0c8] text-sm mb-4 leading-relaxed">{persona.desc}</p>
+                <div className="space-y-1.5">
+                  {persona.items.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: persona.border }} />
+                      <span className="text-sm text-[#8888a0]">{item}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
 
-          <p className="text-center text-[#8888a0] mt-6 text-sm">
-            BuilderCFO gives you CFO-level financial visibility at a fraction of the cost. For contractors who need hands-on advisory,{' '}
+          <p className="text-center text-[#8888a0] mt-8 text-sm">
+            Need hands-on bookkeeping or fractional controller support alongside the dashboard?{' '}
             <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
               Salisbury Bookkeeping
             </a>{' '}
-            offers fractional controller services that pair perfectly with the dashboard.
+            works with construction companies nationwide.
           </p>
         </div>
       </section>
@@ -957,9 +975,9 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How much does BuilderCFO cost compared to a full-time CFO?</h3>
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How much does BuilderCFO cost?</h3>
               <p className="text-[#b0b0c8]">
-                BuilderCFO starts at $299/month (Starter), $499/month (Professional), or $699/month (Enterprise). A full-time construction CFO typically costs $120,000–$200,000+ per year in salary and benefits. BuilderCFO provides real-time dashboards, automated WIP, and AI analysis for $3,588–$8,388 per year — roughly 3–5% the cost of a dedicated hire. Every plan includes a 14-day free trial.
+                BuilderCFO starts at $299/month (Starter), $499/month (Professional), or $699/month (Enterprise). Every plan includes a 14-day free trial — you enter a card upfront but are not charged until day 15. Whether you&apos;re a contractor tracking your own numbers, a specialty trade managing retainage, or a CFO overseeing multiple clients, BuilderCFO provides real-time dashboards, automated WIP schedules, and AI analysis at a fraction of the cost of building these reports manually.
               </p>
             </div>
 
