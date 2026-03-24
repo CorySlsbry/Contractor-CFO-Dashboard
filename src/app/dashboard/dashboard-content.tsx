@@ -310,33 +310,38 @@ const formatFullCurrency = (val: number) =>
 
 // ── Components ──────────────────────────────────────────
 
-const KPICard = ({ title, value, change, positive, icon: Icon }: {
+function KPICard({ title, value, change, positive, icon: Icon }: {
   title: string; value: string; change: string; positive: boolean; icon: React.ComponentType<any>;
-}) => (
-  <Card variant="metric" className="p-5">
-    <div className="flex items-start justify-between mb-3">
-      <div>
-        <p className="text-xs text-[#8888a0] mb-1 uppercase tracking-wide">{title}</p>
-        <p className="text-xl font-bold">{value}</p>
+}) {
+  const { theme } = useChartTheme();
+  const tc = theme.colors;
+
+  return (
+    <Card variant="metric" className="p-5">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <p className="text-xs text-[#8888a0] mb-1 uppercase tracking-wide">{title}</p>
+          <p className="text-xl font-bold">{value}</p>
+        </div>
+        <div className="p-2 rounded-lg" style={{ backgroundColor: (positive ? tc.positive : tc.negative) + '1a' }}>
+          <Icon size={18} style={{ color: positive ? tc.positive : tc.negative }} />
+        </div>
       </div>
-      <div className={`p-2 rounded-lg ${positive ? 'bg-[#22c55e]/10' : 'bg-[#ef4444]/10'}`}>
-        <Icon size={18} className={positive ? 'text-[#22c55e]' : 'text-[#ef4444]'} />
+      <div className="flex items-center justify-between">
+        <div className="flex-1 mr-2">
+          <ResponsiveContainer width="100%" height={32}>
+            <LineChart data={sparklineData}>
+              <Line type="monotone" dataKey="value" stroke={positive ? tc.positive : tc.negative} dot={false} strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="text-xs font-semibold" style={{ color: positive ? tc.positive : tc.negative }}>
+          {change}
+        </div>
       </div>
-    </div>
-    <div className="flex items-center justify-between">
-      <div className="flex-1 mr-2">
-        <ResponsiveContainer width="100%" height={32}>
-          <LineChart data={sparklineData}>
-            <Line type="monotone" dataKey="value" stroke={positive ? '#22c55e' : '#ef4444'} dot={false} strokeWidth={2} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-      <div className={`text-xs font-semibold ${positive ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
-        {change}
-      </div>
-    </div>
-  </Card>
-);
+    </Card>
+  );
+}
 
 // ── Tab Content Components ──────────────────────────────
 
@@ -423,13 +428,13 @@ function OverviewTab() {
                   <p className="text-sm font-medium truncate">{w.job}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#6366f1] rounded-full" style={{ width: `${Math.min(w.percentComplete, 100)}%` }} />
+                      <div className="h-full rounded-full" style={{ backgroundColor: tc.primary, width: `${Math.min(w.percentComplete, 100)}%` }} />
                     </div>
                     <span className="text-xs text-[#8888a0]">{w.percentComplete}%</span>
                   </div>
                 </div>
                 <div className="ml-4 text-right">
-                  <span className={`text-sm font-semibold ${w.overUnderBilled < 0 ? 'text-[#eab308]' : 'text-[#22c55e]'}`}>
+                  <span className="text-sm font-semibold" style={{ color: w.overUnderBilled < 0 ? tc.warning : tc.positive }}>
                     {w.overUnderBilled < 0 ? 'Over' : 'Under'}: {formatCurrency(Math.abs(w.overUnderBilled))}
                   </span>
                 </div>
@@ -445,7 +450,7 @@ function OverviewTab() {
               <div key={s.stage} className="flex items-center gap-3">
                 <span className="text-sm text-[#8888a0] w-24">{s.stage}</span>
                 <div className="flex-1 h-6 bg-[#2a2a3d] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#6366f1] rounded-full flex items-center justify-end pr-2" style={{ width: `${(s.value / 4200000) * 100}%` }}>
+                  <div className="rounded-full flex items-center justify-end pr-2" style={{ backgroundColor: tc.primary, width: `${(s.value / 4200000) * 100}%` }}>
                     <span className="text-xs font-bold text-white">{s.count}</span>
                   </div>
                 </div>
@@ -460,6 +465,9 @@ function OverviewTab() {
 }
 
 function ARByJobTab() {
+  const { theme } = useChartTheme();
+  const tc = theme.colors;
+
   const grouped = arByJob.reduce((acc, inv) => {
     if (!acc[inv.job]) acc[inv.job] = [];
     acc[inv.job].push(inv);
@@ -476,7 +484,7 @@ function ARByJobTab() {
       {/* Compact Summary */}
       <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d] text-sm">
         <span className="text-[#c8c8d8]">
-          Total AR: <span className="font-semibold text-[#e8e8f0]">{formatFullCurrency(totalAR)}</span> · Past Due: <span className="font-semibold text-red-400">{formatFullCurrency(pastDueAR)} ({percentPastDue}%)</span> · Current: <span className="font-semibold text-green-400">{formatFullCurrency(currentAR)}</span>
+          Total AR: <span className="font-semibold text-[#e8e8f0]">{formatFullCurrency(totalAR)}</span> · Past Due: <span className="font-semibold" style={{ color: tc.negative }}>{formatFullCurrency(pastDueAR)} ({percentPastDue}%)</span> · Current: <span className="font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(currentAR)}</span>
         </span>
       </div>
 
@@ -499,7 +507,7 @@ function ARByJobTab() {
               <div className="text-right">
                 <p className="text-sm font-semibold">{formatFullCurrency(jobTotal)}</p>
                 {jobPastDue > 0 && (
-                  <p className="text-xs text-[#ef4444] flex items-center gap-1 justify-end">
+                  <p className="text-xs flex items-center gap-1 justify-end" style={{ color: tc.negative }}>
                     <AlertTriangle size={12} /> {formatFullCurrency(jobPastDue)} past due
                   </p>
                 )}
@@ -518,13 +526,13 @@ function ARByJobTab() {
                 </thead>
                 <tbody>
                   {sortedInvoices.map((inv) => (
-                    <tr key={inv.invoiceNum} className={`border-b border-[#2a2a3d]/50 ${inv.daysPastDue > 0 ? 'bg-[#ef4444]/5' : ''}`}>
+                    <tr key={inv.invoiceNum} className="border-b border-[#2a2a3d]/50" style={{ backgroundColor: inv.daysPastDue > 0 ? tc.negative + '0d' : 'transparent' }}>
                       <td className="py-2.5 font-mono text-xs">{inv.invoiceNum}</td>
-                      <td className={`py-2.5 text-right font-semibold ${inv.daysPastDue > 0 ? 'text-[#ef4444]' : ''}`}>
+                      <td className="py-2.5 text-right font-semibold" style={{ color: inv.daysPastDue > 0 ? tc.negative : 'inherit' }}>
                         {formatFullCurrency(inv.amount)}
                       </td>
                       <td className="py-2.5 text-right text-[#8888a0]">{inv.dueDate}</td>
-                      <td className={`py-2.5 text-right font-semibold ${inv.daysPastDue > 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>
+                      <td className="py-2.5 text-right font-semibold" style={{ color: inv.daysPastDue > 0 ? tc.negative : tc.positive }}>
                         {inv.daysPastDue > 0 ? inv.daysPastDue : '—'}
                       </td>
                       <td className="py-2.5 text-right">
@@ -545,6 +553,9 @@ function ARByJobTab() {
 }
 
 function APByJobTab() {
+  const { theme } = useChartTheme();
+  const tc = theme.colors;
+
   const grouped = apByJob.reduce((acc, bill) => {
     if (!acc[bill.job]) acc[bill.job] = [];
     acc[bill.job].push(bill);
@@ -561,7 +572,7 @@ function APByJobTab() {
       {/* Compact Summary */}
       <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d] text-sm">
         <span className="text-[#c8c8d8]">
-          Total AP: <span className="font-semibold text-[#e8e8f0]">{formatFullCurrency(totalAP)}</span> · Past Due: <span className="font-semibold text-red-400">{formatFullCurrency(pastDueAP)} ({percentPastDue}%)</span> · Current: <span className="font-semibold text-green-400">{formatFullCurrency(currentAP)}</span>
+          Total AP: <span className="font-semibold text-[#e8e8f0]">{formatFullCurrency(totalAP)}</span> · Past Due: <span className="font-semibold" style={{ color: tc.negative }}>{formatFullCurrency(pastDueAP)} ({percentPastDue}%)</span> · Current: <span className="font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(currentAP)}</span>
         </span>
       </div>
 
@@ -581,7 +592,7 @@ function APByJobTab() {
               <div className="text-right">
                 <p className="text-sm font-semibold">{formatFullCurrency(jobTotal)}</p>
                 {jobPastDue > 0 && (
-                  <p className="text-xs text-[#ef4444] flex items-center gap-1 justify-end">
+                  <p className="text-xs flex items-center gap-1 justify-end" style={{ color: tc.negative }}>
                     <AlertTriangle size={12} /> {formatFullCurrency(jobPastDue)} past due
                   </p>
                 )}
@@ -601,14 +612,14 @@ function APByJobTab() {
                 </thead>
                 <tbody>
                   {sortedBills.map((bill) => (
-                    <tr key={bill.invoiceNum} className={`border-b border-[#2a2a3d]/50 ${bill.daysPastDue > 0 ? 'bg-[#ef4444]/5' : ''}`}>
+                    <tr key={bill.invoiceNum} className="border-b border-[#2a2a3d]/50" style={{ backgroundColor: bill.daysPastDue > 0 ? tc.negative + '0d' : 'transparent' }}>
                       <td className="py-2.5">{bill.vendor}</td>
                       <td className="py-2.5 font-mono text-xs">{bill.invoiceNum}</td>
-                      <td className={`py-2.5 text-right font-semibold ${bill.daysPastDue > 0 ? 'text-[#ef4444]' : ''}`}>
+                      <td className="py-2.5 text-right font-semibold" style={{ color: bill.daysPastDue > 0 ? tc.negative : 'inherit' }}>
                         {formatFullCurrency(bill.amount)}
                       </td>
                       <td className="py-2.5 text-right text-[#8888a0]">{bill.dueDate}</td>
-                      <td className={`py-2.5 text-right font-semibold ${bill.daysPastDue > 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>
+                      <td className="py-2.5 text-right font-semibold" style={{ color: bill.daysPastDue > 0 ? tc.negative : tc.positive }}>
                         {bill.daysPastDue > 0 ? bill.daysPastDue : '—'}
                       </td>
                       <td className="py-2.5 text-right">
@@ -629,6 +640,9 @@ function APByJobTab() {
 }
 
 function WIPTrackingTab() {
+  const { theme } = useChartTheme();
+  const tc = theme.colors;
+
   const totalOverBilled = wipData.filter(w => w.overUnderBilled < 0).reduce((s, w) => s + Math.abs(w.overUnderBilled), 0);
   const totalUnderBilled = wipData.filter(w => w.overUnderBilled > 0).reduce((s, w) => s + w.overUnderBilled, 0);
   const totalContractValue = wipData.reduce((s, w) => s + w.contractAmount, 0);
@@ -642,16 +656,16 @@ function WIPTrackingTab() {
       {/* AI Summary Card */}
       <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">AI Summary</span>
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Summary</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="flex items-start gap-2">
-            <span className="text-green-400 text-sm">▲</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-green-400">Win:</span> Portfolio gross margin holding at {portfolioMargin}% across {wipData.length} active projects</p>
+            <span className="text-sm" style={{ color: tc.positive }}>▲</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Portfolio gross margin holding at {portfolioMargin}% across {wipData.length} active projects</p>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-amber-400 text-sm">▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-amber-400">Watch:</span> {biggestUnderBill ? `${biggestUnderBill.job} is $${Math.round(biggestUnderBill.overUnderBilled / 1000)}k under-billed — submit draw request to maintain cash position` : 'All projects within billing targets'}</p>
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> {biggestUnderBill ? `${biggestUnderBill.job} is $${Math.round(biggestUnderBill.overUnderBilled / 1000)}k under-billed — submit draw request to maintain cash position` : 'All projects within billing targets'}</p>
           </div>
         </div>
       </div>
@@ -663,15 +677,15 @@ function WIPTrackingTab() {
         </Card>
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Over-Billed</p>
-          <p className="text-xl font-bold mt-1 text-[#eab308]">{formatCurrency(totalOverBilled)}</p>
+          <p className="text-xl font-bold mt-1" style={{ color: tc.warning }}>{formatCurrency(totalOverBilled)}</p>
         </Card>
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Under-Billed</p>
-          <p className="text-xl font-bold mt-1 text-[#6366f1]">{formatCurrency(totalUnderBilled)}</p>
+          <p className="text-xl font-bold mt-1" style={{ color: tc.primary }}>{formatCurrency(totalUnderBilled)}</p>
         </Card>
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Net Position</p>
-          <p className={`text-xl font-bold mt-1 ${totalOverBilled > totalUnderBilled ? 'text-[#eab308]' : 'text-[#22c55e]'}`}>
+          <p className="text-xl font-bold mt-1" style={{ color: totalOverBilled > totalUnderBilled ? tc.warning : tc.positive }}>
             {totalOverBilled > totalUnderBilled ? 'Over' : 'Under'}: {formatCurrency(Math.abs(totalOverBilled - totalUnderBilled))}
           </p>
         </Card>
@@ -693,8 +707,11 @@ function WIPTrackingTab() {
           <div className="mb-4">
             <div className="h-3 bg-[#2a2a3d] rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full ${w.percentComplete > 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`}
-                style={{ width: `${Math.min(w.percentComplete, 100)}%` }}
+                className="h-full rounded-full"
+                style={{
+                  backgroundColor: w.percentComplete > 100 ? tc.negative : tc.primary,
+                  width: `${Math.min(w.percentComplete, 100)}%`
+                }}
               />
             </div>
           </div>
@@ -707,7 +724,7 @@ function WIPTrackingTab() {
             </div>
             <div className="bg-[#1a1a26] rounded-lg p-3">
               <p className="text-xs text-[#8888a0]">Cost to Date</p>
-              <p className={`font-semibold mt-1 ${w.costToDate > w.totalEstCost ? 'text-[#ef4444]' : ''}`}>
+              <p className="font-semibold mt-1" style={{ color: w.costToDate > w.totalEstCost ? tc.negative : 'inherit' }}>
                 {formatFullCurrency(w.costToDate)}
               </p>
             </div>
@@ -721,19 +738,22 @@ function WIPTrackingTab() {
             </div>
             <div className="bg-[#1a1a26] rounded-lg p-3">
               <p className="text-xs text-[#8888a0]">Est. Gross Profit</p>
-              <p className={`font-semibold mt-1 ${w.estGrossProfit < 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>
+              <p className="font-semibold mt-1" style={{ color: w.estGrossProfit < 0 ? tc.negative : tc.positive }}>
                 {formatFullCurrency(w.estGrossProfit)}
               </p>
             </div>
-            <div className={`rounded-lg p-3 ${w.overUnderBilled < 0 ? 'bg-[#eab308]/10 border border-[#eab308]/30' : 'bg-[#6366f1]/10 border border-[#6366f1]/30'}`}>
+            <div className="rounded-lg p-3" style={{
+              backgroundColor: (w.overUnderBilled < 0 ? tc.warning : tc.primary) + '1a',
+              border: `1px solid ${(w.overUnderBilled < 0 ? tc.warning : tc.primary) + '4d'}`
+            }}>
               <p className="text-xs text-[#8888a0]">{w.overUnderBilled < 0 ? 'Over-Billed' : 'Under-Billed'}</p>
-              <p className={`font-semibold mt-1 ${w.overUnderBilled < 0 ? 'text-[#eab308]' : 'text-[#6366f1]'}`}>
+              <p className="font-semibold mt-1" style={{ color: w.overUnderBilled < 0 ? tc.warning : tc.primary }}>
                 {formatFullCurrency(Math.abs(w.overUnderBilled))}
               </p>
             </div>
             <div className="bg-[#1a1a26] rounded-lg p-3 col-span-2">
               <p className="text-xs text-[#8888a0]">Gross Profit Margin</p>
-              <p className={`font-semibold mt-1 ${w.estGrossProfit < 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>
+              <p className="font-semibold mt-1" style={{ color: w.estGrossProfit < 0 ? tc.negative : tc.positive }}>
                 {((w.estGrossProfit / w.contractAmount) * 100).toFixed(1)}%
               </p>
             </div>
@@ -745,6 +765,9 @@ function WIPTrackingTab() {
 }
 
 function RetainageTab() {
+  const { theme } = useChartTheme();
+  const tc = theme.colors;
+
   const totalReceivable = retainageData.reduce((s, r) => s + r.retainageReceivable, 0);
   const totalPayable = retainageData.reduce((s, r) => s + r.retainagePayable, 0);
   const totalNet = retainageData.reduce((s, r) => s + r.netRetainage, 0);
@@ -772,22 +795,22 @@ function RetainageTab() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Held</p>
-          <p className="text-2xl font-bold mt-1 text-[#22c55e]">{formatFullCurrency(heldRetainage)}</p>
+          <p className="text-2xl font-bold mt-1" style={{ color: tc.positive }}>{formatFullCurrency(heldRetainage)}</p>
           <p className="text-xs text-[#8888a0] mt-1">Active retainage</p>
         </Card>
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Overdue</p>
-          <p className="text-2xl font-bold mt-1 text-[#ef4444]">{formatFullCurrency(overdueRetainage)}</p>
+          <p className="text-2xl font-bold mt-1" style={{ color: tc.negative }}>{formatFullCurrency(overdueRetainage)}</p>
           <p className="text-xs text-[#8888a0] mt-1">Past release date</p>
         </Card>
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Paid</p>
-          <p className="text-2xl font-bold mt-1 text-[#6366f1]">{formatFullCurrency(paidRetainage)}</p>
+          <p className="text-2xl font-bold mt-1" style={{ color: tc.primary }}>{formatFullCurrency(paidRetainage)}</p>
           <p className="text-xs text-[#8888a0] mt-1">Released to subs</p>
         </Card>
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Net Position</p>
-          <p className="text-2xl font-bold mt-1 text-[#6366f1]">{formatFullCurrency(totalNet)}</p>
+          <p className="text-2xl font-bold mt-1" style={{ color: tc.primary }}>{formatFullCurrency(totalNet)}</p>
           <p className="text-xs text-[#8888a0] mt-1">Cash impact on release</p>
         </Card>
       </div>
@@ -810,13 +833,15 @@ function RetainageTab() {
             </thead>
             <tbody>
               {sortedData.map((r) => (
-                <tr key={r.job} className={`border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26] ${r.status === 'Overdue' ? 'bg-[#ef4444]/5' : r.status === 'Paid' ? 'bg-[#6366f1]/5' : ''}`}>
+                <tr key={r.job} className="border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26]" style={{
+                  backgroundColor: r.status === 'Overdue' ? tc.negative + '0d' : r.status === 'Paid' ? tc.primary + '0d' : 'transparent'
+                }}>
                   <td className="py-3 font-medium">{r.job}</td>
                   <td className="py-3 text-right">{formatFullCurrency(r.contractAmount)}</td>
                   <td className="py-3 text-center">{r.retainagePercent}%</td>
-                  <td className="py-3 text-right text-[#22c55e] font-semibold">{formatFullCurrency(r.retainageReceivable)}</td>
-                  <td className="py-3 text-right text-[#ef9d44] font-semibold">{formatFullCurrency(r.retainagePayable)}</td>
-                  <td className="py-3 text-right text-[#6366f1] font-semibold">{formatFullCurrency(r.netRetainage)}</td>
+                  <td className="py-3 text-right font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(r.retainageReceivable)}</td>
+                  <td className="py-3 text-right font-semibold" style={{ color: tc.tertiary }}>{formatFullCurrency(r.retainagePayable)}</td>
+                  <td className="py-3 text-right font-semibold" style={{ color: tc.primary }}>{formatFullCurrency(r.netRetainage)}</td>
                   <td className="py-3 text-right text-[#8888a0]">{r.releaseDate}</td>
                   <td className="py-3 text-right">
                     <Badge variant={getStatusVariant(r.status)}>
@@ -827,13 +852,13 @@ function RetainageTab() {
               ))}
             </tbody>
             <tfoot>
-              <tr className="border-t-2 border-[#6366f1]/30 font-semibold">
+              <tr className="font-semibold" style={{ borderTop: `2px solid ${tc.primary + '4d'}` }}>
                 <td className="py-3">TOTALS</td>
                 <td className="py-3 text-right">{formatFullCurrency(sortedData.reduce((s, r) => s + r.contractAmount, 0))}</td>
                 <td className="py-3 text-center">—</td>
-                <td className="py-3 text-right text-[#22c55e]">{formatFullCurrency(totalReceivable)}</td>
-                <td className="py-3 text-right text-[#ef9d44]">{formatFullCurrency(totalPayable)}</td>
-                <td className="py-3 text-right text-[#6366f1]">{formatFullCurrency(totalNet)}</td>
+                <td className="py-3 text-right" style={{ color: tc.positive }}>{formatFullCurrency(totalReceivable)}</td>
+                <td className="py-3 text-right" style={{ color: tc.tertiary }}>{formatFullCurrency(totalPayable)}</td>
+                <td className="py-3 text-right" style={{ color: tc.primary }}>{formatFullCurrency(totalNet)}</td>
                 <td className="py-3 text-right">—</td>
                 <td className="py-3 text-right">—</td>
               </tr>
@@ -856,6 +881,7 @@ function SalesDashboardTab() {
   const teamTotalQuota = salesTeamMembers.reduce((s, m) => s + m.quota, 0);
   const teamTotalWon = salesTeamMembers.reduce((s, m) => s + m.wonValue, 0);
   const teamQuotaPercent = Math.round((teamTotalWon / teamTotalQuota) * 100);
+  const TEAM_COLORS = theme.series.slice(0, 4);
 
   return (
     <div className="space-y-6">
@@ -866,7 +892,7 @@ function SalesDashboardTab() {
         </Card>
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Won (This Quarter)</p>
-          <p className="text-xl font-bold mt-1 text-[#22c55e]">{formatCurrency(wonValue)}</p>
+          <p className="text-xl font-bold mt-1" style={{ color: tc.positive }}>{formatCurrency(wonValue)}</p>
         </Card>
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Avg Deal Size</p>
@@ -874,7 +900,7 @@ function SalesDashboardTab() {
         </Card>
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Team Quota Attainment</p>
-          <p className={`text-xl font-bold mt-1 ${teamQuotaPercent >= 80 ? 'text-[#22c55e]' : teamQuotaPercent >= 50 ? 'text-[#eab308]' : 'text-[#ef4444]'}`}>
+          <p className="text-xl font-bold mt-1" style={{ color: teamQuotaPercent >= 80 ? tc.positive : teamQuotaPercent >= 50 ? tc.warning : tc.negative }}>
             {teamQuotaPercent}%
           </p>
         </Card>
@@ -905,7 +931,7 @@ function SalesDashboardTab() {
                 <div>
                   <div className="flex justify-between text-xs mb-1">
                     <span className="text-[#8888a0]">Quota</span>
-                    <span className={quotaPct >= 80 ? 'text-[#22c55e]' : quotaPct >= 50 ? 'text-[#eab308]' : 'text-[#ef4444]'}>
+                    <span style={{ color: quotaPct >= 80 ? tc.positive : quotaPct >= 50 ? tc.warning : tc.negative }}>
                       {quotaPct}% ({formatCurrency(member.wonValue)} / {formatCurrency(member.quota)})
                     </span>
                   </div>
@@ -914,7 +940,7 @@ function SalesDashboardTab() {
                       className="h-full rounded-full transition-all"
                       style={{
                         width: `${Math.min(quotaPct, 100)}%`,
-                        backgroundColor: quotaPct >= 80 ? '#22c55e' : quotaPct >= 50 ? '#eab308' : '#ef4444',
+                        backgroundColor: quotaPct >= 80 ? tc.positive : quotaPct >= 50 ? tc.warning : tc.negative,
                       }}
                     />
                   </div>
@@ -1003,12 +1029,15 @@ function SalesDashboardTab() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 text-right font-semibold text-[#22c55e]">{formatFullCurrency(member.wonValue)}</td>
+                      <td className="py-3 text-right font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(member.wonValue)}</td>
                       <td className="py-3 text-right">{formatCurrency(member.pipelineValue)}</td>
                       <td className="py-3 text-center">
                         <div className="flex items-center gap-2 justify-center">
                           <div className="w-12 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${member.winRate >= 45 ? 'bg-[#22c55e]' : member.winRate >= 35 ? 'bg-[#eab308]' : 'bg-[#ef9d44]'}`} style={{ width: `${member.winRate}%` }} />
+                            <div className="h-full rounded-full" style={{
+                              backgroundColor: member.winRate >= 45 ? tc.positive : member.winRate >= 35 ? tc.warning : tc.tertiary,
+                              width: `${member.winRate}%`
+                            }} />
                           </div>
                           <span className="text-xs">{member.winRate}%</span>
                         </div>
@@ -1098,14 +1127,17 @@ function SalesDashboardTab() {
                     <div className="flex items-center gap-2 justify-center">
                       <div className="w-16 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${deal.probability >= 80 ? 'bg-[#22c55e]' : deal.probability >= 50 ? 'bg-[#eab308]' : 'bg-[#ef9d44]'}`}
-                          style={{ width: `${deal.probability}%` }}
+                          className="h-full rounded-full"
+                          style={{
+                            backgroundColor: deal.probability >= 80 ? tc.positive : deal.probability >= 50 ? tc.warning : tc.tertiary,
+                            width: `${deal.probability}%`
+                          }}
                         />
                       </div>
                       <span className="text-xs">{deal.probability}%</span>
                     </div>
                   </td>
-                  <td className="py-3 text-right text-[#6366f1] font-semibold">
+                  <td className="py-3 text-right font-semibold" style={{ color: tc.primary }}>
                     {formatFullCurrency(Math.round(deal.value * deal.probability / 100))}
                   </td>
                   <td className="py-3 text-right">
@@ -1125,8 +1157,15 @@ function SalesDashboardTab() {
 
 // ── Demo Banner Component ───────────────────────────────
 function DemoBanner({ onDismiss }: { onDismiss: () => void }) {
+  const { theme } = useChartTheme();
+  const tc = theme.colors;
+
   return (
-    <div className="relative bg-gradient-to-r from-[#6366f1]/10 via-[#1a1a26] to-[#6366f1]/10 border border-[#6366f1]/30 rounded-xl p-5 mb-2">
+    <div className="relative rounded-xl p-5 mb-2" style={{
+      backgroundImage: `linear-gradient(to right, ${tc.primary}1a, transparent, ${tc.primary}1a)`,
+      backgroundColor: '#1a1a26',
+      border: `1px solid ${tc.primary + '4d'}`
+    }}>
       <button
         onClick={onDismiss}
         className="absolute top-3 right-3 text-[#8888a0] hover:text-[#e8e8f0] transition"
@@ -1135,8 +1174,8 @@ function DemoBanner({ onDismiss }: { onDismiss: () => void }) {
         ✕
       </button>
       <div className="flex items-start gap-3">
-        <div className="bg-[#6366f1]/20 rounded-lg p-2 flex-shrink-0 mt-0.5">
-          <Eye size={20} className="text-[#a5b4fc]" />
+        <div className="rounded-lg p-2 flex-shrink-0 mt-0.5" style={{ backgroundColor: tc.primary + '33' }}>
+          <Eye size={20} style={{ color: tc.primary + 'e0' }} />
         </div>
         <div>
           <p className="text-sm font-semibold text-[#e8e8f0] mb-1">Welcome! You&apos;re viewing sample data.</p>
@@ -1144,7 +1183,7 @@ function DemoBanner({ onDismiss }: { onDismiss: () => void }) {
             Once your platforms are connected, this dashboard becomes your real-time financial command center.
             One thing to keep in mind — the accuracy of your dashboard depends on the accuracy of your books.
             If anything looks off or you want help getting your data dialed in, our team at{' '}
-            <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition font-medium">
+            <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#818cf8] transition font-medium" style={{ color: tc.primary }}>
               SalisburyBookkeeping.com
             </a>{' '}
             has your back.
@@ -1157,6 +1196,8 @@ function DemoBanner({ onDismiss }: { onDismiss: () => void }) {
 
 // ── Main Dashboard Component ────────────────────────────
 export default function DashboardContent() {
+  const { theme } = useChartTheme();
+  const tc = theme.colors;
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showDemoBanner, setShowDemoBanner] = useState(true);
 
@@ -1171,9 +1212,14 @@ export default function DashboardContent() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
+            style={activeTab === tab.key ? {
+              backgroundColor: tc.primary + '26',
+              color: tc.primary + 'e0',
+              borderBottom: `2px solid ${tc.primary}`,
+            } : {}}
             className={`px-4 py-2.5 text-sm font-medium rounded-t-lg whitespace-nowrap transition-all ${
               activeTab === tab.key
-                ? 'bg-[#6366f1]/15 text-[#a5b4fc] border-b-2 border-[#6366f1]'
+                ? ''
                 : 'text-[#8888a0] hover:text-[#e8e8f0] hover:bg-[#1a1a26]'
             }`}
           >
