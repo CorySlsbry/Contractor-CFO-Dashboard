@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock } from 'lucide-react';
 import { useState } from 'react';
 import Head from 'next/head';
+import { LandingTracker } from '@/components/landing-tracker';
 
 type DemoTab = 'overview' | 'ar' | 'ap' | 'wip' | 'retainage' | 'sales';
 
@@ -13,6 +14,7 @@ export default function LandingPage() {
 
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0]">
+      <LandingTracker />
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-[#0a0a0f]/80 backdrop-blur border-b border-[#1e1e2e] z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
@@ -1102,10 +1104,10 @@ export default function LandingPage() {
               <ul className="space-y-2">
                 <li>
                   <a
-                    href="mailto:support@topbuildercfo.com"
+                    href="mailto:cory@salisburybookkeeping.com"
                     className="text-[#e8e8f0] hover:text-[#6366f1]"
                   >
-                    support@topbuildercfo.com
+                    cory@salisburybookkeeping.com
                   </a>
                 </li>
                 <li>

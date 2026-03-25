@@ -16,6 +16,9 @@ import {
   Plug,
   LogOut,
   Brain,
+  MessageSquare,
+  Send,
+  X as XIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -51,6 +54,10 @@ export default function DashboardLayoutClient({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackSending, setFeedbackSending] = useState(false);
+  const [feedbackSent, setFeedbackSent] = useState(false);
   const [userProfile, setUserProfile] = useState<{
     fullName: string;
     companyName: string;
@@ -94,6 +101,37 @@ export default function DashboardLayoutClient({
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.href = '/';
+  };
+
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackText.trim()) return;
+    setFeedbackSending(true);
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: feedbackText,
+          userName: userProfile.fullName,
+          companyName: userProfile.companyName,
+        }),
+      });
+      setFeedbackSent(true);
+      setFeedbackText('');
+      setTimeout(() => {
+        setFeedbackOpen(false);
+        setFeedbackSent(false);
+      }, 2000);
+    } catch {
+      // Still close gracefully
+      setFeedbackSent(true);
+      setTimeout(() => {
+        setFeedbackOpen(false);
+        setFeedbackSent(false);
+      }, 2000);
+    } finally {
+      setFeedbackSending(false);
+    }
   };
 
   const isActive = (href: string) => {
@@ -152,7 +190,7 @@ export default function DashboardLayoutClient({
           })}
         </nav>
 
-        {/* User Profile & Logout */}
+        {/* User Profile, Feedback & Logout */}
         <div className="border-t border-[#2a2a3d] p-3 space-y-2">
           <div
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
@@ -171,6 +209,13 @@ export default function DashboardLayoutClient({
               </div>
             )}
           </div>
+          <button
+            onClick={() => setFeedbackOpen(true)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#6366f1] hover:bg-[#6366f1]/10 transition-all duration-200"
+          >
+            <MessageSquare size={20} />
+            {sidebarOpen && <span>Send Feedback</span>}
+          </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all duration-200"
@@ -225,7 +270,7 @@ export default function DashboardLayoutClient({
               })}
             </nav>
 
-            {/* Mobile User Profile & Logout */}
+            {/* Mobile User Profile, Feedback & Logout */}
             <div className="border-t border-[#2a2a3d] p-3 space-y-2">
               <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#1a1a26]">
                 <div className="w-10 h-10 rounded-full bg-[#6366f1] flex items-center justify-center font-semibold text-sm flex-shrink-0">
@@ -236,6 +281,13 @@ export default function DashboardLayoutClient({
                   <div className="text-xs text-[#8888a0] truncate">{userProfile.companyName}</div>
                 </div>
               </div>
+              <button
+                onClick={() => { setFeedbackOpen(true); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#6366f1] hover:bg-[#6366f1]/10 transition-all duration-200"
+              >
+                <MessageSquare size={20} />
+                <span>Send Feedback</span>
+              </button>
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all duration-200"
@@ -293,6 +345,59 @@ export default function DashboardLayoutClient({
         </div>
       </div>
     </div>
+
+    {/* Feedback Modal */}
+    {feedbackOpen && (
+      <>
+        <div className="fixed inset-0 bg-black/60 z-50" onClick={() => setFeedbackOpen(false)} />
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-[#2a2a3d]">
+              <h3 className="text-lg font-semibold">Send Feedback</h3>
+              <button onClick={() => setFeedbackOpen(false)} className="p-1 hover:bg-[#2a2a3d] rounded-lg text-[#8888a0] hover:text-[#e8e8f0] transition">
+                <XIcon size={18} />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              {feedbackSent ? (
+                <div className="text-center py-8">
+                  <div className="text-3xl mb-3">&#10003;</div>
+                  <p className="text-lg font-semibold text-[#22c55e]">Thank you!</p>
+                  <p className="text-sm text-[#8888a0] mt-1">Your feedback has been sent to the Salisbury team.</p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-[#8888a0]">
+                    Tell us what you love, what&apos;s broken, or what you wish the dashboard could do. We read every message.
+                  </p>
+                  <textarea
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    placeholder="What's on your mind?"
+                    rows={5}
+                    className="w-full bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3 text-sm text-[#e8e8f0] placeholder-[#8888a0] focus:outline-none focus:border-[#6366f1] resize-none"
+                    autoFocus
+                  />
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-[#8888a0]">
+                      Sent to info@salisburybookkeeping.com
+                    </p>
+                    <button
+                      onClick={handleFeedbackSubmit}
+                      disabled={feedbackSending || !feedbackText.trim()}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm text-white bg-[#6366f1] hover:bg-[#5558d9] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                    >
+                      <Send size={14} />
+                      {feedbackSending ? 'Sending...' : 'Send Feedback'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </>
+    )}
     </ChartThemeProvider>
   );
 }

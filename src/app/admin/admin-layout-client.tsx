@@ -14,6 +14,7 @@ import {
   X,
   ArrowLeft,
   LogOut,
+  BarChart3,
 } from 'lucide-react';
 
 interface NavItem {
@@ -25,6 +26,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Platform Overview', href: '/admin', icon: LayoutDashboard },
   { label: 'Subscribers', href: '/admin/subscribers', icon: Users },
+  { label: 'Site Analytics', href: '/admin/analytics', icon: BarChart3 },
   { label: 'Error Log', href: '/admin/errors', icon: AlertTriangle },
   { label: 'System Health', href: '/admin/health', icon: Activity },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
