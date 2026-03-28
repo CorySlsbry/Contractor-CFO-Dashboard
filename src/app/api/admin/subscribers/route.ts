@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 interface SubscriberRow {
   id: string;
@@ -64,8 +65,11 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'created_at';
     const order = (searchParams.get('order') || 'desc') as 'asc' | 'desc';
 
+    // Use admin client to bypass RLS and see ALL organizations
+    const adminSupabase = createAdminClient();
+
     // Build base query
-    let query = (supabase as any)
+    let query = (adminSupabase as any)
       .from('organizations')
       .select(
         `
@@ -106,14 +110,14 @@ export async function GET(request: NextRequest) {
     // Get aggregated data for each organization
     const subscribers: SubscriberRow[] = await Promise.all(
       (organizations || []).map(async (org: any) => {
-        // Count users
-        const { count: userCount } = await (supabase as any)
+        // Count users (use admin client to see all profiles)
+        const { count: userCount } = await (adminSupabase as any)
           .from('profiles')
           .select('id', { count: 'exact', head: true })
           .eq('organization_id', org.id);
 
         // Get integrations and last sync
-        const { data: integrations } = await (supabase as any)
+        const { data: integrations } = await (adminSupabase as any)
           .from('integration_connections')
           .select('last_sync_at')
           .eq('organization_id', org.id);
@@ -130,7 +134,7 @@ export async function GET(request: NextRequest) {
             : null;
 
         // Count unresolved errors
-        const { count: errorCount } = await (supabase as any)
+        const { count: errorCount } = await (adminSupabase as any)
           .from('error_logs')
           .select('id', { count: 'exact', head: true })
           .eq('organization_id', org.id)

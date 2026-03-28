@@ -48,8 +48,11 @@ export async function GET(
 
     const orgId = params.id;
 
+    // Use admin client to bypass RLS and see ALL data across orgs
+    const adminSupabase = createAdminClient();
+
     // Get organization details
-    const { data: organization, error: orgError } = await (supabase as any)
+    const { data: organization, error: orgError } = await (adminSupabase as any)
       .from('organizations')
       .select('*')
       .eq('id', orgId)
@@ -63,21 +66,21 @@ export async function GET(
     }
 
     // Get all users in organization
-    const { data: profiles } = await (supabase as any)
+    const { data: profiles } = await (adminSupabase as any)
       .from('profiles')
       .select('*')
       .eq('organization_id', orgId)
       .order('created_at', { ascending: false });
 
     // Get all integration connections
-    const { data: integrations } = await (supabase as any)
+    const { data: integrations } = await (adminSupabase as any)
       .from('integration_connections')
       .select('*')
       .eq('organization_id', orgId)
       .order('created_at', { ascending: false });
 
     // Get recent error logs (last 50, unresolved first)
-    const { data: errorLogs } = await (supabase as any)
+    const { data: errorLogs } = await (adminSupabase as any)
       .from('error_logs')
       .select('*')
       .eq('organization_id', orgId)
@@ -86,7 +89,7 @@ export async function GET(
       .limit(50);
 
     // Get recent sync jobs (last 20)
-    const { data: syncJobs } = await (supabase as any)
+    const { data: syncJobs } = await (adminSupabase as any)
       .from('sync_jobs')
       .select('*')
       .eq('organization_id', orgId)
@@ -94,17 +97,17 @@ export async function GET(
       .limit(20);
 
     // Get counts of normalized data
-    const { count: projectCount } = await (supabase as any)
+    const { count: projectCount } = await (adminSupabase as any)
       .from('normalized_projects')
       .select('id', { count: 'exact', head: true })
       .eq('organization_id', orgId);
 
-    const { count: contactCount } = await (supabase as any)
+    const { count: contactCount } = await (adminSupabase as any)
       .from('normalized_contacts')
       .select('id', { count: 'exact', head: true })
       .eq('organization_id', orgId);
 
-    const { count: dealCount } = await (supabase as any)
+    const { count: dealCount } = await (adminSupabase as any)
       .from('normalized_deals')
       .select('id', { count: 'exact', head: true })
       .eq('organization_id', orgId);
