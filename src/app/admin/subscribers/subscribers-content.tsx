@@ -24,7 +24,7 @@ export default function SubscribersContent() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [filteredSubscribers, setFilteredSubscribers] = useState<Subscriber[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('active');
   const [planFilter, setPlanFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -121,7 +121,11 @@ export default function SubscribersContent() {
       <div>
         <h1 className="text-3xl font-bold">Subscribers</h1>
         <p className="text-[#8888a0] mt-2">
-          Manage and monitor all active subscribers ({filteredSubscribers.length})
+          {statusFilter === 'canceled'
+            ? `Canceled subscribers (${filteredSubscribers.length})`
+            : statusFilter === 'all'
+            ? `All subscribers (${filteredSubscribers.length})`
+            : `Active subscribers (${filteredSubscribers.length})`}
         </p>
       </div>
 
