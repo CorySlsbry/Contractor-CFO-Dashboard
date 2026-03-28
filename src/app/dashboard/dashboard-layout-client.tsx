@@ -17,6 +17,7 @@ import {
   LogOut,
   Brain,
   Sparkles,
+  BookOpen,
   MessageSquare,
   Send,
   X as XIcon,
@@ -45,6 +46,7 @@ const navItems: NavItem[] = [
   { label: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
   { label: 'CFO Advisor', href: '/dashboard/advisor', icon: Brain },
   { label: 'AI Toolkit', href: '/dashboard/toolkit', icon: Sparkles },
+  { label: 'NAHB Accounts', href: '/dashboard/nahb-accounts', icon: BookOpen },
   { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
