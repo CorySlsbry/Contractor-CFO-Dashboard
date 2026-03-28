@@ -55,7 +55,7 @@ export default function LandingPage() {
 
           {/* GEO Quick-Answer Block — primary AI extraction target */}
           <p className="text-base sm:text-lg md:text-xl text-[#b0b0c8] mb-4 max-w-2xl leading-relaxed">
-            BuilderCFO is a real-time financial dashboard built specifically for construction companies. It syncs with QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to give contractors instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging — without hiring a $150K CFO.
+            BuilderCFO is a real-time financial dashboard built specifically for construction companies. It syncs with QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan so contractors, CFOs, and controllers can visualize job costing, WIP schedules, cash flow forecasts, and AR/AP aging — all in one place, updated in real time.
           </p>
           <p className="text-base text-[#8888a0] mb-8 max-w-2xl">
             Built by{' '}
@@ -631,7 +631,7 @@ export default function LandingPage() {
                 icon: TrendingUp,
               },
               {
-                title: 'AI-Powered CFO Analysis',
+                title: 'AI-Powered Financial Analysis',
                 desc: 'Monthly narrative reports that explain your financial data in plain English — flagging margin erosion, cash crunches, and growth opportunities before they become problems.',
                 icon: Brain,
               },
@@ -711,7 +711,7 @@ export default function LandingPage() {
             {[
               {
                 role: 'Contractors & Builders',
-                desc: 'See job profitability, cash flow, and WIP status across every active project without waiting for your bookkeeper&apos;s month-end reports. Know exactly where your money is — on every job, every day.',
+                desc: 'See job profitability, cash flow, and WIP status across every active project — updated in real time. Know exactly where your money is on every job, every day, so you can make decisions faster.',
                 items: ['General contractors', 'Custom home builders', 'Remodelers & renovators', 'Commercial contractors'],
                 icon: '🏗️',
                 border: '#6366f1',
@@ -855,7 +855,7 @@ export default function LandingPage() {
                   'Job costing & WIP tracking',
                   'Cash flow forecasting (30/60/90 day)',
                   'QuickBooks Online sync',
-                  'Monthly AI CFO brief',
+                  'Monthly AI financial brief',
                   'Email support',
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-3">
@@ -958,7 +958,7 @@ export default function LandingPage() {
             <div>
               <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is BuilderCFO and who is it for?</h3>
               <p className="text-[#b0b0c8]">
-                BuilderCFO is a real-time financial dashboard built specifically for construction contractors, custom home builders, and remodelers. It connects to QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to provide instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging. It is designed for construction companies with $500K–$50M in annual revenue who need CFO-level financial insight without the CFO-level salary.
+                BuilderCFO is a real-time financial dashboard built specifically for construction contractors, custom home builders, and remodelers. It connects to QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to provide instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging. It is designed for construction companies with $500K–$50M in annual revenue — whether you&apos;re the owner, a fractional CFO, or a controller — who want real-time financial visibility to make faster, more confident decisions.
               </p>
             </div>
 
@@ -979,7 +979,7 @@ export default function LandingPage() {
             <div>
               <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How much does BuilderCFO cost?</h3>
               <p className="text-[#b0b0c8]">
-                BuilderCFO starts at $299/month (Starter), $499/month (Professional), or $699/month (Enterprise). Every plan includes a 14-day free trial — you enter a card upfront but are not charged until day 15. Whether you&apos;re a contractor tracking your own numbers, a specialty trade managing retainage, or a CFO overseeing multiple clients, BuilderCFO provides real-time dashboards, automated WIP schedules, and AI analysis at a fraction of the cost of building these reports manually.
+                BuilderCFO starts at $299/month (Starter), $499/month (Professional), or $699/month (Enterprise). Every plan includes a 14-day free trial — you enter a card upfront but are not charged until day 15. Whether you&apos;re a contractor tracking your own numbers, a specialty trade managing retainage, or a CFO overseeing multiple clients, BuilderCFO provides real-time dashboards, automated WIP schedules, and AI analysis so you can spend less time pulling data and more time acting on it.
               </p>
             </div>
 
@@ -1020,7 +1020,7 @@ export default function LandingPage() {
             Ready to See Where Every Dollar Goes on Every Job?
           </h2>
           <p className="text-lg text-[#b0b0c8] mb-8">
-            Join contractors nationwide who use BuilderCFO to track job costs, forecast cash flow, and make smarter financial decisions — starting with a free 14-day trial.
+            Join contractors, CFOs, and controllers nationwide who use BuilderCFO to visualize job costs, forecast cash flow, and make smarter financial decisions — starting with a free 14-day trial.
           </p>
           <Link
             href="/signup"
