@@ -311,7 +311,9 @@ export const chartThemes: Record<ChartThemeKey, ChartTheme> = {
 // Helper to get the current theme from localStorage (or default)
 export function getStoredThemeKey(): ChartThemeKey {
   if (typeof window === 'undefined') return 'default';
-  return (localStorage.getItem('buildercfo-chart-theme') as ChartThemeKey) || 'default';
+  const stored = localStorage.getItem('buildercfo-chart-theme') as string;
+  if (stored && stored in chartThemes) return stored as ChartThemeKey;
+  return 'default';
 }
 
 export function storeThemeKey(key: ChartThemeKey): void {

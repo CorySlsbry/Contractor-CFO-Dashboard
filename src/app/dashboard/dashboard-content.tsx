@@ -469,8 +469,8 @@ function OverviewTab() {
             </h2>
             <ChartTypeSelector options={['area', 'bar', 'groupedBar', 'line']} value={cashFlowType} onChange={setCashFlowType} />
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            {cashFlowType === 'area' ? (
+          {cashFlowType === 'area' && (
+            <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={cashFlowData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
                 <XAxis dataKey="week" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
@@ -489,7 +489,10 @@ function OverviewTab() {
                 <Area type="monotone" dataKey="inflow" stroke={tc.positive} fill="url(#inflowGrad)" strokeWidth={ch.strokeWidth} name="Cash In" />
                 <Area type="monotone" dataKey="outflow" stroke={tc.negative} fill="url(#outflowGrad)" strokeWidth={ch.strokeWidth} name="Cash Out" />
               </AreaChart>
-            ) : cashFlowType === 'line' ? (
+            </ResponsiveContainer>
+          )}
+          {cashFlowType === 'line' && (
+            <ResponsiveContainer width="100%" height={200}>
               <LineChart data={cashFlowData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
                 <XAxis dataKey="week" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
@@ -498,7 +501,10 @@ function OverviewTab() {
                 <Line type="monotone" dataKey="inflow" stroke={tc.positive} strokeWidth={ch.strokeWidth} dot={{ r: 4, fill: tc.positive }} name="Cash In" />
                 <Line type="monotone" dataKey="outflow" stroke={tc.negative} strokeWidth={ch.strokeWidth} dot={{ r: 4, fill: tc.negative }} name="Cash Out" />
               </LineChart>
-            ) : (
+            </ResponsiveContainer>
+          )}
+          {(cashFlowType === 'bar' || cashFlowType === 'groupedBar') && (
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart data={cashFlowData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
                 <XAxis dataKey="week" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
@@ -507,8 +513,8 @@ function OverviewTab() {
                 <Bar dataKey="inflow" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Cash In" stackId={cashFlowType === 'bar' ? 'stack' : undefined} />
                 <Bar dataKey="outflow" fill={tc.negative} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Cash Out" stackId={cashFlowType === 'bar' ? 'stack' : undefined} opacity={cashFlowType === 'groupedBar' ? 0.7 : 1} />
               </BarChart>
-            )}
-          </ResponsiveContainer>
+            </ResponsiveContainer>
+          )}
         </Card>
       </div>
 
@@ -1291,8 +1297,8 @@ function SalesDashboardTab() {
             <h2 className="text-lg font-semibold">Closed vs Pipeline (Monthly)</h2>
             <ChartTypeSelector options={['groupedBar', 'stackedBar', 'area', 'line']} value={salesTrendType} onChange={setSalesTrendType} />
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            {salesTrendType === 'area' ? (
+          {salesTrendType === 'area' && (
+            <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={salesByMonth}>
                 <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
                 <XAxis dataKey="month" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
@@ -1311,7 +1317,10 @@ function SalesDashboardTab() {
                 <Area type="monotone" dataKey="closed" stroke={tc.positive} fill="url(#closedGrad)" strokeWidth={ch.strokeWidth} name="Closed" />
                 <Area type="monotone" dataKey="pipeline" stroke={tc.primary} fill="url(#pipeGrad)" strokeWidth={ch.strokeWidth} name="Pipeline" />
               </AreaChart>
-            ) : salesTrendType === 'line' ? (
+            </ResponsiveContainer>
+          )}
+          {salesTrendType === 'line' && (
+            <ResponsiveContainer width="100%" height={260}>
               <LineChart data={salesByMonth}>
                 <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
                 <XAxis dataKey="month" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
@@ -1320,7 +1329,10 @@ function SalesDashboardTab() {
                 <Line type="monotone" dataKey="closed" stroke={tc.positive} strokeWidth={ch.strokeWidth} dot={{ r: 4, fill: tc.positive }} name="Closed" />
                 <Line type="monotone" dataKey="pipeline" stroke={tc.primary} strokeWidth={ch.strokeWidth} dot={{ r: 4, fill: tc.primary }} name="Pipeline" />
               </LineChart>
-            ) : (
+            </ResponsiveContainer>
+          )}
+          {(salesTrendType === 'groupedBar' || salesTrendType === 'stackedBar') && (
+            <ResponsiveContainer width="100%" height={260}>
               <BarChart data={salesByMonth}>
                 <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
                 <XAxis dataKey="month" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
@@ -1329,8 +1341,8 @@ function SalesDashboardTab() {
                 <Bar dataKey="closed" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Closed" stackId={salesTrendType === 'stackedBar' ? 'stack' : undefined} />
                 <Bar dataKey="pipeline" fill={tc.primary} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Pipeline" opacity={salesTrendType === 'groupedBar' ? 0.5 : 1} stackId={salesTrendType === 'stackedBar' ? 'stack' : undefined} />
               </BarChart>
-            )}
-          </ResponsiveContainer>
+            </ResponsiveContainer>
+          )}
         </Card>
 
         {/* Lead Sources */}
