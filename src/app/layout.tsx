@@ -85,7 +85,7 @@ const jsonLd = {
           priceCurrency: 'USD',
           billingDuration: 'P1M',
         },
-        description: 'Financial dashboard, job costing & WIP tracking, cash flow forecasting, QuickBooks sync, monthly AI CFO brief.',
+        description: 'Financial dashboard, job costing & WIP tracking, cash flow forecasting, QuickBooks sync, AI Bookkeeper Toolkit.',
       },
       {
         '@type': 'Offer',

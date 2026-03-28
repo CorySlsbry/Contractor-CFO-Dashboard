@@ -7,7 +7,7 @@ export const PLAN_FEATURES = {
   basic: {
     name: 'Essential',
     price: 299,
-    includesAiToolkit: false,
+    includesAiToolkit: true,
   },
   pro: {
     name: 'Professional',

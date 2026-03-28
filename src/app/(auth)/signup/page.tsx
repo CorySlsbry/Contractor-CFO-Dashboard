@@ -11,7 +11,7 @@ const plans = [
     key: 'basic',
     name: 'Starter',
     price: 299,
-    features: ['Financial dashboard', 'Job costing & WIP', 'Cash flow forecasting', 'QuickBooks sync'],
+    features: ['Financial dashboard', 'Job costing & WIP', 'Cash flow forecasting', 'AI Bookkeeper Toolkit'],
   },
   {
     key: 'pro',
