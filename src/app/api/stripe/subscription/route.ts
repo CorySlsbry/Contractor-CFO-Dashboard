@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     // Get organization with subscription details
     const { data: org, error: orgError } = await supabase
       .from("organizations")
-      .select("name, plan, subscription_status, created_at, trial_ends_at")
+      .select("*")
       .eq("id", (profile as any).organization_id)
       .single() as any;
 
