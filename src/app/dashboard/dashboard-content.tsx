@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatCompactCurrency } from '@/lib/utils';
 import { useChartTheme } from '@/components/chart-theme-provider';
+import { ChartTypeSelector, useChartType } from '@/components/chart-type-selector';
+import type { ChartVariant } from '@/components/chart-type-selector';
 import {
   LineChart,
   Line,
@@ -346,11 +348,30 @@ function KPICard({ title, value, change, positive, icon: Icon }: {
 
 // ── Tab Content Components ──────────────────────────────
 
+const cashFlowData = [
+  { week: 'This Week', inflow: 185000, outflow: 142000 },
+  { week: 'Week 2', inflow: 210000, outflow: 175000 },
+  { week: 'Week 3', inflow: 165000, outflow: 120000 },
+  { week: 'Week 4', inflow: 230000, outflow: 195000 },
+];
+
+const arAgingData = [
+  { range: 'Current', amount: 310000 },
+  { range: '1-30 Days', amount: 85000 },
+  { range: '31-60 Days', amount: 63500 },
+  { range: '61-90 Days', amount: 28700 },
+];
+
 function OverviewTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
   const ch = theme.chart;
   const ds = theme.dashboard;
+  const [arChartType, setArChartType] = useChartType('ar-aging', 'horizontalBar');
+  const [cashFlowType, setCashFlowType] = useChartType('cash-flow', 'area');
+  const [pipelineType, setPipelineType] = useChartType('pipeline-mini', 'horizontalBar');
+
+  const arColors = [tc.positive, tc.warning, tc.tertiary, tc.negative];
 
   return (
     <div className="space-y-6">
@@ -382,60 +403,111 @@ function OverviewTab() {
       {/* Quick AR/AP Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <FileText size={20} style={{ color: tc.primary }} /> AR Aging Summary
-          </h2>
-          <div className="space-y-3">
-            {[
-              { range: 'Current', amount: 310000, color: tc.positive },
-              { range: '1-30 Days', amount: 85000, color: tc.warning },
-              { range: '31-60 Days', amount: 63500, color: tc.tertiary },
-              { range: '61-90 Days', amount: 28700, color: tc.negative },
-            ].map((item) => (
-              <div key={item.range} className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                <span className="text-sm w-24" style={{ color: ds.textMuted }}>{item.range}</span>
-                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: ch.gridColor }}>
-                  <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${(item.amount / 310000) * 100}%` }} />
-                </div>
-                <span className="text-sm font-semibold w-20 text-right">{formatCurrency(item.amount)}</span>
-              </div>
-            ))}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <FileText size={20} style={{ color: tc.primary }} /> AR Aging Summary
+            </h2>
+            <ChartTypeSelector options={['horizontalBar', 'bar', 'pie', 'donut']} value={arChartType} onChange={setArChartType} />
           </div>
+
+          {arChartType === 'horizontalBar' && (
+            <div className="space-y-3">
+              {arAgingData.map((item, i) => (
+                <div key={item.range} className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: arColors[i] }} />
+                  <span className="text-sm w-24" style={{ color: ds.textMuted }}>{item.range}</span>
+                  <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: ch.gridColor }}>
+                    <div className="h-full rounded-full" style={{ backgroundColor: arColors[i], width: `${(item.amount / 310000) * 100}%` }} />
+                  </div>
+                  <span className="text-sm font-semibold w-20 text-right">{formatCurrency(item.amount)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {arChartType === 'bar' && (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={arAgingData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                <XAxis dataKey="range" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
+                <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                <Bar dataKey="amount" radius={[ch.barRadius, ch.barRadius, 0, 0]}>
+                  {arAgingData.map((_, i) => <Cell key={i} fill={arColors[i]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+
+          {(arChartType === 'pie' || arChartType === 'donut') && (
+            <div className="flex items-center gap-4">
+              <ResponsiveContainer width="55%" height={200}>
+                <PieChart>
+                  <Pie data={arAgingData} cx="50%" cy="50%" innerRadius={arChartType === 'donut' ? 50 : 0} outerRadius={80} paddingAngle={3} dataKey="amount" nameKey="range">
+                    {arAgingData.map((_, i) => <Cell key={i} fill={arColors[i]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-2 flex-1">
+                {arAgingData.map((item, i) => (
+                  <div key={item.range} className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: arColors[i] }} />
+                    <span className="text-sm flex-1" style={{ color: ds.textMuted }}>{item.range}</span>
+                    <span className="text-sm font-semibold">{formatCurrency(item.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Building2 size={20} style={{ color: tc.primary }} /> Cash Flow Forecast (4 Weeks)
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Building2 size={20} style={{ color: tc.primary }} /> Cash Flow Forecast (4 Weeks)
+            </h2>
+            <ChartTypeSelector options={['area', 'bar', 'groupedBar', 'line']} value={cashFlowType} onChange={setCashFlowType} />
+          </div>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={[
-              { week: 'This Week', inflow: 185000, outflow: 142000 },
-              { week: 'Week 2', inflow: 210000, outflow: 175000 },
-              { week: 'Week 3', inflow: 165000, outflow: 120000 },
-              { week: 'Week 4', inflow: 230000, outflow: 195000 },
-            ]}>
-              <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
-              <XAxis dataKey="week" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
-              <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
-              <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
-              <defs>
-                {ch.gradientFills && (
-                  <>
-                    <linearGradient id="inflowGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={tc.positive} stopOpacity={0.4} />
-                      <stop offset="100%" stopColor={tc.positive} stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="outflowGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={tc.negative} stopOpacity={0.4} />
-                      <stop offset="100%" stopColor={tc.negative} stopOpacity={0} />
-                    </linearGradient>
-                  </>
-                )}
-              </defs>
-              <Area type="monotone" dataKey="inflow" stroke={tc.positive} fill={ch.gradientFills ? 'url(#inflowGrad)' : tc.positive} fillOpacity={ch.gradientFills ? 1 : ch.areaOpacity} strokeWidth={ch.strokeWidth} name="Cash In" />
-              <Area type="monotone" dataKey="outflow" stroke={tc.negative} fill={ch.gradientFills ? 'url(#outflowGrad)' : tc.negative} fillOpacity={ch.gradientFills ? 1 : ch.areaOpacity} strokeWidth={ch.strokeWidth} name="Cash Out" />
-            </AreaChart>
+            {cashFlowType === 'area' ? (
+              <AreaChart data={cashFlowData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                <XAxis dataKey="week" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
+                <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                <defs>
+                  <linearGradient id="inflowGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={tc.positive} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={tc.positive} stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="outflowGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={tc.negative} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={tc.negative} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area type="monotone" dataKey="inflow" stroke={tc.positive} fill="url(#inflowGrad)" strokeWidth={ch.strokeWidth} name="Cash In" />
+                <Area type="monotone" dataKey="outflow" stroke={tc.negative} fill="url(#outflowGrad)" strokeWidth={ch.strokeWidth} name="Cash Out" />
+              </AreaChart>
+            ) : cashFlowType === 'line' ? (
+              <LineChart data={cashFlowData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                <XAxis dataKey="week" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
+                <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                <Line type="monotone" dataKey="inflow" stroke={tc.positive} strokeWidth={ch.strokeWidth} dot={{ r: 4, fill: tc.positive }} name="Cash In" />
+                <Line type="monotone" dataKey="outflow" stroke={tc.negative} strokeWidth={ch.strokeWidth} dot={{ r: 4, fill: tc.negative }} name="Cash Out" />
+              </LineChart>
+            ) : (
+              <BarChart data={cashFlowData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                <XAxis dataKey="week" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
+                <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                <Bar dataKey="inflow" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Cash In" stackId={cashFlowType === 'bar' ? 'stack' : undefined} />
+                <Bar dataKey="outflow" fill={tc.negative} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Cash Out" stackId={cashFlowType === 'bar' ? 'stack' : undefined} opacity={cashFlowType === 'groupedBar' ? 0.7 : 1} />
+              </BarChart>
+            )}
           </ResponsiveContainer>
         </Card>
       </div>
@@ -467,20 +539,60 @@ function OverviewTab() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Sales Pipeline</h2>
-          <div className="space-y-3">
-            {salesPipelineData.map((s) => (
-              <div key={s.stage} className="flex items-center gap-3">
-                <span className="text-sm w-24" style={{ color: ds.textMuted }}>{s.stage}</span>
-                <div className="flex-1 h-6 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
-                  <div className="rounded-full flex items-center justify-end pr-2" style={{ backgroundColor: tc.primary, width: `${(s.value / 4200000) * 100}%` }}>
-                    <span className="text-xs font-bold text-white">{s.count}</span>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Sales Pipeline</h2>
+            <ChartTypeSelector options={['horizontalBar', 'bar', 'pie', 'donut']} value={pipelineType} onChange={setPipelineType} />
+          </div>
+
+          {pipelineType === 'horizontalBar' && (
+            <div className="space-y-3">
+              {salesPipelineData.map((s) => (
+                <div key={s.stage} className="flex items-center gap-3">
+                  <span className="text-sm w-24" style={{ color: ds.textMuted }}>{s.stage}</span>
+                  <div className="flex-1 h-6 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
+                    <div className="rounded-full flex items-center justify-end pr-2" style={{ backgroundColor: tc.primary, width: `${(s.value / 4200000) * 100}%` }}>
+                      <span className="text-xs font-bold text-white">{s.count}</span>
+                    </div>
                   </div>
-                </div>
-                <span className="text-sm font-semibold w-20 text-right">{formatCurrency(s.value)}</span>
+                  <span className="text-sm font-semibold w-20 text-right">{formatCurrency(s.value)}</span>
               </div>
             ))}
           </div>
+          )}
+
+          {pipelineType === 'bar' && (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={salesPipelineData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                <XAxis dataKey="stage" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
+                <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                <Bar dataKey="value" fill={tc.primary} radius={[ch.barRadius, ch.barRadius, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+
+          {(pipelineType === 'pie' || pipelineType === 'donut') && (
+            <div className="flex items-center gap-4">
+              <ResponsiveContainer width="55%" height={200}>
+                <PieChart>
+                  <Pie data={salesPipelineData} cx="50%" cy="50%" innerRadius={pipelineType === 'donut' ? 50 : 0} outerRadius={80} paddingAngle={3} dataKey="value" nameKey="stage">
+                    {salesPipelineData.map((_, i) => <Cell key={i} fill={theme.series[i]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-2 flex-1">
+                {salesPipelineData.map((s, i) => (
+                  <div key={s.stage} className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: theme.series[i] }} />
+                    <span className="text-sm flex-1" style={{ color: ds.textMuted }}>{s.stage} ({s.count})</span>
+                    <span className="text-sm font-semibold">{formatCurrency(s.value)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </div>
@@ -966,6 +1078,8 @@ function SalesDashboardTab() {
   const tc = theme.colors;
   const ch = theme.chart;
   const ds = theme.dashboard;
+  const [salesTrendType, setSalesTrendType] = useChartType('sales-trend', 'groupedBar');
+  const [leadSourceType, setLeadSourceType] = useChartType('lead-source', 'donut');
   const totalPipeline = salesPipelineData.reduce((s, p) => s + p.value, 0);
   const wonDeals = recentDeals.filter(d => d.stage === 'Won');
   const wonValue = wonDeals.reduce((s, d) => s + d.value, 0);
@@ -1173,43 +1287,111 @@ function SalesDashboardTab() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Trend */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Closed vs Pipeline (Monthly)</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Closed vs Pipeline (Monthly)</h2>
+            <ChartTypeSelector options={['groupedBar', 'stackedBar', 'area', 'line']} value={salesTrendType} onChange={setSalesTrendType} />
+          </div>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={salesByMonth}>
-              <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
-              <XAxis dataKey="month" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
-              <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
-              <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
-              <Bar dataKey="closed" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Closed" />
-              <Bar dataKey="pipeline" fill={tc.primary} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Pipeline" opacity={0.5} />
-            </BarChart>
+            {salesTrendType === 'area' ? (
+              <AreaChart data={salesByMonth}>
+                <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                <XAxis dataKey="month" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
+                <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                <defs>
+                  <linearGradient id="closedGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={tc.positive} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={tc.positive} stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="pipeGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={tc.primary} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={tc.primary} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area type="monotone" dataKey="closed" stroke={tc.positive} fill="url(#closedGrad)" strokeWidth={ch.strokeWidth} name="Closed" />
+                <Area type="monotone" dataKey="pipeline" stroke={tc.primary} fill="url(#pipeGrad)" strokeWidth={ch.strokeWidth} name="Pipeline" />
+              </AreaChart>
+            ) : salesTrendType === 'line' ? (
+              <LineChart data={salesByMonth}>
+                <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                <XAxis dataKey="month" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
+                <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                <Line type="monotone" dataKey="closed" stroke={tc.positive} strokeWidth={ch.strokeWidth} dot={{ r: 4, fill: tc.positive }} name="Closed" />
+                <Line type="monotone" dataKey="pipeline" stroke={tc.primary} strokeWidth={ch.strokeWidth} dot={{ r: 4, fill: tc.primary }} name="Pipeline" />
+              </LineChart>
+            ) : (
+              <BarChart data={salesByMonth}>
+                <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                <XAxis dataKey="month" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
+                <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                <Bar dataKey="closed" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Closed" stackId={salesTrendType === 'stackedBar' ? 'stack' : undefined} />
+                <Bar dataKey="pipeline" fill={tc.primary} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Pipeline" opacity={salesTrendType === 'groupedBar' ? 0.5 : 1} stackId={salesTrendType === 'stackedBar' ? 'stack' : undefined} />
+              </BarChart>
+            )}
           </ResponsiveContainer>
         </Card>
 
         {/* Lead Sources */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Lead Sources</h2>
-          <div className="flex items-center gap-4">
-            <ResponsiveContainer width="50%" height={200}>
-              <PieChart>
-                <Pie data={leadSourceData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
-                  {leadSourceData.map((_, i) => (
-                    <Cell key={i} fill={theme.series[i] || '#8888a0'} />
-                  ))}
-                </Pie>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Lead Sources</h2>
+            <ChartTypeSelector options={['donut', 'pie', 'bar', 'horizontalBar']} value={leadSourceType} onChange={setLeadSourceType} />
+          </div>
+
+          {(leadSourceType === 'donut' || leadSourceType === 'pie') && (
+            <div className="flex items-center gap-4">
+              <ResponsiveContainer width="50%" height={200}>
+                <PieChart>
+                  <Pie data={leadSourceData} cx="50%" cy="50%" innerRadius={leadSourceType === 'donut' ? 50 : 0} outerRadius={80} paddingAngle={3} dataKey="value">
+                    {leadSourceData.map((_, i) => (
+                      <Cell key={i} fill={theme.series[i] || '#8888a0'} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => `${v}%`} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-2 flex-1">
+                {leadSourceData.map((source, i) => (
+                  <div key={source.name} className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: theme.series[i] || '#8888a0' }} />
+                    <span className="text-sm flex-1" style={{ color: ds.textMuted }}>{source.name}</span>
+                    <span className="text-sm font-semibold">{source.value}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {leadSourceType === 'bar' && (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={leadSourceData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                <XAxis dataKey="name" stroke={ds.textMuted} style={{ fontSize: '0.65rem' }} />
+                <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => `${v}%`} />
                 <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => `${v}%`} />
-              </PieChart>
+                <Bar dataKey="value" radius={[ch.barRadius, ch.barRadius, 0, 0]}>
+                  {leadSourceData.map((_, i) => <Cell key={i} fill={theme.series[i] || '#8888a0'} />)}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
-            <div className="space-y-2 flex-1">
+          )}
+
+          {leadSourceType === 'horizontalBar' && (
+            <div className="space-y-3">
               {leadSourceData.map((source, i) => (
-                <div key={source.name} className="flex items-center gap-2">
+                <div key={source.name} className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: theme.series[i] || '#8888a0' }} />
-                  <span className="text-sm flex-1" style={{ color: ds.textMuted }}>{source.name}</span>
-                  <span className="text-sm font-semibold">{source.value}%</span>
+                  <span className="text-sm w-24" style={{ color: ds.textMuted }}>{source.name}</span>
+                  <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
+                    <div className="h-full rounded-full" style={{ backgroundColor: theme.series[i] || '#8888a0', width: `${(source.value / 42) * 100}%` }} />
+                  </div>
+                  <span className="text-sm font-semibold w-12 text-right">{source.value}%</span>
                 </div>
               ))}
             </div>
-          </div>
+          )}
         </Card>
       </div>
 

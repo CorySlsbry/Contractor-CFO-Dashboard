@@ -1,8 +1,8 @@
 // Dashboard Style System — Full visual themes inspired by top BI platforms
-// Klipfolio PowerMetrics, Tremor, Geckoboard, Glassmorphism, and more
+// Tremor, Geckoboard, Glassmorphism, and more
 // Each theme controls chart colors AND overall dashboard visual feel
 
-export type ChartThemeKey = 'default' | 'powermetrics' | 'neon' | 'glass' | 'tremor' | 'midnight' | 'executive';
+export type ChartThemeKey = 'default' | 'glass' | 'tremor' | 'midnight' | 'executive';
 
 export interface DashboardStyle {
   // Surface & container colors
@@ -114,104 +114,7 @@ export const chartThemes: Record<ChartThemeKey, ChartTheme> = {
     },
   },
 
-  // ── 2. PowerMetrics (Klipfolio-inspired) ─────────────────
-  powermetrics: {
-    key: 'powermetrics',
-    name: 'PowerMetrics',
-    description: 'Klipfolio-inspired — bold KPIs, gradient cards',
-    preview: '📊',
-    colors: {
-      primary: '#7c5cfc',
-      positive: '#00d68f',
-      negative: '#ff4d6a',
-      warning: '#ffaa00',
-      secondary: '#00c1d4',
-      tertiary: '#ff8a65',
-    },
-    series: ['#7c5cfc', '#00d68f', '#00c1d4', '#ffaa00', '#ff8a65', '#ff4d6a'],
-    chart: {
-      gridColor: '#232340',
-      tooltipBg: '#16162a',
-      tooltipBorder: '#7c5cfc30',
-      areaOpacity: 0.2,
-      barRadius: 6,
-      strokeWidth: 2.5,
-      glowEffect: false,
-      gradientFills: true,
-    },
-    dashboard: {
-      pageBg: '#0c0c1d',
-      cardBg: '#13132a',
-      cardBorder: '#252548',
-      cardShadow: '0 4px 24px rgba(124, 92, 252, 0.06)',
-      cardGradient: 'linear-gradient(135deg, rgba(124, 92, 252, 0.04) 0%, transparent 60%)',
-      textPrimary: '#eaeaff',
-      textSecondary: '#b8b8d4',
-      textMuted: '#7878a0',
-      divider: '#252548',
-      inputBg: '#1a1a36',
-      inputBorder: '#252548',
-      tabActiveBg: '#7c5cfc',
-      tabActiveText: '#ffffff',
-      tabInactiveText: '#7878a0',
-      briefBg: '#1a1a36',
-      briefBorder: '#252548',
-      badgeStyle: 'solid',
-      borderRadius: '0.75rem',
-      kpiValueSize: 'text-3xl',
-      kpiLabelWeight: 'font-semibold',
-    },
-  },
-
-  // ── 3. Neon (Cyberpunk / Electric) ───────────────────────
-  neon: {
-    key: 'neon',
-    name: 'Neon',
-    description: 'Vibrant glow effects with electric colors',
-    preview: '⚡',
-    colors: {
-      primary: '#00f0ff',
-      positive: '#39ff14',
-      negative: '#ff3366',
-      warning: '#ffee00',
-      secondary: '#bf5af2',
-      tertiary: '#ff9500',
-    },
-    series: ['#00f0ff', '#39ff14', '#ffee00', '#ff9500', '#bf5af2', '#ff3366'],
-    chart: {
-      gridColor: '#0d1f2d',
-      tooltipBg: '#060e18',
-      tooltipBorder: '#00f0ff25',
-      areaOpacity: 0.2,
-      barRadius: 6,
-      strokeWidth: 2.5,
-      glowEffect: true,
-      gradientFills: true,
-    },
-    dashboard: {
-      pageBg: '#060a10',
-      cardBg: '#0a1018',
-      cardBorder: '#0d2030',
-      cardShadow: '0 0 20px rgba(0, 240, 255, 0.04)',
-      textPrimary: '#e0f4ff',
-      textSecondary: '#a0c8e0',
-      textMuted: '#5888a0',
-      divider: '#0d2030',
-      inputBg: '#0a1420',
-      inputBorder: '#0d2030',
-      tabActiveBg: '#00f0ff',
-      tabActiveText: '#060a10',
-      tabInactiveText: '#5888a0',
-      briefBg: '#0a1420',
-      briefBorder: '#00f0ff15',
-      badgeStyle: 'outline',
-      borderRadius: '0.5rem',
-      kpiValueSize: 'text-2xl',
-      kpiLabelWeight: 'font-medium',
-    },
-  },
-
-  // ── 4. Glassmorphism (Frosted / Translucent) ─────────────
+  // ── 2. Glass (Frosted / Translucent) ─────────────────────
   glass: {
     key: 'glass',
     name: 'Glass',
@@ -260,7 +163,7 @@ export const chartThemes: Record<ChartThemeKey, ChartTheme> = {
     },
   },
 
-  // ── 5. Tremor (Ultra-clean, minimal, rounded) ────────────
+  // ── 3. Tremor (Ultra-clean, minimal, rounded) ────────────
   tremor: {
     key: 'tremor',
     name: 'Tremor',
@@ -308,7 +211,7 @@ export const chartThemes: Record<ChartThemeKey, ChartTheme> = {
     },
   },
 
-  // ── 6. Midnight (Geckoboard-inspired, deep navy, high contrast) ──
+  // ── 4. Midnight (Deep navy, high contrast) ───────────────
   midnight: {
     key: 'midnight',
     name: 'Midnight',
@@ -356,7 +259,7 @@ export const chartThemes: Record<ChartThemeKey, ChartTheme> = {
     },
   },
 
-  // ── 7. Executive (Boardroom, minimal, monochrome) ────────
+  // ── 5. Executive (Boardroom, minimal, monochrome) ────────
   executive: {
     key: 'executive',
     name: 'Executive',
