@@ -1003,7 +1003,7 @@ export default function LandingPage() {
             <div>
               <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is BuilderCFO and who is it for?</h3>
               <p className="text-[#b0b0c8]">
-                BuilderCFO is a real-time financial dashboard built specifically for construction contractors, custom home builders, and remodelers. It connects to QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to provide instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging. It is designed for construction companies with $500K–$50M in annual revenue — whether you&apos;re the owner, a fractional CFO, or a controller — who want real-time financial visibility to make faster, more confident decisions.
+                BuilderCFO is a real-time financial dashboard built specifically for construction contractors, custom home builders, and remodelers. It connects to QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to provide instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging. Whether you&apos;re the owner, a fractional CFO, or a controller — BuilderCFO gives you real-time financial visibility to make faster, more confident decisions.
               </p>
             </div>
 
