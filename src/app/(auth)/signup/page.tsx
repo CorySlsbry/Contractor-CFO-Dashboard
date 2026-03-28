@@ -18,13 +18,13 @@ const plans = [
     name: 'Professional',
     price: 499,
     popular: true,
-    features: ['Everything in Starter', 'Buildertrend + HubSpot + JobNimbus', 'AI CFO advisor', 'Priority support'],
+    features: ['Everything in Starter', 'Buildertrend + HubSpot + JobNimbus', 'AI Bookkeeper Toolkit', 'Priority support'],
   },
   {
     key: 'enterprise',
     name: 'Enterprise',
     price: 699,
-    features: ['Everything in Professional', 'Procore + Salesforce + ServiceTitan', 'Quarterly strategy call', 'Dedicated account manager'],
+    features: ['Everything in Professional', 'Procore + Salesforce + ServiceTitan', 'Advanced AI Bookkeeper features', 'Quarterly strategy call + dedicated manager'],
   },
 ];
 
