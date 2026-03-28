@@ -85,19 +85,27 @@ export async function POST(request: NextRequest) {
           const plan = await getPlanFromSubscription(subscription);
           const status = mapSubscriptionStatus(subscription.status);
 
+          // Build update payload
+          const updatePayload: Record<string, any> = {
+            stripe_customer_id: session.customer as string,
+            stripe_subscription_id: session.subscription as string,
+            subscription_status: status,
+            plan,
+            updated_at: new Date().toISOString(),
+          };
+
+          // Store trial end date if subscription is trialing
+          if (subscription.trial_end) {
+            updatePayload.trial_ends_at = new Date(subscription.trial_end * 1000).toISOString();
+          }
+
           // Update organization
           await (supabase
             .from("organizations") as any)
-            .update({
-              stripe_customer_id: session.customer as string,
-              stripe_subscription_id: session.subscription as string,
-              subscription_status: status,
-              plan,
-              updated_at: new Date().toISOString(),
-            })
+            .update(updatePayload)
             .eq("id", orgId);
 
-          console.log(`Subscription created for org ${orgId}: ${status} ${plan}`);
+          console.log(`Subscription created for org ${orgId}: ${status} ${plan}${subscription.trial_end ? ` (trial ends ${new Date(subscription.trial_end * 1000).toISOString()})` : ''}`);
         } catch (error) {
           console.error("Failed to process checkout session:", error);
         }

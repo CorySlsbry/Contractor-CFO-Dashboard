@@ -63,7 +63,10 @@ export default function SubscribersContent() {
       );
     }
 
-    if (statusFilter !== 'all') {
+    if (statusFilter === 'active') {
+      // "Active" view shows both active and trialing subscribers
+      filtered = filtered.filter((sub) => sub.subscription_status === 'active' || sub.subscription_status === 'trialing');
+    } else if (statusFilter !== 'all') {
       filtered = filtered.filter((sub) => sub.subscription_status === statusFilter);
     }
 

@@ -15,6 +15,8 @@ interface SubscriptionData {
   organizationName: string | null;
   userEmail: string | null;
   userFullName: string | null;
+  trialEndsAt: string | null;
+  trialDaysRemaining: number | null;
 }
 
 export default function SettingsPage() {
@@ -192,6 +194,14 @@ export default function SettingsPage() {
               ) : subscription ? (
                 <div>
                   <p className="text-[#8888a0]">{subscription.planName} (${subscription.price}/month)</p>
+                  {subscription.status === 'trialing' && subscription.trialDaysRemaining !== null && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs text-emerald-400 font-medium">
+                        14-day free trial — {subscription.trialDaysRemaining} day{subscription.trialDaysRemaining !== 1 ? 's' : ''} remaining
+                      </span>
+                    </div>
+                  )}
                   {subscription.includesAiToolkit && (
                     <div className="flex items-center gap-1 mt-1">
                       <Zap size={12} className="text-yellow-400" />
