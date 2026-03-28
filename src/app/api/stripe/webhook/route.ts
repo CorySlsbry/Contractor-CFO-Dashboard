@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { stripeService } from "@/lib/stripe";
 import type Stripe from "stripe";
 
@@ -62,7 +62,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    // CRITICAL: Use admin client — webhook requests from Stripe have NO auth cookies.
+    // The server client (anon key + RLS) would silently fail every update.
+    const supabase = createAdminClient();
 
     // Handle different event types
     switch (event.type) {
@@ -84,8 +86,8 @@ export async function POST(request: NextRequest) {
           const status = mapSubscriptionStatus(subscription.status);
 
           // Update organization
-          await (supabase as any)
-            .from("organizations")
+          await (supabase
+            .from("organizations") as any)
             .update({
               stripe_customer_id: session.customer as string,
               stripe_subscription_id: session.subscription as string,
@@ -117,8 +119,8 @@ export async function POST(request: NextRequest) {
           const status = mapSubscriptionStatus(subscription.status);
 
           // Update organization
-          await (supabase as any)
-            .from("organizations")
+          await (supabase
+            .from("organizations") as any)
             .update({
               stripe_subscription_id: subscription.id,
               subscription_status: status,
@@ -145,8 +147,8 @@ export async function POST(request: NextRequest) {
 
         try {
           // Update organization
-          await (supabase as any)
-            .from("organizations")
+          await (supabase
+            .from("organizations") as any)
             .update({
               subscription_status: "canceled",
               plan: "basic",

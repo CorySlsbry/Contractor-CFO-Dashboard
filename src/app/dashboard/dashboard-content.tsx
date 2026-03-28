@@ -370,6 +370,15 @@ function OverviewTab() {
   const [arChartType, setArChartType] = useChartType('ar-aging', 'horizontalBar');
   const [cashFlowType, setCashFlowType] = useChartType('cash-flow', 'area');
   const [pipelineType, setPipelineType] = useChartType('pipeline-mini', 'horizontalBar');
+  const [wipSummaryType, setWipSummaryType] = useChartType('wip-summary', 'horizontalBar');
+
+  const wipChartData = wipData.map(w => ({
+    name: w.job.split(' ').slice(0, 2).join(' '),
+    fullName: w.job,
+    value: Math.abs(w.overUnderBilled),
+    overUnder: w.overUnderBilled,
+  }));
+  const wipColors = wipData.map(w => w.overUnderBilled < 0 ? tc.warning : tc.primary);
 
   const arColors = [tc.positive, tc.warning, tc.tertiary, tc.negative];
 
@@ -521,27 +530,69 @@ function OverviewTab() {
       {/* WIP Summary + Sales Pipeline Mini */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">WIP Summary</h2>
-          <div className="space-y-3">
-            {wipData.map((w) => (
-              <div key={w.job} className="flex items-center justify-between py-2 last:border-0" style={{ borderBottom: `1px solid ${ds.divider}` }}>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: ds.textPrimary }}>{w.job}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
-                      <div className="h-full rounded-full" style={{ backgroundColor: tc.primary, width: `${Math.min(w.percentComplete, 100)}%` }} />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">WIP Summary</h2>
+            <ChartTypeSelector options={['horizontalBar', 'bar', 'pie', 'donut']} value={wipSummaryType} onChange={setWipSummaryType} />
+          </div>
+
+          {wipSummaryType === 'horizontalBar' && (
+            <div className="space-y-3">
+              {wipData.map((w, i) => (
+                <div key={w.job} className="flex items-center justify-between py-2 last:border-0" style={{ borderBottom: `1px solid ${ds.divider}` }}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: ds.textPrimary }}>{w.job}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
+                        <div className="h-full rounded-full" style={{ backgroundColor: tc.primary, width: `${Math.min(w.percentComplete, 100)}%` }} />
+                      </div>
+                      <span className="text-xs" style={{ color: ds.textMuted }}>{w.percentComplete}%</span>
                     </div>
-                    <span className="text-xs" style={{ color: ds.textMuted }}>{w.percentComplete}%</span>
+                  </div>
+                  <div className="ml-4 text-right">
+                    <span className="text-sm font-semibold" style={{ color: w.overUnderBilled < 0 ? tc.warning : tc.positive }}>
+                      {w.overUnderBilled < 0 ? 'Over' : 'Under'}: {formatCurrency(Math.abs(w.overUnderBilled))}
+                    </span>
                   </div>
                 </div>
-                <div className="ml-4 text-right">
-                  <span className="text-sm font-semibold" style={{ color: w.overUnderBilled < 0 ? tc.warning : tc.positive }}>
-                    {w.overUnderBilled < 0 ? 'Over' : 'Under'}: {formatCurrency(Math.abs(w.overUnderBilled))}
-                  </span>
-                </div>
+              ))}
+            </div>
+          )}
+
+          {wipSummaryType === 'bar' && (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={wipChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                <XAxis dataKey="name" stroke={ds.textMuted} style={{ fontSize: '0.65rem' }} />
+                <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any, _: any, props: any) => [`${formatFullCurrency(Number(v))} (${props.payload.overUnder < 0 ? 'Over' : 'Under'})`, 'Billing Gap']} />
+                <Bar dataKey="value" radius={[ch.barRadius, ch.barRadius, 0, 0]}>
+                  {wipChartData.map((_, i) => <Cell key={i} fill={wipColors[i]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+
+          {(wipSummaryType === 'pie' || wipSummaryType === 'donut') && (
+            <div className="flex items-center gap-4">
+              <ResponsiveContainer width="55%" height={200}>
+                <PieChart>
+                  <Pie data={wipChartData} cx="50%" cy="50%" innerRadius={wipSummaryType === 'donut' ? 50 : 0} outerRadius={80} paddingAngle={3} dataKey="value" nameKey="name">
+                    {wipChartData.map((_, i) => <Cell key={i} fill={wipColors[i]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any, _: any, props: any) => [`${formatFullCurrency(Number(v))} (${props.payload.overUnder < 0 ? 'Over' : 'Under'})`, 'Billing Gap']} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-2 flex-1">
+                {wipData.map((w, i) => (
+                  <div key={w.job} className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: wipColors[i] }} />
+                    <span className="text-xs flex-1 truncate" style={{ color: ds.textMuted }}>{w.job.split(' ').slice(0, 3).join(' ')}</span>
+                    <span className="text-xs font-semibold" style={{ color: wipColors[i] }}>{w.overUnderBilled < 0 ? 'O' : 'U'}: {formatCurrency(Math.abs(w.overUnderBilled))}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </Card>
 
         <Card className="p-6">
@@ -608,7 +659,9 @@ function OverviewTab() {
 function ARByJobTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ch = theme.chart;
   const ds = theme.dashboard;
+  const [arJobChartType, setArJobChartType] = useChartType('ar-by-job', 'bar');
 
   const grouped = arByJob.reduce((acc, inv) => {
     if (!acc[inv.job]) acc[inv.job] = [];
@@ -650,6 +703,75 @@ function ARByJobTab() {
           Total AR: <span className="font-semibold" style={{ color: ds.textPrimary }}>{formatFullCurrency(totalAR)}</span> · Past Due: <span className="font-semibold" style={{ color: tc.negative }}>{formatFullCurrency(pastDueAR)} ({percentPastDue}%)</span> · Current: <span className="font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(currentAR)}</span>
         </span>
       </div>
+
+      {/* AR by Job Chart */}
+      {(() => {
+        const arJobChartData = Object.entries(grouped).map(([jobName, invoices]) => ({
+          name: jobName.split(' ').slice(0, 2).join(' '),
+          fullName: jobName,
+          current: invoices.filter(i => i.daysPastDue === 0).reduce((s, i) => s + i.amount, 0),
+          pastDue: invoices.filter(i => i.daysPastDue > 0).reduce((s, i) => s + i.amount, 0),
+          total: invoices.reduce((s, i) => s + i.amount, 0),
+        }));
+        return (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">AR by Job</h2>
+              <ChartTypeSelector options={['bar', 'horizontalBar', 'pie', 'donut']} value={arJobChartType} onChange={setArJobChartType} />
+            </div>
+
+            {arJobChartType === 'bar' && (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={arJobChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                  <XAxis dataKey="name" stroke={ds.textMuted} style={{ fontSize: '0.65rem' }} />
+                  <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                  <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                  <Bar dataKey="current" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Current" stackId="ar" />
+                  <Bar dataKey="pastDue" fill={tc.negative} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Past Due" stackId="ar" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+
+            {arJobChartType === 'horizontalBar' && (
+              <div className="space-y-3">
+                {arJobChartData.map((job) => (
+                  <div key={job.fullName} className="flex items-center gap-3">
+                    <span className="text-sm w-28 truncate" style={{ color: ds.textMuted }}>{job.name}</span>
+                    <div className="flex-1 h-4 rounded-full overflow-hidden flex" style={{ backgroundColor: ds.divider }}>
+                      <div className="h-full" style={{ backgroundColor: tc.positive, width: `${(job.current / totalAR) * 100}%` }} />
+                      <div className="h-full" style={{ backgroundColor: tc.negative, width: `${(job.pastDue / totalAR) * 100}%` }} />
+                    </div>
+                    <span className="text-sm font-semibold w-20 text-right">{formatCurrency(job.total)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {(arJobChartType === 'pie' || arJobChartType === 'donut') && (
+              <div className="flex items-center gap-4">
+                <ResponsiveContainer width="50%" height={220}>
+                  <PieChart>
+                    <Pie data={arJobChartData} cx="50%" cy="50%" innerRadius={arJobChartType === 'donut' ? 50 : 0} outerRadius={80} paddingAngle={3} dataKey="total" nameKey="name">
+                      {arJobChartData.map((_, i) => <Cell key={i} fill={theme.series[i % theme.series.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-2 flex-1">
+                  {arJobChartData.map((job, i) => (
+                    <div key={job.fullName} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: theme.series[i % theme.series.length] }} />
+                      <span className="text-sm flex-1 truncate" style={{ color: ds.textMuted }}>{job.fullName}</span>
+                      <span className="text-sm font-semibold">{formatCurrency(job.total)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        );
+      })()}
 
       {Object.entries(grouped).map(([jobName, invoices]) => {
         const jobTotal = invoices.reduce((s, i) => s + i.amount, 0);
@@ -718,7 +840,9 @@ function ARByJobTab() {
 function APByJobTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ch = theme.chart;
   const ds = theme.dashboard;
+  const [apJobChartType, setApJobChartType] = useChartType('ap-by-job', 'bar');
 
   const grouped = apByJob.reduce((acc, bill) => {
     if (!acc[bill.job]) acc[bill.job] = [];
@@ -760,6 +884,75 @@ function APByJobTab() {
           Total AP: <span className="font-semibold" style={{ color: ds.textPrimary }}>{formatFullCurrency(totalAP)}</span> · Past Due: <span className="font-semibold" style={{ color: tc.negative }}>{formatFullCurrency(pastDueAP)} ({percentPastDue}%)</span> · Current: <span className="font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(currentAP)}</span>
         </span>
       </div>
+
+      {/* AP by Job Chart */}
+      {(() => {
+        const apJobChartData = Object.entries(grouped).map(([jobName, bills]) => ({
+          name: jobName.split(' ').slice(0, 2).join(' '),
+          fullName: jobName,
+          current: bills.filter(i => i.daysPastDue === 0).reduce((s, i) => s + i.amount, 0),
+          pastDue: bills.filter(i => i.daysPastDue > 0).reduce((s, i) => s + i.amount, 0),
+          total: bills.reduce((s, i) => s + i.amount, 0),
+        }));
+        return (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">AP by Job</h2>
+              <ChartTypeSelector options={['bar', 'horizontalBar', 'pie', 'donut']} value={apJobChartType} onChange={setApJobChartType} />
+            </div>
+
+            {apJobChartType === 'bar' && (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={apJobChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                  <XAxis dataKey="name" stroke={ds.textMuted} style={{ fontSize: '0.65rem' }} />
+                  <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                  <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                  <Bar dataKey="current" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Current" stackId="ap" />
+                  <Bar dataKey="pastDue" fill={tc.negative} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Past Due" stackId="ap" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+
+            {apJobChartType === 'horizontalBar' && (
+              <div className="space-y-3">
+                {apJobChartData.map((job) => (
+                  <div key={job.fullName} className="flex items-center gap-3">
+                    <span className="text-sm w-28 truncate" style={{ color: ds.textMuted }}>{job.name}</span>
+                    <div className="flex-1 h-4 rounded-full overflow-hidden flex" style={{ backgroundColor: ds.divider }}>
+                      <div className="h-full" style={{ backgroundColor: tc.positive, width: `${(job.current / totalAP) * 100}%` }} />
+                      <div className="h-full" style={{ backgroundColor: tc.negative, width: `${(job.pastDue / totalAP) * 100}%` }} />
+                    </div>
+                    <span className="text-sm font-semibold w-20 text-right">{formatCurrency(job.total)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {(apJobChartType === 'pie' || apJobChartType === 'donut') && (
+              <div className="flex items-center gap-4">
+                <ResponsiveContainer width="50%" height={220}>
+                  <PieChart>
+                    <Pie data={apJobChartData} cx="50%" cy="50%" innerRadius={apJobChartType === 'donut' ? 50 : 0} outerRadius={80} paddingAngle={3} dataKey="total" nameKey="name">
+                      {apJobChartData.map((_, i) => <Cell key={i} fill={theme.series[i % theme.series.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-2 flex-1">
+                  {apJobChartData.map((job, i) => (
+                    <div key={job.fullName} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: theme.series[i % theme.series.length] }} />
+                      <span className="text-sm flex-1 truncate" style={{ color: ds.textMuted }}>{job.fullName}</span>
+                      <span className="text-sm font-semibold">{formatCurrency(job.total)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        );
+      })()}
 
       {Object.entries(grouped).map(([jobName, bills]) => {
         const jobTotal = bills.reduce((s, i) => s + i.amount, 0);
@@ -827,7 +1020,9 @@ function APByJobTab() {
 function WIPTrackingTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ch = theme.chart;
   const ds = theme.dashboard;
+  const [wipChartType, setWipChartType] = useChartType('wip-tracking', 'groupedBar');
 
   const totalOverBilled = wipData.filter(w => w.overUnderBilled < 0).reduce((s, w) => s + Math.abs(w.overUnderBilled), 0);
   const totalUnderBilled = wipData.filter(w => w.overUnderBilled > 0).reduce((s, w) => s + w.overUnderBilled, 0);
@@ -876,6 +1071,85 @@ function WIPTrackingTab() {
           </p>
         </Card>
       </div>
+
+      {/* WIP Billing Position Chart */}
+      {(() => {
+        const wipBillingData = wipData.map(w => ({
+          name: w.job.split(' ').slice(0, 2).join(' '),
+          fullName: w.job,
+          billed: w.billedToDate,
+          earned: w.earnedRevenue,
+          gap: Math.abs(w.overUnderBilled),
+          isOver: w.overUnderBilled < 0,
+        }));
+        return (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Billing vs Earned Revenue</h2>
+              <ChartTypeSelector options={['groupedBar', 'bar', 'horizontalBar', 'area']} value={wipChartType} onChange={setWipChartType} />
+            </div>
+
+            {(wipChartType === 'groupedBar' || wipChartType === 'bar') && (
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={wipBillingData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                  <XAxis dataKey="name" stroke={ds.textMuted} style={{ fontSize: '0.65rem' }} />
+                  <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                  <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                  <Bar dataKey="billed" fill={tc.primary} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Billed" stackId={wipChartType === 'bar' ? 'stack' : undefined} />
+                  <Bar dataKey="earned" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Earned" opacity={wipChartType === 'groupedBar' ? 0.6 : 1} stackId={wipChartType === 'bar' ? 'stack' : undefined} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+
+            {wipChartType === 'horizontalBar' && (
+              <div className="space-y-3">
+                {wipBillingData.map((w) => (
+                  <div key={w.fullName}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs truncate" style={{ color: ds.textMuted }}>{w.name}</span>
+                      <span className="text-xs font-semibold" style={{ color: w.isOver ? tc.warning : tc.positive }}>
+                        {w.isOver ? 'Over' : 'Under'}: {formatCurrency(w.gap)}
+                      </span>
+                    </div>
+                    <div className="flex gap-1">
+                      <div className="h-3 rounded-full" style={{ backgroundColor: tc.primary, width: `${(w.billed / Math.max(...wipBillingData.map(d => Math.max(d.billed, d.earned)))) * 50}%` }} />
+                      <div className="h-3 rounded-full opacity-60" style={{ backgroundColor: tc.positive, width: `${(w.earned / Math.max(...wipBillingData.map(d => Math.max(d.billed, d.earned)))) * 50}%` }} />
+                    </div>
+                  </div>
+                ))}
+                <div className="flex gap-4 mt-2 text-xs" style={{ color: ds.textMuted }}>
+                  <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: tc.primary }} /> Billed</div>
+                  <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full opacity-60" style={{ backgroundColor: tc.positive }} /> Earned</div>
+                </div>
+              </div>
+            )}
+
+            {wipChartType === 'area' && (
+              <ResponsiveContainer width="100%" height={240}>
+                <AreaChart data={wipBillingData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                  <XAxis dataKey="name" stroke={ds.textMuted} style={{ fontSize: '0.65rem' }} />
+                  <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                  <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                  <defs>
+                    <linearGradient id="billedGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={tc.primary} stopOpacity={0.4} />
+                      <stop offset="100%" stopColor={tc.primary} stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="earnedGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={tc.positive} stopOpacity={0.4} />
+                      <stop offset="100%" stopColor={tc.positive} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <Area type="monotone" dataKey="billed" stroke={tc.primary} fill="url(#billedGrad)" strokeWidth={ch.strokeWidth} name="Billed" />
+                  <Area type="monotone" dataKey="earned" stroke={tc.positive} fill="url(#earnedGrad)" strokeWidth={ch.strokeWidth} name="Earned" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </Card>
+        );
+      })()}
 
       {wipData.map((w) => (
         <Card key={w.job} className="p-6">
@@ -953,7 +1227,9 @@ function WIPTrackingTab() {
 function RetainageTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ch = theme.chart;
   const ds = theme.dashboard;
+  const [retChartType, setRetChartType] = useChartType('retainage-summary', 'bar');
 
   const totalReceivable = retainageData.reduce((s, r) => s + r.retainageReceivable, 0);
   const totalPayable = retainageData.reduce((s, r) => s + r.retainagePayable, 0);
@@ -1023,6 +1299,90 @@ function RetainageTab() {
         </Card>
       </div>
 
+      {/* Retainage Summary Chart */}
+      {(() => {
+        const activeRetainage = retainageData.filter(r => r.status !== 'Paid');
+        const retChartData = activeRetainage.map(r => ({
+          name: r.job.split(' ').slice(0, 2).join(' '),
+          fullName: r.job,
+          receivable: r.retainageReceivable,
+          payable: r.retainagePayable,
+          net: r.netRetainage,
+        }));
+        const statusGroups = [
+          { name: 'Held', value: retainageData.filter(r => r.status === 'Held').reduce((s, r) => s + r.retainageReceivable, 0) },
+          { name: 'Due Soon', value: retainageData.filter(r => r.status === 'Due Soon').reduce((s, r) => s + r.retainageReceivable, 0) },
+          { name: 'Ready', value: retainageData.filter(r => r.status === 'Ready to Release').reduce((s, r) => s + r.retainageReceivable, 0) },
+          { name: 'Overdue', value: overdueRetainage },
+          { name: 'Paid', value: paidRetainage },
+        ].filter(g => g.value > 0);
+        const statusColors = [tc.primary, tc.warning, tc.positive, tc.negative, tc.tertiary];
+        return (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Retainage Overview</h2>
+              <ChartTypeSelector options={['bar', 'horizontalBar', 'pie', 'donut']} value={retChartType} onChange={setRetChartType} />
+            </div>
+
+            {retChartType === 'bar' && (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={retChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+                  <XAxis dataKey="name" stroke={ds.textMuted} style={{ fontSize: '0.65rem' }} />
+                  <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+                  <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                  <Bar dataKey="receivable" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Receivable" />
+                  <Bar dataKey="payable" fill={tc.tertiary} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Payable" opacity={0.6} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+
+            {retChartType === 'horizontalBar' && (
+              <div className="space-y-3">
+                {retChartData.map((r) => (
+                  <div key={r.fullName}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs truncate" style={{ color: ds.textMuted }}>{r.name}</span>
+                      <span className="text-xs font-semibold" style={{ color: tc.primary }}>Net: {formatCurrency(r.net)}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <div className="h-3 rounded-full" style={{ backgroundColor: tc.positive, width: `${(r.receivable / totalReceivable) * 100}%` }} />
+                      <div className="h-3 rounded-full opacity-60" style={{ backgroundColor: tc.tertiary, width: `${(r.payable / totalReceivable) * 100}%` }} />
+                    </div>
+                  </div>
+                ))}
+                <div className="flex gap-4 mt-2 text-xs" style={{ color: ds.textMuted }}>
+                  <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: tc.positive }} /> Receivable</div>
+                  <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full opacity-60" style={{ backgroundColor: tc.tertiary }} /> Payable</div>
+                </div>
+              </div>
+            )}
+
+            {(retChartType === 'pie' || retChartType === 'donut') && (
+              <div className="flex items-center gap-4">
+                <ResponsiveContainer width="50%" height={220}>
+                  <PieChart>
+                    <Pie data={statusGroups} cx="50%" cy="50%" innerRadius={retChartType === 'donut' ? 50 : 0} outerRadius={80} paddingAngle={3} dataKey="value" nameKey="name">
+                      {statusGroups.map((_, i) => <Cell key={i} fill={statusColors[i]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-2 flex-1">
+                  {statusGroups.map((g, i) => (
+                    <div key={g.name} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: statusColors[i] }} />
+                      <span className="text-sm flex-1" style={{ color: ds.textMuted }}>{g.name}</span>
+                      <span className="text-sm font-semibold">{formatCurrency(g.value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        );
+      })()}
+
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-4">Retainage by Job</h2>
         <div className="overflow-x-auto">
@@ -1086,6 +1446,8 @@ function SalesDashboardTab() {
   const ds = theme.dashboard;
   const [salesTrendType, setSalesTrendType] = useChartType('sales-trend', 'groupedBar');
   const [leadSourceType, setLeadSourceType] = useChartType('lead-source', 'donut');
+  const [teamSparkType, setTeamSparkType] = useChartType('team-spark', 'area');
+  const [activeDealsType, setActiveDealsType] = useChartType('active-deals', 'horizontalBar');
   const totalPipeline = salesPipelineData.reduce((s, p) => s + p.value, 0);
   const wonDeals = recentDeals.filter(d => d.stage === 'Won');
   const wonValue = wonDeals.reduce((s, d) => s + d.value, 0);
@@ -1143,7 +1505,7 @@ function SalesDashboardTab() {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold">Sales Team Performance</h2>
-          <span className="text-xs" style={{ color: ds.textMuted }}>Current Quarter</span>
+          <ChartTypeSelector options={['area', 'line', 'bar']} value={teamSparkType} onChange={setTeamSparkType} />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {salesTeamMembers.map((member, idx) => {
@@ -1202,17 +1564,33 @@ function SalesDashboardTab() {
                 {/* Sparkline Trend */}
                 <div>
                   <p className="text-xs mb-1" style={{ color: ds.textMuted }}>Monthly Closed</p>
-                  <ResponsiveContainer width="100%" height={40}>
-                    <AreaChart data={member.monthlyTrend}>
-                      <defs>
-                        <linearGradient id={`grad-${idx}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={TEAM_COLORS[idx]} stopOpacity={0.3} />
-                          <stop offset="100%" stopColor={TEAM_COLORS[idx]} stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <Area type="monotone" dataKey="closed" stroke={TEAM_COLORS[idx]} fill={`url(#grad-${idx})`} strokeWidth={1.5} dot={false} />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  {teamSparkType === 'area' && (
+                    <ResponsiveContainer width="100%" height={40}>
+                      <AreaChart data={member.monthlyTrend}>
+                        <defs>
+                          <linearGradient id={`grad-${idx}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={TEAM_COLORS[idx]} stopOpacity={0.3} />
+                            <stop offset="100%" stopColor={TEAM_COLORS[idx]} stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <Area type="monotone" dataKey="closed" stroke={TEAM_COLORS[idx]} fill={`url(#grad-${idx})`} strokeWidth={1.5} dot={false} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
+                  {teamSparkType === 'line' && (
+                    <ResponsiveContainer width="100%" height={40}>
+                      <LineChart data={member.monthlyTrend}>
+                        <Line type="monotone" dataKey="closed" stroke={TEAM_COLORS[idx]} strokeWidth={1.5} dot={{ r: 2, fill: TEAM_COLORS[idx] }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
+                  {teamSparkType === 'bar' && (
+                    <ResponsiveContainer width="100%" height={40}>
+                      <BarChart data={member.monthlyTrend}>
+                        <Bar dataKey="closed" fill={TEAM_COLORS[idx]} radius={[2, 2, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
               </div>
             );
@@ -1407,56 +1785,97 @@ function SalesDashboardTab() {
         </Card>
       </div>
 
-      {/* Active Deals Table */}
+      {/* Active Deals */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Active Deals</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${ds.divider}`, color: ds.textMuted }}>
-                <th className="text-left py-3 text-xs font-medium">Project</th>
-                <th className="text-left py-3 text-xs font-medium">Client</th>
-                <th className="text-left py-3 text-xs font-medium">Rep</th>
-                <th className="text-right py-3 text-xs font-medium">Value</th>
-                <th className="text-center py-3 text-xs font-medium">Probability</th>
-                <th className="text-right py-3 text-xs font-medium">Weighted</th>
-                <th className="text-right py-3 text-xs font-medium">Stage</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentDeals.map((deal) => (
-                <tr key={deal.name} className="hover:bg-[#1a1a26]" style={{ borderBottom: '1px solid ' + ds.divider + '80' }}>
-                  <td className="py-3 font-medium">{deal.name}</td>
-                  <td className="py-3" style={{ color: ds.textMuted }}>{deal.client}</td>
-                  <td className="py-3 text-xs" style={{ color: ds.textMuted }}>{deal.rep}</td>
-                  <td className="py-3 text-right font-semibold">{formatFullCurrency(deal.value)}</td>
-                  <td className="py-3 text-center">
-                    <div className="flex items-center gap-2 justify-center">
-                      <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            backgroundColor: deal.probability >= 80 ? tc.positive : deal.probability >= 50 ? tc.warning : tc.tertiary,
-                            width: `${deal.probability}%`
-                          }}
-                        />
-                      </div>
-                      <span className="text-xs">{deal.probability}%</span>
-                    </div>
-                  </td>
-                  <td className="py-3 text-right font-semibold" style={{ color: tc.primary }}>
-                    {formatFullCurrency(Math.round(deal.value * deal.probability / 100))}
-                  </td>
-                  <td className="py-3 text-right">
-                    <Badge variant={deal.stage === 'Won' ? 'success' : deal.stage === 'Negotiation' ? 'warning' : 'info'}>
-                      {deal.stage}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Active Deals</h2>
+          <ChartTypeSelector options={['horizontalBar', 'bar', 'pie', 'donut']} value={activeDealsType} onChange={setActiveDealsType} />
         </div>
+
+        {activeDealsType === 'horizontalBar' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${ds.divider}`, color: ds.textMuted }}>
+                  <th className="text-left py-3 text-xs font-medium">Project</th>
+                  <th className="text-left py-3 text-xs font-medium">Client</th>
+                  <th className="text-left py-3 text-xs font-medium">Rep</th>
+                  <th className="text-right py-3 text-xs font-medium">Value</th>
+                  <th className="text-center py-3 text-xs font-medium">Probability</th>
+                  <th className="text-right py-3 text-xs font-medium">Weighted</th>
+                  <th className="text-right py-3 text-xs font-medium">Stage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentDeals.map((deal) => (
+                  <tr key={deal.name} className="hover:bg-[#1a1a26]" style={{ borderBottom: '1px solid ' + ds.divider + '80' }}>
+                    <td className="py-3 font-medium">{deal.name}</td>
+                    <td className="py-3" style={{ color: ds.textMuted }}>{deal.client}</td>
+                    <td className="py-3 text-xs" style={{ color: ds.textMuted }}>{deal.rep}</td>
+                    <td className="py-3 text-right font-semibold">{formatFullCurrency(deal.value)}</td>
+                    <td className="py-3 text-center">
+                      <div className="flex items-center gap-2 justify-center">
+                        <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              backgroundColor: deal.probability >= 80 ? tc.positive : deal.probability >= 50 ? tc.warning : tc.tertiary,
+                              width: `${deal.probability}%`
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs">{deal.probability}%</span>
+                      </div>
+                    </td>
+                    <td className="py-3 text-right font-semibold" style={{ color: tc.primary }}>
+                      {formatFullCurrency(Math.round(deal.value * deal.probability / 100))}
+                    </td>
+                    <td className="py-3 text-right">
+                      <Badge variant={deal.stage === 'Won' ? 'success' : deal.stage === 'Negotiation' ? 'warning' : 'info'}>
+                        {deal.stage}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeDealsType === 'bar' && (
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={recentDeals.map(d => ({ name: d.name.split(' ').slice(0, 2).join(' '), value: d.value, weighted: Math.round(d.value * d.probability / 100) }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
+              <XAxis dataKey="name" stroke={ds.textMuted} style={{ fontSize: '0.6rem' }} angle={-20} textAnchor="end" height={50} />
+              <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+              <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+              <Bar dataKey="value" fill={tc.primary} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Deal Value" opacity={0.5} />
+              <Bar dataKey="weighted" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Weighted Value" />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+
+        {(activeDealsType === 'pie' || activeDealsType === 'donut') && (
+          <div className="flex items-center gap-4">
+            <ResponsiveContainer width="50%" height={280}>
+              <PieChart>
+                <Pie data={recentDeals.map(d => ({ name: d.name.split(' ').slice(0, 2).join(' '), value: d.value }))} cx="50%" cy="50%" innerRadius={activeDealsType === 'donut' ? 55 : 0} outerRadius={90} paddingAngle={2} dataKey="value" nameKey="name">
+                  {recentDeals.map((_, i) => <Cell key={i} fill={theme.series[i % theme.series.length]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="space-y-1.5 flex-1 max-h-[280px] overflow-y-auto">
+              {recentDeals.map((deal, i) => (
+                <div key={deal.name} className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: theme.series[i % theme.series.length] }} />
+                  <span className="text-xs flex-1 truncate" style={{ color: ds.textMuted }}>{deal.name}</span>
+                  <span className="text-xs font-semibold">{formatCurrency(deal.value)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
