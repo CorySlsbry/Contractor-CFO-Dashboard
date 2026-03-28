@@ -66,8 +66,7 @@ export async function GET(request: NextRequest) {
     const plan = (org as any).plan || 'basic';
     const planName = getPlanName(plan);
     const price = getPlanPrice(plan);
-    // AI Bookkeeper Toolkit is included on ALL plans
-    const includesAiToolkit = true;
+    const includesAiToolkit = plan === 'pro' || plan === 'enterprise';
 
     const subscriptionInfo: SubscriptionInfo = {
       plan,

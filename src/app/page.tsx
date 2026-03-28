@@ -900,7 +900,7 @@ export default function LandingPage() {
                   'Job costing & WIP tracking',
                   'Cash flow forecasting (30/60/90 day)',
                   'QuickBooks Online sync',
-                  'AI Bookkeeper Toolkit included',
+                  'Monthly AI financial brief',
                   'Email support',
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-3">
