@@ -74,10 +74,29 @@ export default function SubscriberDetail() {
         const subRes = await fetch(`/api/admin/subscribers/${subscriberId}`);
         if (subRes.ok) {
           const subData = await subRes.json();
-          setSubscriber(subData.subscriber);
-          setUsers(subData.users || []);
+          // API returns { organization, profiles, integrations, error_logs }
+          const org = subData.organization;
+          if (org) {
+            setSubscriber({
+              id: org.id,
+              name: org.name,
+              plan: org.plan,
+              subscription_status: org.subscription_status,
+              stripe_customer_id: org.stripe_customer_id,
+              qbo_connected: !!org.qbo_realm_id,
+              created_at: org.created_at,
+              updated_at: org.updated_at,
+            });
+          }
+          setUsers((subData.profiles || []).map((p: any) => ({
+            id: p.id,
+            email: p.email || '',
+            full_name: p.full_name,
+            role: p.role,
+            created_at: p.created_at,
+          })));
           setIntegrations(subData.integrations || []);
-          setErrors(subData.errors || []);
+          setErrors(subData.error_logs || []);
         }
       } catch (error) {
         console.error('Failed to fetch subscriber details:', error);

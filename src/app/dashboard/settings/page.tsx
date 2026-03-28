@@ -12,6 +12,9 @@ interface SubscriptionData {
   price: number;
   status: string;
   includesAiToolkit: boolean;
+  organizationName: string | null;
+  userEmail: string | null;
+  userFullName: string | null;
 }
 
 export default function SettingsPage() {
@@ -21,6 +24,9 @@ export default function SettingsPage() {
   // Subscription state
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+
+  // Integration status state
+  const [connectedIntegrations, setConnectedIntegrations] = useState<string[]>([]);
 
   // Cancel subscription state
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -57,6 +63,20 @@ export default function SettingsPage() {
     };
 
     fetchSubscription();
+
+    // Also fetch connected integrations
+    const fetchIntegrations = async () => {
+      try {
+        const res = await fetch('/api/integrations/data');
+        if (res.ok) {
+          const data = await res.json();
+          setConnectedIntegrations(data.connectedSources || []);
+        }
+      } catch (error) {
+        console.error('Error fetching integrations:', error);
+      }
+    };
+    fetchIntegrations();
   }, []);
 
   const handleManageBilling = async () => {
@@ -149,14 +169,18 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between p-4 bg-[#1a1a26] rounded-lg">
             <div>
               <p className="text-sm font-medium text-[#e8e8f0]">Company Name</p>
-              <p className="text-[#8888a0]">Summit Ridge Construction</p>
+              <p className="text-[#8888a0]">
+                {subscriptionLoading ? 'Loading...' : (subscription?.organizationName || 'Not set')}
+              </p>
             </div>
             <Button variant="secondary" size="sm">Edit</Button>
           </div>
           <div className="flex items-center justify-between p-4 bg-[#1a1a26] rounded-lg">
             <div>
               <p className="text-sm font-medium text-[#e8e8f0]">Email</p>
-              <p className="text-[#8888a0]">john@summitridge.com</p>
+              <p className="text-[#8888a0]">
+                {subscriptionLoading ? 'Loading...' : (subscription?.userEmail || 'Not set')}
+              </p>
             </div>
             <Button variant="secondary" size="sm">Edit</Button>
           </div>
@@ -264,26 +288,52 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between p-4 bg-[#1a1a26] rounded-lg">
             <div>
               <p className="text-sm font-medium text-[#e8e8f0]">QuickBooks Online</p>
-              <p className="text-xs text-[#22c55e]">Connected</p>
+              {connectedIntegrations.includes('quickbooks') ? (
+                <p className="text-xs text-[#22c55e]">Connected</p>
+              ) : (
+                <p className="text-xs text-[#8888a0]">Not connected</p>
+              )}
             </div>
-            <span className="text-xs text-[#8888a0]">Accounting</span>
+            {connectedIntegrations.includes('quickbooks') ? (
+              <span className="text-xs text-[#8888a0]">Accounting</span>
+            ) : (
+              <Link href="/dashboard/integrations">
+                <span className="text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer">Connect &rarr;</span>
+              </Link>
+            )}
           </div>
           <div className="flex items-center justify-between p-4 bg-[#1a1a26] rounded-lg">
             <div>
               <p className="text-sm font-medium text-[#e8e8f0]">Procore, Buildertrend, ServiceTitan</p>
-              <p className="text-xs text-[#8888a0]">Project Management</p>
+              {connectedIntegrations.some(s => ['procore', 'buildertrend', 'servicetitan'].includes(s)) ? (
+                <p className="text-xs text-[#22c55e]">
+                  Connected: {connectedIntegrations.filter(s => ['procore', 'buildertrend', 'servicetitan'].includes(s)).join(', ')}
+                </p>
+              ) : (
+                <p className="text-xs text-[#8888a0]">Not connected</p>
+              )}
             </div>
             <Link href="/dashboard/integrations">
-              <span className="text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer">Connect &rarr;</span>
+              <span className="text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer">
+                {connectedIntegrations.some(s => ['procore', 'buildertrend', 'servicetitan'].includes(s)) ? 'Manage' : 'Connect'} &rarr;
+              </span>
             </Link>
           </div>
           <div className="flex items-center justify-between p-4 bg-[#1a1a26] rounded-lg">
             <div>
               <p className="text-sm font-medium text-[#e8e8f0]">Salesforce, HubSpot, JobNimbus</p>
-              <p className="text-xs text-[#8888a0]">CRM & Sales</p>
+              {connectedIntegrations.some(s => ['salesforce', 'hubspot', 'jobnimbus'].includes(s)) ? (
+                <p className="text-xs text-[#22c55e]">
+                  Connected: {connectedIntegrations.filter(s => ['salesforce', 'hubspot', 'jobnimbus'].includes(s)).join(', ')}
+                </p>
+              ) : (
+                <p className="text-xs text-[#8888a0]">Not connected</p>
+              )}
             </div>
             <Link href="/dashboard/integrations">
-              <span className="text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer">Connect &rarr;</span>
+              <span className="text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer">
+                {connectedIntegrations.some(s => ['salesforce', 'hubspot', 'jobnimbus'].includes(s)) ? 'Manage' : 'Connect'} &rarr;
+              </span>
             </Link>
           </div>
         </div>

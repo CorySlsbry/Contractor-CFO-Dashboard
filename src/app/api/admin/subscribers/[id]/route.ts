@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 async function verifyAdminAccess(supabase: any, userId: string): Promise<boolean> {
   try {
@@ -120,6 +121,76 @@ export async function GET(
         normalized_deals_count: dealCount || 0,
       },
     });
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PATCH /api/admin/subscribers/[id]
+ * Admin-only: Update organization fields (plan, subscription_status, name, etc.)
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const supabase = await createClient();
+
+    // Verify admin access
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const isAdmin = await verifyAdminAccess(supabase, user.id);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: 'Forbidden: Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    const orgId = params.id;
+    const body = await request.json();
+
+    // Whitelist allowed fields
+    const allowedFields = ['name', 'plan', 'subscription_status', 'stripe_customer_id', 'stripe_subscription_id'];
+    const updates: Record<string, any> = {};
+    for (const key of allowedFields) {
+      if (body[key] !== undefined) {
+        updates[key] = body[key];
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+    }
+
+    updates.updated_at = new Date().toISOString();
+
+    // Use admin client to bypass RLS
+    const adminSupabase = createAdminClient();
+    const { data, error } = await (adminSupabase as any)
+      .from('organizations')
+      .update(updates)
+      .eq('id', orgId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Update error:', error);
+      return NextResponse.json({ error: 'Failed to update organization' }, { status: 500 });
+    }
+
+    return NextResponse.json({ organization: data });
   } catch (err) {
     console.error('Unexpected error:', err);
     return NextResponse.json(

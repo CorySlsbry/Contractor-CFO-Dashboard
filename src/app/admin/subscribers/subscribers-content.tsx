@@ -36,7 +36,12 @@ export default function SubscribersContent() {
         const res = await fetch('/api/admin/subscribers?limit=1000');
         if (res.ok) {
           const data = await res.json();
-          setSubscribers(data.subscribers);
+          // Map API response keys to frontend interface
+          setSubscribers((data.subscribers || []).map((s: any) => ({
+            ...s,
+            last_sync_at: s.last_sync || null,
+            error_count: s.unresolved_error_count || 0,
+          })));
         }
       } catch (error) {
         console.error('Failed to fetch subscribers:', error);

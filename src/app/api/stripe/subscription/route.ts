@@ -17,6 +17,9 @@ interface SubscriptionInfo {
   price: number;
   status: string;
   includesAiToolkit: boolean;
+  organizationName: string | null;
+  userEmail: string | null;
+  userFullName: string | null;
 }
 
 export async function GET(request: NextRequest) {
@@ -52,7 +55,7 @@ export async function GET(request: NextRequest) {
     // Get organization with subscription details
     const { data: org, error: orgError } = await supabase
       .from("organizations")
-      .select("plan, subscription_status")
+      .select("name, plan, subscription_status")
       .eq("id", (profile as any).organization_id)
       .single() as any;
 
@@ -62,6 +65,13 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Get user profile info (full_name)
+    const { data: userProfile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single() as any;
 
     const plan = (org as any).plan || 'basic';
     const planName = getPlanName(plan);
@@ -74,6 +84,9 @@ export async function GET(request: NextRequest) {
       price,
       status: (org as any).subscription_status || 'trialing',
       includesAiToolkit,
+      organizationName: (org as any).name || null,
+      userEmail: user.email || null,
+      userFullName: userProfile?.full_name || null,
     };
 
     return NextResponse.json<ApiResponse<SubscriptionInfo>>(
