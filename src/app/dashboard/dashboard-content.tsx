@@ -352,6 +352,27 @@ function OverviewTab() {
 
   return (
     <div className="space-y-6">
+      {/* AI Brief */}
+      <div className="p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Brief</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.positive }}>▲</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Net cash position up 26.1% — strong collections and disciplined AP management are building a healthy runway</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> AR outstanding grew 3.1% while revenue grew 12.3% — collections are lagging behind billings. Review aging buckets</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> $82.4K in WIP over-billing exposes cash flow risk when those jobs close — align billing to % complete</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {kpis.map((kpi) => <KPICard key={kpi.title} {...kpi} />)}
       </div>
@@ -481,6 +502,27 @@ function ARByJobTab() {
 
   return (
     <div className="space-y-6">
+      {/* AI Brief */}
+      <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Brief</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.positive }}>▲</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> {formatFullCurrency(currentAR)} ({100 - percentPastDue}%) of AR is current — solid billing discipline across active jobs</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Oakwood Duplex invoice is 92 days past due ($28.7K) — escalate collections before it ages into write-off territory</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Heritage Park has $45K at 62 days — contact Heritage Park LLC before this triggers a payment dispute</p>
+          </div>
+        </div>
+      </div>
+
       {/* Compact Summary */}
       <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d] text-sm">
         <span className="text-[#c8c8d8]">
@@ -569,6 +611,27 @@ function APByJobTab() {
 
   return (
     <div className="space-y-6">
+      {/* AI Brief */}
+      <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Brief</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.positive }}>▲</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> AP is down 8.2% — you&apos;re paying vendors on time without overextending. This protects sub relationships and negotiating leverage</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Rocky Mtn Concrete bill ($35K, 41 days past due) — late sub payments risk lien filings on the Riverside project</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Valley HVAC ($45.3K, 28 days) on Heritage Park — verify this is held pending punch list, not just missed</p>
+          </div>
+        </div>
+      </div>
+
       {/* Compact Summary */}
       <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d] text-sm">
         <span className="text-[#c8c8d8]">
@@ -792,6 +855,27 @@ function RetainageTab() {
 
   return (
     <div className="space-y-6">
+      {/* AI Brief */}
+      <div className="p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Brief</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.positive }}>▲</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Net retainage position is {formatCurrency(totalNet)} in your favor — you&apos;re holding more than you owe, protecting cash flow</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> {formatCurrency(overdueRetainage)} in retainage is overdue for release across 3 completed jobs — file release requests immediately</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Mountain View &amp; Cedar Heights retainage release dates are approaching — schedule final walk-throughs to avoid delays</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Held</p>
@@ -885,6 +969,27 @@ function SalesDashboardTab() {
 
   return (
     <div className="space-y-6">
+      {/* AI Brief */}
+      <div className="p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Brief</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.positive }}>▲</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Team is at {teamQuotaPercent}% of quota with {formatCurrency(totalPipeline)} in the pipeline — on track to close the quarter strong</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Westfield Fire Station ($1.25M) is at 35% probability — high-value deal needs a strategy session to move it forward</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-sm" style={{ color: tc.warning }}>▼</span>
+            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Pipeline is top-heavy in proposals ({salesPipelineData[1]?.count} deals, {formatCurrency(salesPipelineData[1]?.value || 0)}) — focus on advancing stalled proposals to negotiation</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card variant="metric" className="p-5">
           <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Pipeline</p>

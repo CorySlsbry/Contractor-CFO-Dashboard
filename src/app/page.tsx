@@ -109,6 +109,15 @@ export default function LandingPage() {
             {/* ── OVERVIEW TAB ── */}
             {demoTab === 'overview' && (
               <>
+                {/* AI Brief */}
+                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] mb-3">
+                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Brief</span></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#22c55e]">▲</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> Net cash up 26.1% — strong collections building a healthy runway</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> AR growing faster than revenue — collections lagging billings</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> $82.4K WIP over-billing exposes cash risk at job close</p></div>
+                  </div>
+                </div>
                 {/* KPI Row */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
                   {[
@@ -215,6 +224,15 @@ export default function LandingPage() {
             {/* ── AR BY JOB TAB ── */}
             {demoTab === 'ar' && (
               <div className="space-y-3">
+                {/* AI Brief */}
+                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d]">
+                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Brief</span></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#22c55e]">▲</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> 64% of AR is current — solid billing discipline</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Oakwood Duplex 92 days past due — escalate before write-off</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Heritage Park $45K at 62 days — contact before dispute</p></div>
+                  </div>
+                </div>
                 <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] text-[10px] sm:text-xs">
                   <span className="text-[#c8c8d8]">Total AR: <span className="font-semibold text-[#e8e8f0]">$487,200</span> · Past Due: <span className="font-semibold text-[#ef4444]">$177,200 (36%)</span> · Current: <span className="font-semibold text-[#22c55e]">$310,000</span></span>
                 </div>
@@ -274,6 +292,15 @@ export default function LandingPage() {
             {/* ── AP BY JOB TAB ── */}
             {demoTab === 'ap' && (
               <div className="space-y-3">
+                {/* AI Brief */}
+                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d]">
+                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Brief</span></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#22c55e]">▲</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> AP down 8.2% — paying vendors on time without overextending</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Rocky Mtn Concrete $35K, 41 days late — lien risk on Riverside</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Valley HVAC $45.3K — verify held for punch list, not missed</p></div>
+                  </div>
+                </div>
                 <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] text-[10px] sm:text-xs">
                   <span className="text-[#c8c8d8]">Total AP: <span className="font-semibold text-[#e8e8f0]">$296,600</span> · Past Due: <span className="font-semibold text-[#ef4444]">$129,000 (43%)</span> · Current: <span className="font-semibold text-[#22c55e]">$167,600</span></span>
                 </div>
@@ -380,6 +407,15 @@ export default function LandingPage() {
             {/* ── RETAINAGE TAB ── */}
             {demoTab === 'retainage' && (
               <div className="space-y-3">
+                {/* AI Brief */}
+                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d]">
+                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Brief</span></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#22c55e]">▲</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> Net retainage $171K in your favor — protecting cash flow</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> $68.1K overdue for release across 3 jobs — file requests now</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> 2 retainage release dates approaching — schedule walk-throughs</p></div>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
                     { label: 'Total Held', value: '$223,250', color: 'text-[#22c55e]' },
@@ -430,6 +466,15 @@ export default function LandingPage() {
             {/* ── SALES TAB ── */}
             {demoTab === 'sales' && (
               <div className="space-y-3">
+                {/* AI Brief */}
+                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d]">
+                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Brief</span></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#22c55e]">▲</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> Team at 73% quota with $10.6M pipeline — on track to close strong</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Westfield $1.25M at 35% probability — needs strategy session</p></div>
+                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Pipeline top-heavy in proposals — focus on moving to negotiation</p></div>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
                     { label: 'Total Pipeline', value: '$10.6M', color: '' },
