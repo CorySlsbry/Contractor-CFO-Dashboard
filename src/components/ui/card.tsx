@@ -1,23 +1,59 @@
+'use client';
+
 import React from 'react';
+import { useChartTheme } from '@/components/chart-theme-provider';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'metric' | 'highlighted';
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', ...props }, ref) => {
-    const baseStyles = 'rounded-lg border transition-all duration-200';
+  ({ className, variant = 'default', style, ...props }, ref) => {
+    let ds: any;
+    let tc: any;
+    try {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const { theme } = useChartTheme();
+      ds = theme.dashboard;
+      tc = theme.colors;
+    } catch {
+      // Fallback if outside provider (e.g. admin pages)
+      ds = {
+        cardBg: '#12121a',
+        cardBorder: '#2a2a3d',
+        cardShadow: 'none',
+        cardBlur: undefined,
+        cardGradient: undefined,
+        borderRadius: '0.5rem',
+      };
+      tc = { primary: '#6366f1' };
+    }
 
-    const variantStyles = {
-      default: 'bg-[#12121a] border-[#2a2a3d] hover:border-[#3a3a4d]',
-      metric: 'bg-[#12121a] border-[#2a2a3d] hover:bg-[#1a1a26] hover:border-[#6366f1]/30 hover:shadow-lg hover:shadow-[#6366f1]/10',
-      highlighted: 'bg-[#1a1a26] border-[#6366f1]/30 shadow-lg shadow-[#6366f1]/10',
+    const baseStyle: React.CSSProperties = {
+      backgroundColor: ds.cardBg,
+      border: `1px solid ${ds.cardBorder}`,
+      borderRadius: ds.borderRadius,
+      boxShadow: ds.cardShadow !== 'none' ? ds.cardShadow : undefined,
+      backdropFilter: ds.cardBlur,
+      backgroundImage: ds.cardGradient,
+      transition: 'all 0.2s ease',
+      ...style,
     };
+
+    if (variant === 'metric') {
+      baseStyle.boxShadow = ds.cardShadow !== 'none' ? ds.cardShadow : undefined;
+    }
+
+    if (variant === 'highlighted') {
+      baseStyle.borderColor = `${tc.primary}4d`;
+      baseStyle.boxShadow = `0 4px 16px ${tc.primary}15`;
+    }
 
     return (
       <div
         ref={ref}
-        className={`${baseStyles} ${variantStyles[variant]} ${className || ''}`}
+        className={`rounded-lg ${className || ''}`}
+        style={baseStyle}
         {...props}
       />
     );

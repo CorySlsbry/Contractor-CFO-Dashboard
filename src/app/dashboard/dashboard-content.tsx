@@ -315,13 +315,14 @@ function KPICard({ title, value, change, positive, icon: Icon }: {
 }) {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ds = theme.dashboard;
 
   return (
     <Card variant="metric" className="p-5">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="text-xs text-[#8888a0] mb-1 uppercase tracking-wide">{title}</p>
-          <p className="text-xl font-bold">{value}</p>
+          <p className="text-xs mb-1 uppercase tracking-wide" style={{ color: ds.textMuted }}>{title}</p>
+          <p className="text-xl font-bold" style={{ color: ds.textPrimary }}>{value}</p>
         </div>
         <div className="p-2 rounded-lg" style={{ backgroundColor: (positive ? tc.positive : tc.negative) + '1a' }}>
           <Icon size={18} style={{ color: positive ? tc.positive : tc.negative }} />
@@ -349,26 +350,27 @@ function OverviewTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
   const ch = theme.chart;
+  const ds = theme.dashboard;
 
   return (
     <div className="space-y-6">
       {/* AI Brief */}
-      <div className="p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+      <div className="p-3 rounded-lg" style={{ backgroundColor: ds.briefBg, border: `1px solid ${ds.briefBorder}` }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Brief</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.positive }}>▲</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Net cash position up 26.1% — strong collections and disciplined AP management are building a healthy runway</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Net cash position up 26.1% — strong collections and disciplined AP management are building a healthy runway</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> AR outstanding grew 3.1% while revenue grew 12.3% — collections are lagging behind billings. Review aging buckets</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> AR outstanding grew 3.1% while revenue grew 12.3% — collections are lagging behind billings. Review aging buckets</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> $82.4K in WIP over-billing exposes cash flow risk when those jobs close — align billing to % complete</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> $82.4K in WIP over-billing exposes cash flow risk when those jobs close — align billing to % complete</p>
           </div>
         </div>
       </div>
@@ -392,7 +394,7 @@ function OverviewTab() {
             ].map((item) => (
               <div key={item.range} className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                <span className="text-sm text-[#8888a0] w-24">{item.range}</span>
+                <span className="text-sm w-24" style={{ color: ds.textMuted }}>{item.range}</span>
                 <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: ch.gridColor }}>
                   <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${(item.amount / 310000) * 100}%` }} />
                 </div>
@@ -414,9 +416,9 @@ function OverviewTab() {
               { week: 'Week 4', inflow: 230000, outflow: 195000 },
             ]}>
               <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
-              <XAxis dataKey="week" stroke="#8888a0" style={{ fontSize: '0.7rem' }} />
-              <YAxis stroke="#8888a0" style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
-              <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+              <XAxis dataKey="week" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
+              <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+              <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
               <defs>
                 {ch.gradientFills && (
                   <>
@@ -444,14 +446,14 @@ function OverviewTab() {
           <h2 className="text-lg font-semibold mb-4">WIP Summary</h2>
           <div className="space-y-3">
             {wipData.map((w) => (
-              <div key={w.job} className="flex items-center justify-between py-2 border-b border-[#2a2a3d] last:border-0">
+              <div key={w.job} className="flex items-center justify-between py-2 last:border-0" style={{ borderBottom: `1px solid ${ds.divider}` }}>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{w.job}</p>
+                  <p className="text-sm font-medium truncate" style={{ color: ds.textPrimary }}>{w.job}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
                       <div className="h-full rounded-full" style={{ backgroundColor: tc.primary, width: `${Math.min(w.percentComplete, 100)}%` }} />
                     </div>
-                    <span className="text-xs text-[#8888a0]">{w.percentComplete}%</span>
+                    <span className="text-xs" style={{ color: ds.textMuted }}>{w.percentComplete}%</span>
                   </div>
                 </div>
                 <div className="ml-4 text-right">
@@ -469,8 +471,8 @@ function OverviewTab() {
           <div className="space-y-3">
             {salesPipelineData.map((s) => (
               <div key={s.stage} className="flex items-center gap-3">
-                <span className="text-sm text-[#8888a0] w-24">{s.stage}</span>
-                <div className="flex-1 h-6 bg-[#2a2a3d] rounded-full overflow-hidden">
+                <span className="text-sm w-24" style={{ color: ds.textMuted }}>{s.stage}</span>
+                <div className="flex-1 h-6 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
                   <div className="rounded-full flex items-center justify-end pr-2" style={{ backgroundColor: tc.primary, width: `${(s.value / 4200000) * 100}%` }}>
                     <span className="text-xs font-bold text-white">{s.count}</span>
                   </div>
@@ -488,6 +490,7 @@ function OverviewTab() {
 function ARByJobTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ds = theme.dashboard;
 
   const grouped = arByJob.reduce((acc, inv) => {
     if (!acc[inv.job]) acc[inv.job] = [];
@@ -503,30 +506,30 @@ function ARByJobTab() {
   return (
     <div className="space-y-6">
       {/* AI Brief */}
-      <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+      <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: ds.briefBg, border: `1px solid ${ds.briefBorder}` }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Brief</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.positive }}>▲</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> {formatFullCurrency(currentAR)} ({100 - percentPastDue}%) of AR is current — solid billing discipline across active jobs</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.positive }}>Win:</span> {formatFullCurrency(currentAR)} ({100 - percentPastDue}%) of AR is current — solid billing discipline across active jobs</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Oakwood Duplex invoice is 92 days past due ($28.7K) — escalate collections before it ages into write-off territory</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Oakwood Duplex invoice is 92 days past due ($28.7K) — escalate collections before it ages into write-off territory</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Heritage Park has $45K at 62 days — contact Heritage Park LLC before this triggers a payment dispute</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Heritage Park has $45K at 62 days — contact Heritage Park LLC before this triggers a payment dispute</p>
           </div>
         </div>
       </div>
 
       {/* Compact Summary */}
-      <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d] text-sm">
-        <span className="text-[#c8c8d8]">
-          Total AR: <span className="font-semibold text-[#e8e8f0]">{formatFullCurrency(totalAR)}</span> · Past Due: <span className="font-semibold" style={{ color: tc.negative }}>{formatFullCurrency(pastDueAR)} ({percentPastDue}%)</span> · Current: <span className="font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(currentAR)}</span>
+      <div className="mb-4 p-3 rounded-lg text-sm" style={{ backgroundColor: ds.briefBg, border: `1px solid ${ds.briefBorder}` }}>
+        <span style={{ color: ds.textSecondary }}>
+          Total AR: <span className="font-semibold" style={{ color: ds.textPrimary }}>{formatFullCurrency(totalAR)}</span> · Past Due: <span className="font-semibold" style={{ color: tc.negative }}>{formatFullCurrency(pastDueAR)} ({percentPastDue}%)</span> · Current: <span className="font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(currentAR)}</span>
         </span>
       </div>
 
@@ -544,10 +547,10 @@ function ARByJobTab() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base font-semibold">{jobName}</h3>
-                <p className="text-xs text-[#8888a0]">{invoices[0].customer}</p>
+                <p className="text-xs" style={{ color: ds.textMuted }}>{invoices[0].customer}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold">{formatFullCurrency(jobTotal)}</p>
+                <p className="text-sm font-semibold" style={{ color: ds.textPrimary }}>{formatFullCurrency(jobTotal)}</p>
                 {jobPastDue > 0 && (
                   <p className="text-xs flex items-center gap-1 justify-end" style={{ color: tc.negative }}>
                     <AlertTriangle size={12} /> {formatFullCurrency(jobPastDue)} past due
@@ -558,22 +561,22 @@ function ARByJobTab() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#2a2a3d]">
-                    <th className="text-left py-2 text-xs text-[#8888a0] font-medium">Invoice #</th>
-                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Amount</th>
-                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Due Date</th>
-                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Days Past Due</th>
-                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Status</th>
+                  <tr style={{ borderBottom: `1px solid ${ds.divider}`, color: ds.textMuted }}>
+                    <th className="text-left py-2 text-xs font-medium">Invoice #</th>
+                    <th className="text-right py-2 text-xs font-medium">Amount</th>
+                    <th className="text-right py-2 text-xs font-medium">Due Date</th>
+                    <th className="text-right py-2 text-xs font-medium">Days Past Due</th>
+                    <th className="text-right py-2 text-xs font-medium">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedInvoices.map((inv) => (
-                    <tr key={inv.invoiceNum} className="border-b border-[#2a2a3d]/50" style={{ backgroundColor: inv.daysPastDue > 0 ? tc.negative + '0d' : 'transparent' }}>
+                    <tr key={inv.invoiceNum} style={{ borderBottom: '1px solid ' + ds.divider + '80', backgroundColor: inv.daysPastDue > 0 ? tc.negative + '0d' : 'transparent' }}>
                       <td className="py-2.5 font-mono text-xs">{inv.invoiceNum}</td>
                       <td className="py-2.5 text-right font-semibold" style={{ color: inv.daysPastDue > 0 ? tc.negative : 'inherit' }}>
                         {formatFullCurrency(inv.amount)}
                       </td>
-                      <td className="py-2.5 text-right text-[#8888a0]">{inv.dueDate}</td>
+                      <td className="py-2.5 text-right" style={{ color: ds.textMuted }}>{inv.dueDate}</td>
                       <td className="py-2.5 text-right font-semibold" style={{ color: inv.daysPastDue > 0 ? tc.negative : tc.positive }}>
                         {inv.daysPastDue > 0 ? inv.daysPastDue : '—'}
                       </td>
@@ -597,6 +600,7 @@ function ARByJobTab() {
 function APByJobTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ds = theme.dashboard;
 
   const grouped = apByJob.reduce((acc, bill) => {
     if (!acc[bill.job]) acc[bill.job] = [];
@@ -612,30 +616,30 @@ function APByJobTab() {
   return (
     <div className="space-y-6">
       {/* AI Brief */}
-      <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+      <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: ds.briefBg, border: `1px solid ${ds.briefBorder}` }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Brief</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.positive }}>▲</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> AP is down 8.2% — you&apos;re paying vendors on time without overextending. This protects sub relationships and negotiating leverage</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.positive }}>Win:</span> AP is down 8.2% — you&apos;re paying vendors on time without overextending. This protects sub relationships and negotiating leverage</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Rocky Mtn Concrete bill ($35K, 41 days past due) — late sub payments risk lien filings on the Riverside project</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Rocky Mtn Concrete bill ($35K, 41 days past due) — late sub payments risk lien filings on the Riverside project</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Valley HVAC ($45.3K, 28 days) on Heritage Park — verify this is held pending punch list, not just missed</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Valley HVAC ($45.3K, 28 days) on Heritage Park — verify this is held pending punch list, not just missed</p>
           </div>
         </div>
       </div>
 
       {/* Compact Summary */}
-      <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d] text-sm">
-        <span className="text-[#c8c8d8]">
-          Total AP: <span className="font-semibold text-[#e8e8f0]">{formatFullCurrency(totalAP)}</span> · Past Due: <span className="font-semibold" style={{ color: tc.negative }}>{formatFullCurrency(pastDueAP)} ({percentPastDue}%)</span> · Current: <span className="font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(currentAP)}</span>
+      <div className="mb-4 p-3 rounded-lg text-sm" style={{ backgroundColor: ds.briefBg, border: `1px solid ${ds.briefBorder}` }}>
+        <span style={{ color: ds.textSecondary }}>
+          Total AP: <span className="font-semibold" style={{ color: ds.textPrimary }}>{formatFullCurrency(totalAP)}</span> · Past Due: <span className="font-semibold" style={{ color: tc.negative }}>{formatFullCurrency(pastDueAP)} ({percentPastDue}%)</span> · Current: <span className="font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(currentAP)}</span>
         </span>
       </div>
 
@@ -664,24 +668,24 @@ function APByJobTab() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#2a2a3d]">
-                    <th className="text-left py-2 text-xs text-[#8888a0] font-medium">Vendor</th>
-                    <th className="text-left py-2 text-xs text-[#8888a0] font-medium">Bill #</th>
-                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Amount</th>
-                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Due Date</th>
-                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Days Past Due</th>
-                    <th className="text-right py-2 text-xs text-[#8888a0] font-medium">Status</th>
+                  <tr style={{ borderBottom: `1px solid ${ds.divider}`, color: ds.textMuted }}>
+                    <th className="text-left py-2 text-xs font-medium">Vendor</th>
+                    <th className="text-left py-2 text-xs font-medium">Bill #</th>
+                    <th className="text-right py-2 text-xs font-medium">Amount</th>
+                    <th className="text-right py-2 text-xs font-medium">Due Date</th>
+                    <th className="text-right py-2 text-xs font-medium">Days Past Due</th>
+                    <th className="text-right py-2 text-xs font-medium">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedBills.map((bill) => (
-                    <tr key={bill.invoiceNum} className="border-b border-[#2a2a3d]/50" style={{ backgroundColor: bill.daysPastDue > 0 ? tc.negative + '0d' : 'transparent' }}>
+                    <tr key={bill.invoiceNum} style={{ borderBottom: '1px solid ' + ds.divider + '80', backgroundColor: bill.daysPastDue > 0 ? tc.negative + '0d' : 'transparent' }}>
                       <td className="py-2.5">{bill.vendor}</td>
                       <td className="py-2.5 font-mono text-xs">{bill.invoiceNum}</td>
                       <td className="py-2.5 text-right font-semibold" style={{ color: bill.daysPastDue > 0 ? tc.negative : 'inherit' }}>
                         {formatFullCurrency(bill.amount)}
                       </td>
-                      <td className="py-2.5 text-right text-[#8888a0]">{bill.dueDate}</td>
+                      <td className="py-2.5 text-right" style={{ color: ds.textMuted }}>{bill.dueDate}</td>
                       <td className="py-2.5 text-right font-semibold" style={{ color: bill.daysPastDue > 0 ? tc.negative : tc.positive }}>
                         {bill.daysPastDue > 0 ? bill.daysPastDue : '—'}
                       </td>
@@ -705,6 +709,7 @@ function APByJobTab() {
 function WIPTrackingTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ds = theme.dashboard;
 
   const totalOverBilled = wipData.filter(w => w.overUnderBilled < 0).reduce((s, w) => s + Math.abs(w.overUnderBilled), 0);
   const totalUnderBilled = wipData.filter(w => w.overUnderBilled > 0).reduce((s, w) => s + w.overUnderBilled, 0);
@@ -717,37 +722,37 @@ function WIPTrackingTab() {
   return (
     <div className="space-y-6">
       {/* AI Summary Card */}
-      <div className="mb-4 p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+      <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: ds.briefBg, border: `1px solid ${ds.briefBorder}` }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Summary</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.positive }}>▲</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Portfolio gross margin holding at {portfolioMargin}% across {wipData.length} active projects</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Portfolio gross margin holding at {portfolioMargin}% across {wipData.length} active projects</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> {biggestUnderBill ? `${biggestUnderBill.job} is $${Math.round(biggestUnderBill.overUnderBilled / 1000)}k under-billed — submit draw request to maintain cash position` : 'All projects within billing targets'}</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> {biggestUnderBill ? `${biggestUnderBill.job} is $${Math.round(biggestUnderBill.overUnderBilled / 1000)}k under-billed — submit draw request to maintain cash position` : 'All projects within billing targets'}</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Contract Value</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Total Contract Value</p>
           <p className="text-xl font-bold mt-1">{formatCurrency(totalContractValue)}</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Over-Billed</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Over-Billed</p>
           <p className="text-xl font-bold mt-1" style={{ color: tc.warning }}>{formatCurrency(totalOverBilled)}</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Under-Billed</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Under-Billed</p>
           <p className="text-xl font-bold mt-1" style={{ color: tc.primary }}>{formatCurrency(totalUnderBilled)}</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Net Position</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Net Position</p>
           <p className="text-xl font-bold mt-1" style={{ color: totalOverBilled > totalUnderBilled ? tc.warning : tc.positive }}>
             {totalOverBilled > totalUnderBilled ? 'Over' : 'Under'}: {formatCurrency(Math.abs(totalOverBilled - totalUnderBilled))}
           </p>
@@ -759,7 +764,7 @@ function WIPTrackingTab() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-semibold">{w.job}</h3>
-              <p className="text-xs text-[#8888a0]">Contract: {formatFullCurrency(w.contractAmount)}</p>
+              <p className="text-xs" style={{ color: ds.textMuted }}>Contract: {formatFullCurrency(w.contractAmount)}</p>
             </div>
             <Badge variant={w.estGrossProfit < 0 ? 'danger' : w.percentComplete >= 100 ? 'warning' : 'info'}>
               {w.percentComplete}% Complete
@@ -768,7 +773,7 @@ function WIPTrackingTab() {
 
           {/* Progress Bar */}
           <div className="mb-4">
-            <div className="h-3 bg-[#2a2a3d] rounded-full overflow-hidden">
+            <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
               <div
                 className="h-full rounded-full"
                 style={{
@@ -781,26 +786,26 @@ function WIPTrackingTab() {
 
           {/* WIP Detail Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="bg-[#1a1a26] rounded-lg p-3">
-              <p className="text-xs text-[#8888a0]">Est. Total Cost</p>
+            <div className="rounded-lg p-3" style={{ backgroundColor: ds.inputBg }}>
+              <p className="text-xs" style={{ color: ds.textMuted }}>Est. Total Cost</p>
               <p className="font-semibold mt-1">{formatFullCurrency(w.totalEstCost)}</p>
             </div>
-            <div className="bg-[#1a1a26] rounded-lg p-3">
-              <p className="text-xs text-[#8888a0]">Cost to Date</p>
+            <div className="rounded-lg p-3" style={{ backgroundColor: ds.inputBg }}>
+              <p className="text-xs" style={{ color: ds.textMuted }}>Cost to Date</p>
               <p className="font-semibold mt-1" style={{ color: w.costToDate > w.totalEstCost ? tc.negative : 'inherit' }}>
                 {formatFullCurrency(w.costToDate)}
               </p>
             </div>
-            <div className="bg-[#1a1a26] rounded-lg p-3">
-              <p className="text-xs text-[#8888a0]">Billed to Date</p>
+            <div className="rounded-lg p-3" style={{ backgroundColor: ds.inputBg }}>
+              <p className="text-xs" style={{ color: ds.textMuted }}>Billed to Date</p>
               <p className="font-semibold mt-1">{formatFullCurrency(w.billedToDate)}</p>
             </div>
-            <div className="bg-[#1a1a26] rounded-lg p-3">
-              <p className="text-xs text-[#8888a0]">Earned Revenue</p>
+            <div className="rounded-lg p-3" style={{ backgroundColor: ds.inputBg }}>
+              <p className="text-xs" style={{ color: ds.textMuted }}>Earned Revenue</p>
               <p className="font-semibold mt-1">{formatFullCurrency(w.earnedRevenue)}</p>
             </div>
-            <div className="bg-[#1a1a26] rounded-lg p-3">
-              <p className="text-xs text-[#8888a0]">Est. Gross Profit</p>
+            <div className="rounded-lg p-3" style={{ backgroundColor: ds.inputBg }}>
+              <p className="text-xs" style={{ color: ds.textMuted }}>Est. Gross Profit</p>
               <p className="font-semibold mt-1" style={{ color: w.estGrossProfit < 0 ? tc.negative : tc.positive }}>
                 {formatFullCurrency(w.estGrossProfit)}
               </p>
@@ -809,13 +814,13 @@ function WIPTrackingTab() {
               backgroundColor: (w.overUnderBilled < 0 ? tc.warning : tc.primary) + '1a',
               border: `1px solid ${(w.overUnderBilled < 0 ? tc.warning : tc.primary) + '4d'}`
             }}>
-              <p className="text-xs text-[#8888a0]">{w.overUnderBilled < 0 ? 'Over-Billed' : 'Under-Billed'}</p>
+              <p className="text-xs" style={{ color: ds.textMuted }}>{w.overUnderBilled < 0 ? 'Over-Billed' : 'Under-Billed'}</p>
               <p className="font-semibold mt-1" style={{ color: w.overUnderBilled < 0 ? tc.warning : tc.primary }}>
                 {formatFullCurrency(Math.abs(w.overUnderBilled))}
               </p>
             </div>
-            <div className="bg-[#1a1a26] rounded-lg p-3 col-span-2">
-              <p className="text-xs text-[#8888a0]">Gross Profit Margin</p>
+            <div className="rounded-lg p-3 col-span-2" style={{ backgroundColor: ds.inputBg }}>
+              <p className="text-xs" style={{ color: ds.textMuted }}>Gross Profit Margin</p>
               <p className="font-semibold mt-1" style={{ color: w.estGrossProfit < 0 ? tc.negative : tc.positive }}>
                 {((w.estGrossProfit / w.contractAmount) * 100).toFixed(1)}%
               </p>
@@ -830,6 +835,7 @@ function WIPTrackingTab() {
 function RetainageTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ds = theme.dashboard;
 
   const totalReceivable = retainageData.reduce((s, r) => s + r.retainageReceivable, 0);
   const totalPayable = retainageData.reduce((s, r) => s + r.retainagePayable, 0);
@@ -856,46 +862,46 @@ function RetainageTab() {
   return (
     <div className="space-y-6">
       {/* AI Brief */}
-      <div className="p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+      <div className="p-3 rounded-lg" style={{ backgroundColor: ds.briefBg, border: `1px solid ${ds.briefBorder}` }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Brief</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.positive }}>▲</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Net retainage position is {formatCurrency(totalNet)} in your favor — you&apos;re holding more than you owe, protecting cash flow</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Net retainage position is {formatCurrency(totalNet)} in your favor — you&apos;re holding more than you owe, protecting cash flow</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> {formatCurrency(overdueRetainage)} in retainage is overdue for release across 3 completed jobs — file release requests immediately</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> {formatCurrency(overdueRetainage)} in retainage is overdue for release across 3 completed jobs — file release requests immediately</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Mountain View &amp; Cedar Heights retainage release dates are approaching — schedule final walk-throughs to avoid delays</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Mountain View &amp; Cedar Heights retainage release dates are approaching — schedule final walk-throughs to avoid delays</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Held</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Total Held</p>
           <p className="text-2xl font-bold mt-1" style={{ color: tc.positive }}>{formatFullCurrency(heldRetainage)}</p>
-          <p className="text-xs text-[#8888a0] mt-1">Active retainage</p>
+          <p className="text-xs mt-1" style={{ color: ds.textMuted }}>Active retainage</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Overdue</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Total Overdue</p>
           <p className="text-2xl font-bold mt-1" style={{ color: tc.negative }}>{formatFullCurrency(overdueRetainage)}</p>
-          <p className="text-xs text-[#8888a0] mt-1">Past release date</p>
+          <p className="text-xs mt-1" style={{ color: ds.textMuted }}>Past release date</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Paid</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Total Paid</p>
           <p className="text-2xl font-bold mt-1" style={{ color: tc.primary }}>{formatFullCurrency(paidRetainage)}</p>
-          <p className="text-xs text-[#8888a0] mt-1">Released to subs</p>
+          <p className="text-xs mt-1" style={{ color: ds.textMuted }}>Released to subs</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Net Position</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Net Position</p>
           <p className="text-2xl font-bold mt-1" style={{ color: tc.primary }}>{formatFullCurrency(totalNet)}</p>
-          <p className="text-xs text-[#8888a0] mt-1">Cash impact on release</p>
+          <p className="text-xs mt-1" style={{ color: ds.textMuted }}>Cash impact on release</p>
         </Card>
       </div>
 
@@ -904,20 +910,21 @@ function RetainageTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#2a2a3d]">
-                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Job</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Contract</th>
-                <th className="text-center py-3 text-xs text-[#8888a0] font-medium">Ret %</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Receivable</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Payable</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Net</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Release Date</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Status</th>
+              <tr style={{ borderBottom: `1px solid ${ds.divider}`, color: ds.textMuted }}>
+                <th className="text-left py-3 text-xs font-medium">Job</th>
+                <th className="text-right py-3 text-xs font-medium">Contract</th>
+                <th className="text-center py-3 text-xs font-medium">Ret %</th>
+                <th className="text-right py-3 text-xs font-medium">Receivable</th>
+                <th className="text-right py-3 text-xs font-medium">Payable</th>
+                <th className="text-right py-3 text-xs font-medium">Net</th>
+                <th className="text-right py-3 text-xs font-medium">Release Date</th>
+                <th className="text-right py-3 text-xs font-medium">Status</th>
               </tr>
             </thead>
             <tbody>
               {sortedData.map((r) => (
-                <tr key={r.job} className="border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26]" style={{
+                <tr key={r.job} className="hover:bg-[#1a1a26]" style={{
+                  borderBottom: '1px solid ' + ds.divider + '80',
                   backgroundColor: r.status === 'Overdue' ? tc.negative + '0d' : r.status === 'Paid' ? tc.primary + '0d' : 'transparent'
                 }}>
                   <td className="py-3 font-medium">{r.job}</td>
@@ -926,7 +933,7 @@ function RetainageTab() {
                   <td className="py-3 text-right font-semibold" style={{ color: tc.positive }}>{formatFullCurrency(r.retainageReceivable)}</td>
                   <td className="py-3 text-right font-semibold" style={{ color: tc.tertiary }}>{formatFullCurrency(r.retainagePayable)}</td>
                   <td className="py-3 text-right font-semibold" style={{ color: tc.primary }}>{formatFullCurrency(r.netRetainage)}</td>
-                  <td className="py-3 text-right text-[#8888a0]">{r.releaseDate}</td>
+                  <td className="py-3 text-right" style={{ color: ds.textMuted }}>{r.releaseDate}</td>
                   <td className="py-3 text-right">
                     <Badge variant={getStatusVariant(r.status)}>
                       {r.status}
@@ -958,6 +965,7 @@ function SalesDashboardTab() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
   const ch = theme.chart;
+  const ds = theme.dashboard;
   const totalPipeline = salesPipelineData.reduce((s, p) => s + p.value, 0);
   const wonDeals = recentDeals.filter(d => d.stage === 'Won');
   const wonValue = wonDeals.reduce((s, d) => s + d.value, 0);
@@ -970,41 +978,41 @@ function SalesDashboardTab() {
   return (
     <div className="space-y-6">
       {/* AI Brief */}
-      <div className="p-3 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
+      <div className="p-3 rounded-lg" style={{ backgroundColor: ds.briefBg, border: `1px solid ${ds.briefBorder}` }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: tc.primary }}>AI Brief</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.positive }}>▲</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Team is at {teamQuotaPercent}% of quota with {formatCurrency(totalPipeline)} in the pipeline — on track to close the quarter strong</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.positive }}>Win:</span> Team is at {teamQuotaPercent}% of quota with {formatCurrency(totalPipeline)} in the pipeline — on track to close the quarter strong</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Westfield Fire Station ($1.25M) is at 35% probability — high-value deal needs a strategy session to move it forward</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Westfield Fire Station ($1.25M) is at 35% probability — high-value deal needs a strategy session to move it forward</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-sm" style={{ color: tc.warning }}>▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Pipeline is top-heavy in proposals ({salesPipelineData[1]?.count} deals, {formatCurrency(salesPipelineData[1]?.value || 0)}) — focus on advancing stalled proposals to negotiation</p>
+            <p className="text-sm" style={{ color: ds.textSecondary }}><span className="font-medium" style={{ color: tc.warning }}>Watch:</span> Pipeline is top-heavy in proposals ({salesPipelineData[1]?.count} deals, {formatCurrency(salesPipelineData[1]?.value || 0)}) — focus on advancing stalled proposals to negotiation</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Total Pipeline</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Total Pipeline</p>
           <p className="text-xl font-bold mt-1">{formatCurrency(totalPipeline)}</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Won (This Quarter)</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Won (This Quarter)</p>
           <p className="text-xl font-bold mt-1" style={{ color: tc.positive }}>{formatCurrency(wonValue)}</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Avg Deal Size</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Avg Deal Size</p>
           <p className="text-xl font-bold mt-1">{formatCurrency(avgDealSize)}</p>
         </Card>
         <Card variant="metric" className="p-5">
-          <p className="text-xs text-[#8888a0] uppercase tracking-wide">Team Quota Attainment</p>
+          <p className="text-xs uppercase tracking-wide" style={{ color: ds.textMuted }}>Team Quota Attainment</p>
           <p className="text-xl font-bold mt-1" style={{ color: teamQuotaPercent >= 80 ? tc.positive : teamQuotaPercent >= 50 ? tc.warning : tc.negative }}>
             {teamQuotaPercent}%
           </p>
@@ -1015,32 +1023,32 @@ function SalesDashboardTab() {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold">Sales Team Performance</h2>
-          <span className="text-xs text-[#8888a0]">Current Quarter</span>
+          <span className="text-xs" style={{ color: ds.textMuted }}>Current Quarter</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {salesTeamMembers.map((member, idx) => {
             const quotaPct = Math.round((member.wonValue / member.quota) * 100);
             return (
-              <div key={member.name} className="bg-[#1a1a26] border border-[#2a2a3d] rounded-xl p-4 space-y-3">
+              <div key={member.name} className="rounded-xl p-4 space-y-3" style={{ backgroundColor: ds.inputBg, border: `1px solid ${ds.divider}` }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: TEAM_COLORS[idx] + '25', color: TEAM_COLORS[idx] }}>
                     {member.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{member.name}</p>
-                    <p className="text-xs text-[#8888a0]">{member.role}</p>
+                    <p className="text-xs" style={{ color: ds.textMuted }}>{member.role}</p>
                   </div>
                 </div>
 
                 {/* Quota Progress Bar */}
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-[#8888a0]">Quota</span>
+                    <span style={{ color: ds.textMuted }}>Quota</span>
                     <span style={{ color: quotaPct >= 80 ? tc.positive : quotaPct >= 50 ? tc.warning : tc.negative }}>
                       {quotaPct}% ({formatCurrency(member.wonValue)} / {formatCurrency(member.quota)})
                     </span>
                   </div>
-                  <div className="w-full h-2 bg-[#2a2a3d] rounded-full overflow-hidden">
+                  <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
@@ -1053,27 +1061,27 @@ function SalesDashboardTab() {
 
                 {/* Key Metrics */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-[#12121a] rounded-lg p-2">
-                    <p className="text-[#8888a0]">Pipeline</p>
+                  <div className="rounded-lg p-2" style={{ backgroundColor: ds.cardBg }}>
+                    <p style={{ color: ds.textMuted }}>Pipeline</p>
                     <p className="font-semibold">{formatCurrency(member.pipelineValue)}</p>
                   </div>
-                  <div className="bg-[#12121a] rounded-lg p-2">
-                    <p className="text-[#8888a0]">Win Rate</p>
+                  <div className="rounded-lg p-2" style={{ backgroundColor: ds.cardBg }}>
+                    <p style={{ color: ds.textMuted }}>Win Rate</p>
                     <p className="font-semibold">{member.winRate}%</p>
                   </div>
-                  <div className="bg-[#12121a] rounded-lg p-2">
-                    <p className="text-[#8888a0]">Deals</p>
+                  <div className="rounded-lg p-2" style={{ backgroundColor: ds.cardBg }}>
+                    <p style={{ color: ds.textMuted }}>Deals</p>
                     <p className="font-semibold">{member.wonDeals}W / {member.deals - member.wonDeals}O</p>
                   </div>
-                  <div className="bg-[#12121a] rounded-lg p-2">
-                    <p className="text-[#8888a0]">Avg Cycle</p>
+                  <div className="rounded-lg p-2" style={{ backgroundColor: ds.cardBg }}>
+                    <p style={{ color: ds.textMuted }}>Avg Cycle</p>
                     <p className="font-semibold">{member.avgCycleTime}d</p>
                   </div>
                 </div>
 
                 {/* Sparkline Trend */}
                 <div>
-                  <p className="text-xs text-[#8888a0] mb-1">Monthly Closed</p>
+                  <p className="text-xs mb-1" style={{ color: ds.textMuted }}>Monthly Closed</p>
                   <ResponsiveContainer width="100%" height={40}>
                     <AreaChart data={member.monthlyTrend}>
                       <defs>
@@ -1098,15 +1106,15 @@ function SalesDashboardTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#2a2a3d]">
-                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Rank</th>
-                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Rep</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Won Revenue</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Pipeline</th>
-                <th className="text-center py-3 text-xs text-[#8888a0] font-medium">Win Rate</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Avg Deal</th>
-                <th className="text-center py-3 text-xs text-[#8888a0] font-medium">Quota %</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Top Source</th>
+              <tr style={{ borderBottom: `1px solid ${ds.divider}`, color: ds.textMuted }}>
+                <th className="text-left py-3 text-xs font-medium">Rank</th>
+                <th className="text-left py-3 text-xs font-medium">Rep</th>
+                <th className="text-right py-3 text-xs font-medium">Won Revenue</th>
+                <th className="text-right py-3 text-xs font-medium">Pipeline</th>
+                <th className="text-center py-3 text-xs font-medium">Win Rate</th>
+                <th className="text-right py-3 text-xs font-medium">Avg Deal</th>
+                <th className="text-center py-3 text-xs font-medium">Quota %</th>
+                <th className="text-right py-3 text-xs font-medium">Top Source</th>
               </tr>
             </thead>
             <tbody>
@@ -1115,7 +1123,7 @@ function SalesDashboardTab() {
                 .map((member, rank) => {
                   const quotaPct = Math.round((member.wonValue / member.quota) * 100);
                   return (
-                    <tr key={member.name} className="border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26]">
+                    <tr key={member.name} className="hover:bg-[#1a1a26]" style={{ borderBottom: '1px solid ' + ds.divider + '80' }}>
                       <td className="py-3">
                         <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                           rank === 0 ? 'bg-[#eab308]/20 text-[#eab308]' : rank === 1 ? 'bg-[#8888a0]/20 text-[#c0c0cc]' : rank === 2 ? 'bg-[#ef9d44]/20 text-[#ef9d44]' : 'bg-[#2a2a3d] text-[#8888a0]'
@@ -1130,7 +1138,7 @@ function SalesDashboardTab() {
                           </div>
                           <div>
                             <p className="font-medium">{member.name}</p>
-                            <p className="text-[10px] text-[#8888a0]">{member.role}</p>
+                            <p className="text-[10px]" style={{ color: ds.textMuted }}>{member.role}</p>
                           </div>
                         </div>
                       </td>
@@ -1138,7 +1146,7 @@ function SalesDashboardTab() {
                       <td className="py-3 text-right">{formatCurrency(member.pipelineValue)}</td>
                       <td className="py-3 text-center">
                         <div className="flex items-center gap-2 justify-center">
-                          <div className="w-12 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                          <div className="w-12 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
                             <div className="h-full rounded-full" style={{
                               backgroundColor: member.winRate >= 45 ? tc.positive : member.winRate >= 35 ? tc.warning : tc.tertiary,
                               width: `${member.winRate}%`
@@ -1153,7 +1161,7 @@ function SalesDashboardTab() {
                           {quotaPct}%
                         </Badge>
                       </td>
-                      <td className="py-3 text-right text-[#8888a0]">{member.leadSource}</td>
+                      <td className="py-3 text-right" style={{ color: ds.textMuted }}>{member.leadSource}</td>
                     </tr>
                   );
                 })}
@@ -1169,9 +1177,9 @@ function SalesDashboardTab() {
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={salesByMonth}>
               <CartesianGrid strokeDasharray="3 3" stroke={ch.gridColor} vertical={false} />
-              <XAxis dataKey="month" stroke="#8888a0" style={{ fontSize: '0.7rem' }} />
-              <YAxis stroke="#8888a0" style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
-              <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => formatFullCurrency(Number(v))} />
+              <XAxis dataKey="month" stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} />
+              <YAxis stroke={ds.textMuted} style={{ fontSize: '0.7rem' }} tickFormatter={(v) => formatCurrency(v)} />
+              <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => formatFullCurrency(Number(v))} />
               <Bar dataKey="closed" fill={tc.positive} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Closed" />
               <Bar dataKey="pipeline" fill={tc.primary} radius={[ch.barRadius, ch.barRadius, 0, 0]} name="Pipeline" opacity={0.5} />
             </BarChart>
@@ -1189,14 +1197,14 @@ function SalesDashboardTab() {
                     <Cell key={i} fill={theme.series[i] || '#8888a0'} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: '#e8e8f0' }} formatter={(v: any) => `${v}%`} />
+                <Tooltip contentStyle={{ backgroundColor: ch.tooltipBg, border: `1px solid ${ch.tooltipBorder}`, borderRadius: '0.5rem', color: ds.textPrimary }} formatter={(v: any) => `${v}%`} />
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-2 flex-1">
               {leadSourceData.map((source, i) => (
                 <div key={source.name} className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: theme.series[i] || '#8888a0' }} />
-                  <span className="text-sm text-[#8888a0] flex-1">{source.name}</span>
+                  <span className="text-sm flex-1" style={{ color: ds.textMuted }}>{source.name}</span>
                   <span className="text-sm font-semibold">{source.value}%</span>
                 </div>
               ))}
@@ -1211,26 +1219,26 @@ function SalesDashboardTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#2a2a3d]">
-                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Project</th>
-                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Client</th>
-                <th className="text-left py-3 text-xs text-[#8888a0] font-medium">Rep</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Value</th>
-                <th className="text-center py-3 text-xs text-[#8888a0] font-medium">Probability</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Weighted</th>
-                <th className="text-right py-3 text-xs text-[#8888a0] font-medium">Stage</th>
+              <tr style={{ borderBottom: `1px solid ${ds.divider}`, color: ds.textMuted }}>
+                <th className="text-left py-3 text-xs font-medium">Project</th>
+                <th className="text-left py-3 text-xs font-medium">Client</th>
+                <th className="text-left py-3 text-xs font-medium">Rep</th>
+                <th className="text-right py-3 text-xs font-medium">Value</th>
+                <th className="text-center py-3 text-xs font-medium">Probability</th>
+                <th className="text-right py-3 text-xs font-medium">Weighted</th>
+                <th className="text-right py-3 text-xs font-medium">Stage</th>
               </tr>
             </thead>
             <tbody>
               {recentDeals.map((deal) => (
-                <tr key={deal.name} className="border-b border-[#2a2a3d]/50 hover:bg-[#1a1a26]">
+                <tr key={deal.name} className="hover:bg-[#1a1a26]" style={{ borderBottom: '1px solid ' + ds.divider + '80' }}>
                   <td className="py-3 font-medium">{deal.name}</td>
-                  <td className="py-3 text-[#8888a0]">{deal.client}</td>
-                  <td className="py-3 text-[#8888a0] text-xs">{deal.rep}</td>
+                  <td className="py-3" style={{ color: ds.textMuted }}>{deal.client}</td>
+                  <td className="py-3 text-xs" style={{ color: ds.textMuted }}>{deal.rep}</td>
                   <td className="py-3 text-right font-semibold">{formatFullCurrency(deal.value)}</td>
                   <td className="py-3 text-center">
                     <div className="flex items-center gap-2 justify-center">
-                      <div className="w-16 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                      <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: ds.divider }}>
                         <div
                           className="h-full rounded-full"
                           style={{
@@ -1264,16 +1272,18 @@ function SalesDashboardTab() {
 function DemoBanner({ onDismiss }: { onDismiss: () => void }) {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ds = theme.dashboard;
 
   return (
     <div className="relative rounded-xl p-5 mb-2" style={{
       backgroundImage: `linear-gradient(to right, ${tc.primary}1a, transparent, ${tc.primary}1a)`,
-      backgroundColor: '#1a1a26',
+      backgroundColor: ds.briefBg,
       border: `1px solid ${tc.primary + '4d'}`
     }}>
       <button
         onClick={onDismiss}
-        className="absolute top-3 right-3 text-[#8888a0] hover:text-[#e8e8f0] transition"
+        className="absolute top-3 right-3 hover:text-[#e8e8f0] transition"
+        style={{ color: ds.textMuted }}
         aria-label="Dismiss banner"
       >
         ✕
@@ -1283,8 +1293,8 @@ function DemoBanner({ onDismiss }: { onDismiss: () => void }) {
           <Eye size={20} style={{ color: tc.primary + 'e0' }} />
         </div>
         <div>
-          <p className="text-sm font-semibold text-[#e8e8f0] mb-1">Welcome! You&apos;re viewing sample data.</p>
-          <p className="text-sm text-[#b0b0c8] leading-relaxed">
+          <p className="text-sm font-semibold mb-1" style={{ color: ds.textPrimary }}>Welcome! You&apos;re viewing sample data.</p>
+          <p className="text-sm leading-relaxed" style={{ color: ds.textSecondary }}>
             Once your platforms are connected, this dashboard becomes your real-time financial command center.
             One thing to keep in mind — the accuracy of your dashboard depends on the accuracy of your books.
             If anything looks off or you want help getting your data dialed in, our team at{' '}
@@ -1303,6 +1313,7 @@ function DemoBanner({ onDismiss }: { onDismiss: () => void }) {
 export default function DashboardContent() {
   const { theme } = useChartTheme();
   const tc = theme.colors;
+  const ds = theme.dashboard;
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showDemoBanner, setShowDemoBanner] = useState(true);
 
@@ -1312,7 +1323,7 @@ export default function DashboardContent() {
       {showDemoBanner && <DemoBanner onDismiss={() => setShowDemoBanner(false)} />}
 
       {/* Tab Navigation */}
-      <div className="flex gap-1 overflow-x-auto pb-1 border-b border-[#2a2a3d]">
+      <div className="flex gap-1 overflow-x-auto pb-1" style={{ borderBottom: `1px solid ${ds.divider}` }}>
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -1321,11 +1332,13 @@ export default function DashboardContent() {
               backgroundColor: tc.primary + '26',
               color: tc.primary + 'e0',
               borderBottom: `2px solid ${tc.primary}`,
-            } : {}}
+            } : {
+              color: ds.textMuted
+            }}
             className={`px-4 py-2.5 text-sm font-medium rounded-t-lg whitespace-nowrap transition-all ${
               activeTab === tab.key
                 ? ''
-                : 'text-[#8888a0] hover:text-[#e8e8f0] hover:bg-[#1a1a26]'
+                : 'hover:bg-[#1a1a26]'
             }`}
           >
             {tab.label}
