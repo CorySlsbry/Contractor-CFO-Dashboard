@@ -6,6 +6,47 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+const PAGE_SIZE = 10000;
+
+/**
+ * Fetches ALL rows from a Supabase table matching the query,
+ * paginating past the default 1000-row limit.
+ */
+async function fetchAllRows(
+  table: string,
+  columns: string,
+  sinceISO: string
+): Promise<any[]> {
+  const allRows: any[] = [];
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(columns)
+      .gte('created_at', sinceISO)
+      .order('created_at', { ascending: true })
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    if (error) {
+      console.error(`Error fetching ${table} at offset ${offset}:`, error);
+      break;
+    }
+
+    if (data && data.length > 0) {
+      allRows.push(...data);
+      offset += data.length;
+      // If we got fewer rows than the page size, we've reached the end
+      hasMore = data.length === PAGE_SIZE;
+    } else {
+      hasMore = false;
+    }
+  }
+
+  return allRows;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
@@ -14,19 +55,11 @@ export async function GET(request: NextRequest) {
     since.setDate(since.getDate() - days);
     const sinceISO = since.toISOString();
 
-    // 1. Page views by day
-    const { data: rawViews } = await supabase
-      .from('page_analytics')
-      .select('created_at, page, event')
-      .gte('created_at', sinceISO)
-      .order('created_at', { ascending: true });
+    // 1. Page views — paginate to get ALL rows (no 1000-row cap)
+    const rawViews = await fetchAllRows('page_analytics', 'created_at, page, event, referrer, utm_source', sinceISO);
 
-    // 2. Signups (new profiles created)
-    const { data: rawSignups } = await supabase
-      .from('profiles')
-      .select('created_at')
-      .gte('created_at', sinceISO)
-      .order('created_at', { ascending: true });
+    // 2. Signups (new profiles created) — also paginate
+    const rawSignups = await fetchAllRows('profiles', 'created_at', sinceISO);
 
     // 3. Current subscription counts
     const { data: orgs } = await supabase
