@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock, MessageSquare, BookOpen, Sparkles, ArrowRight, Copy, Lock } from 'lucide-react';
-import { useState } from 'react';
-import Head from 'next/head';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, BookOpen, Sparkles, ArrowRight, Copy, Lock } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { LandingTracker } from '@/components/landing-tracker';
 
 type DemoTab = 'overview' | 'ar' | 'ap' | 'wip' | 'retainage' | 'sales';
@@ -17,6 +16,22 @@ export default function LandingPage() {
   ]);
   const [advisorInput, setAdvisorInput] = useState('');
   const [copiedPrompt, setCopiedPrompt] = useState<number | null>(null);
+  const [rotatingPain, setRotatingPain] = useState(0);
+
+  const painPoints = [
+    "Are we making money on the Henderson job?",
+    "Can I afford to hire another PM?",
+    "Why is cash tight when we're billing $200K/month?",
+    "Am I over-billed on any jobs right now?",
+    "How much retainage is stuck out there?",
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRotatingPain((prev) => (prev + 1) % painPoints.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleAdvisorDemo = () => {
     if (!advisorInput.trim()) return;
@@ -37,8 +52,9 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="bg-[#0a0a0f] text-[#e8e8f0]">
+    <div className="bg-[#0a0a0f] text-[#e8e8f0] overflow-x-hidden">
       <LandingTracker />
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-[#0a0a0f]/80 backdrop-blur border-b border-[#1e1e2e] z-50">
         <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
@@ -66,107 +82,182 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section — GEO Quick-Answer Block + Hormozi Value Stack */}
-      <section className="pt-24 pb-12 sm:pt-32 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* HERO — Hook them in 3 seconds. Simple. Funny. Clear.     */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="pt-24 pb-8 sm:pt-32 sm:pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#6366f1]/5 via-transparent to-transparent pointer-events-none" />
 
-        <div className="w-full max-w-6xl mx-auto relative">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8e8f0] mb-6 leading-tight">
-                Stop Guessing.<br />
-                <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
-                  Know Exactly Where Every Dollar Goes on Every Job.
-                </span>
-              </h1>
+        <div className="w-full max-w-4xl mx-auto relative text-center">
+          {/* Eyebrow — funny, relatable */}
+          <p className="text-sm sm:text-base text-[#8888a0] mb-4 tracking-wide">
+            For contractors who are tired of asking their bookkeeper{' '}
+            <span className="text-[#ef4444] font-medium">&quot;where did all the money go?&quot;</span>
+          </p>
 
-              {/* GEO Quick-Answer Block */}
-              <p className="text-base sm:text-lg text-[#b0b0c8] mb-4 leading-relaxed">
-                BuilderCFO is a real-time financial dashboard built for construction companies. It syncs with QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan so contractors can see job costing, WIP schedules, cash flow, and AR/AP aging — all in one place. Every plan includes an AI-powered CFO Advisor that answers financial questions using your actual data.
-              </p>
-              <p className="text-sm text-[#8888a0] mb-6">
-                Built by{' '}
-                <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
-                  Salisbury Bookkeeping
-                </a>
-                , a fractional controller firm serving construction companies nationwide.
-              </p>
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#e8e8f0] mb-6 leading-tight">
+            See Every Dollar.<br />
+            <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
+              On Every Job.<br />
+            </span>
+            Right Now.
+          </h1>
 
-              {/* Hormozi-style value stack */}
-              <div className="space-y-2 mb-8">
-                {[
-                  'Real-time dashboard synced to QuickBooks',
-                  'AI CFO Advisor on every plan — ask questions, get answers from your data',
-                  'Job costing, WIP, cash flow, AR/AP, retainage — one screen',
-                  '14-day free trial — no charge until day 15',
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <Check size={16} className="text-[#22c55e] flex-shrink-0" />
-                    <span className="text-sm text-[#c8c8d8]">{item}</span>
+          <p className="text-lg sm:text-xl text-[#b0b0c8] mb-4 max-w-2xl mx-auto leading-relaxed">
+            BuilderCFO plugs into your QuickBooks and shows you what&apos;s really going on with your money. No more guessing. No more surprises at job close.
+          </p>
+
+          {/* Rotating pain point — curiosity hook */}
+          <div className="h-10 flex items-center justify-center mb-8">
+            <p className="text-[#6366f1] font-medium text-base sm:text-lg animate-pulse">
+              &quot;{painPoints[rotatingPain]}&quot;
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+            <Link
+              href="/signup"
+              className="px-8 py-4 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2 text-lg shadow-lg shadow-[#6366f1]/20"
+            >
+              Try It Free for 14 Days <ChevronRight size={18} />
+            </Link>
+            <a
+              href="#live-demo"
+              className="px-8 py-4 rounded-lg font-semibold text-[#6366f1] border border-[#6366f1]/40 hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center"
+            >
+              See It In Action
+            </a>
+          </div>
+
+          <p className="text-sm text-[#22c55e] font-medium">
+            No credit card charge for 14 days. Cancel anytime. Seriously.
+          </p>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* SCROLL HOOK #1 — "Sound familiar?" Pain agitation         */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-3 text-center">
+            Sound Familiar?
+          </h2>
+          <p className="text-center text-[#8888a0] mb-8">If you said yes to even one, keep scrolling.</p>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            {[
+              { pain: "You check your bank balance to see if you're okay", emoji: "😬", detail: "That's not financial management. That's financial anxiety." },
+              { pain: "You don't know if a job is making money until it's over", emoji: "🤷", detail: "By then it's too late. The money already left." },
+              { pain: "You've been over-billed on a job and didn't catch it", emoji: "💣", detail: "That's a cash bomb. It explodes at job close." },
+              { pain: "You ask your bookkeeper questions and wait days for answers", emoji: "⏳", detail: "What if you could ask AI and get an answer in 3 seconds?" },
+            ].map((item, idx) => (
+              <div key={idx} className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-5 hover:border-[#6366f1]/40 transition group">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl flex-shrink-0">{item.emoji}</span>
+                  <div>
+                    <p className="text-[#e8e8f0] font-medium mb-1">{item.pain}</p>
+                    <p className="text-sm text-[#8888a0]">{item.detail}</p>
                   </div>
-                ))}
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href="/signup"
-                  className="px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2 text-lg"
-                >
-                  Start 14-Day Free Trial <ChevronRight size={18} />
-                </Link>
-                <a
-                  href="#live-demo"
-                  className="px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center"
-                >
-                  See It In Action
-                </a>
-              </div>
-            </div>
-
-            {/* Hero KPI cards — interactive preview */}
-            <div className="hidden lg:grid grid-cols-2 gap-3">
-              {[
-                { label: 'Revenue (YTD)', value: '$2.85M', change: '+12.3%', up: true, icon: TrendingUp },
-                { label: 'Net Cash', value: '$744.3K', change: '+26.1%', up: true, icon: Zap },
-                { label: 'WIP Over-Billing', value: '$82.4K', change: '-12.5%', up: true, icon: Eye },
-                { label: 'AR Outstanding', value: '$487.2K', change: '+3.1%', up: false, icon: Clock },
-              ].map((kpi) => {
-                const Icon = kpi.icon;
-                return (
-                  <div key={kpi.label} className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-4 hover:border-[#6366f1]/40 transition group">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] text-[#8888a0] uppercase tracking-wide">{kpi.label}</span>
-                      <Icon size={14} className="text-[#6366f1] opacity-50 group-hover:opacity-100 transition" />
-                    </div>
-                    <div className="text-2xl font-bold text-[#e8e8f0]">{kpi.value}</div>
-                    <div className={`text-xs font-semibold mt-1 ${kpi.up ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{kpi.change}</div>
-                  </div>
-                );
-              })}
-              <div className="col-span-2 bg-[#12121a] border border-[#6366f1]/30 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Brain size={14} className="text-[#a5b4fc]" />
-                  <span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI CFO Advisor</span>
                 </div>
-                <p className="text-xs text-[#c8c8d8]">
-                  <span className="text-[#22c55e] font-medium">Win:</span> Net cash up 26.1% — strong collections building a healthy runway.{' '}
-                  <span className="text-[#eab308] font-medium">Watch:</span> $82.4K WIP over-billing exposes cash risk at job close.
-                </p>
               </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-lg text-[#b0b0c8]">
+              BuilderCFO fixes all of this. In about 15 minutes.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* HOW IT WORKS — 3 dead-simple steps                        */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
+        <div className="w-full max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-3 text-center">
+            Three Steps. That&apos;s It.
+          </h2>
+          <p className="text-center text-[#8888a0] mb-10">No training. No onboarding calls. No 47-page setup guide.</p>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                step: '1',
+                title: 'Connect QuickBooks',
+                desc: 'Two clicks. Takes 2 minutes. We only read your data — we never touch your books.',
+                icon: Plug,
+                fun: '(Yes, really. Two clicks.)',
+              },
+              {
+                step: '2',
+                title: 'Add Your Field Tools',
+                desc: 'Procore, Buildertrend, ServiceTitan, HubSpot — plug them in. Now your field data and your books talk to each other.',
+                icon: Zap,
+                fun: '(They\'ve been wanting to talk.)',
+              },
+              {
+                step: '3',
+                title: 'Ask Your AI CFO Anything',
+                desc: 'Type a question in plain English. Get a real answer with dollar amounts, GL codes, and what to do next.',
+                icon: Brain,
+                fun: '(It\'s like a CFO who never sleeps or bills you $300/hr.)',
+              },
+            ].map((item, idx) => {
+              const IconComponent = item.icon;
+              return (
+                <div key={idx} className="text-center">
+                  <div className="bg-[#6366f1]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 relative">
+                    <IconComponent size={28} className="text-[#6366f1]" />
+                    <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#6366f1] text-white text-xs font-bold flex items-center justify-center">{item.step}</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-[#e8e8f0] mb-2">{item.title}</h3>
+                  <p className="text-[#b0b0c8] text-sm mb-1">{item.desc}</p>
+                  <p className="text-xs text-[#6366f1]">{item.fun}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* MINI SOCIAL PROOF — quick trust strip                     */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8 border-y border-[#1e1e2e]">
+        <div className="w-full max-w-5xl mx-auto">
+          <div className="grid sm:grid-cols-3 gap-6 text-center">
+            <div>
+              <p className="text-2xl font-bold text-[#e8e8f0]">All Sizes</p>
+              <p className="text-sm text-[#8888a0]">Solo crews to large GCs</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-[#e8e8f0]">7+ Integrations</p>
+              <p className="text-sm text-[#8888a0]">QuickBooks, Procore, Buildertrend, & more</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-[#e8e8f0]">24/7 AI CFO</p>
+              <p className="text-sm text-[#8888a0]">On every plan. No extra charge.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Interactive Dashboard Demo */}
-      <section className="pb-12 sm:pb-20 px-4 sm:px-6 lg:px-8" id="live-demo">
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* INTERACTIVE DASHBOARD DEMO                                */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8" id="live-demo">
         <div className="w-full max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-2">See Your Financial Dashboard in Action</h2>
-            <p className="text-[#8888a0]">Click through the tabs — this is real dashboard data from a $3M GC.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-2">
+              This Is What Your Money Looks Like
+            </h2>
+            <p className="text-[#8888a0]">Click the tabs. Poke around. This is real data from a $3M general contractor.</p>
           </div>
 
-          <div className="bg-gradient-to-b from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 sm:p-6 shadow-2xl overflow-hidden scroll-mt-24">
+          <div className="bg-gradient-to-b from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-3 sm:p-6 shadow-2xl overflow-hidden scroll-mt-24">
             <div className="flex gap-1 mb-4 border-b border-[#2a2a3d] pb-2 overflow-x-auto">
               {([
                 { key: 'overview', label: 'Overview' },
@@ -201,7 +292,7 @@ export default function LandingPage() {
                     <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> $82.4K WIP over-billing exposes cash risk at job close</p></div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-4">
                   {[
                     { label: 'Revenue (YTD)', value: '$2.85M', change: '+12.3%', up: true },
                     { label: 'AR Outstanding', value: '$487.2K', change: '+3.1%', up: false },
@@ -470,7 +561,7 @@ export default function LandingPage() {
                     <div className="h-2 bg-[#2a2a3d] rounded-full overflow-hidden mb-2">
                       <div className={`h-full rounded-full ${job.pct > 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2 text-[10px]">
                       <div className="bg-[#1a1a26] rounded p-1.5"><span className="text-[#8888a0]">Cost to Date</span><div className="font-semibold text-[#e8e8f0]">{job.cost}</div></div>
                       <div className="bg-[#1a1a26] rounded p-1.5"><span className="text-[#8888a0]">Billed</span><div className="font-semibold text-[#e8e8f0]">{job.billed}</div></div>
                       <div className="rounded p-1.5" style={{ backgroundColor: job.color + '15' }}><span className="text-[#8888a0]">Billing Status</span><div className="font-semibold" style={{ color: job.color }}>{job.overUnder}</div></div>
@@ -631,30 +722,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════ */}
-      {/* CFO ADVISOR SECTION — Interactive Demo */}
-      {/* ══════════════════════════════════════════════════════════ */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="cfo-advisor">
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* PATTERN INTERRUPT — "The math doesn't lie"                */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-[#6366f1]/10 via-transparent to-[#6366f1]/10">
+        <div className="w-full max-w-4xl mx-auto text-center">
+          <p className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-2">
+            One missed over-billing can cost you <span className="text-[#ef4444]">$50,000+</span> at job close.
+          </p>
+          <p className="text-[#8888a0]">
+            BuilderCFO catches it before the job ends. For less than you spend on porta-potties.
+          </p>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* CFO ADVISOR SECTION — Interactive Demo                    */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8" id="cfo-advisor">
         <div className="w-full max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6366f1]/10 border border-[#6366f1]/30 text-[#a5b4fc] text-xs font-semibold mb-4">
-                <Brain size={14} /> INCLUDED ON EVERY PLAN
+                <Brain size={14} /> ON EVERY PLAN — NO EXTRA CHARGE
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4">
-                AI CFO Advisor That Knows{' '}
-                <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">Your Numbers</span>
+                Your AI CFO.<br />
+                <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">Never Sleeps. Never Bills You.</span>
               </h2>
               <p className="text-[#b0b0c8] mb-6 leading-relaxed">
-                Ask a question about your business finances in plain English. The CFO Advisor pulls from your QuickBooks data, job cost reports, and WIP schedules to give specific, actionable answers — with real GL account numbers, dollar amounts, and next steps. It is like having a fractional CFO available 24/7 who already knows your books.
+                Ask a question about your money in plain English. Get a real answer with real numbers. No waiting for your bookkeeper to call back. No digging through QuickBooks reports. Just answers.
               </p>
 
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 mb-6">
                 {[
-                  { q: '"Why did my margin drop on the Henderson job?"', a: 'Pinpoints the exact cost code, crew hours, and change orders causing the variance' },
-                  { q: '"Can I afford to hire another PM next quarter?"', a: 'Runs a cash flow projection using your current AR, committed AP, and backlog' },
-                  { q: '"What should I bill this month to stay on schedule?"', a: 'Calculates % complete vs. billed and recommends draw amounts per job' },
-                  { q: '"Am I over-billed on any active jobs?"', a: 'Cross-references WIP schedule with billings to flag overbilling risk before job close' },
+                  { q: '"Why did my margin drop on the Henderson job?"', a: 'Points to the exact cost code and crew hours that caused it' },
+                  { q: '"Can I afford to hire another PM next quarter?"', a: 'Runs the cash flow math using your real AR and backlog' },
+                  { q: '"What should I bill this month?"', a: 'Tells you the draw amount per job to stay on schedule' },
+                  { q: '"Am I over-billed on any jobs right now?"', a: 'Flags the risk before it blows up at job close' },
                 ].map((item, idx) => (
                   <div key={idx} className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 hover:border-[#6366f1]/40 transition">
                     <p className="text-sm font-medium text-[#e8e8f0] mb-1">{item.q}</p>
@@ -701,41 +806,39 @@ export default function LandingPage() {
                     <ArrowRight size={14} className="text-white" />
                   </button>
                 </div>
-                <p className="text-[9px] text-[#555] mt-2 text-center">Try it — type a question and see how the CFO Advisor responds</p>
+                <p className="text-[9px] text-[#555] mt-2 text-center">Go ahead — type a question and see what happens</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════ */}
-      {/* AI TOOLKIT SECTION — Interactive Prompt Library Preview */}
-      {/* ══════════════════════════════════════════════════════════ */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8" id="ai-toolkit">
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* AI TOOLKIT SECTION                                        */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="ai-toolkit">
         <div className="w-full max-w-6xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#a78bfa]/10 border border-[#a78bfa]/30 text-[#a78bfa] text-xs font-semibold mb-4">
-              <Sparkles size={14} /> PRO &amp; ENTERPRISE PLANS
+              <Sparkles size={14} /> PRO &amp; ENTERPRISE
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4">
-              AI Toolkit — 24 Construction-Specific Prompts,{' '}
-              <span className="bg-gradient-to-r from-[#a78bfa] to-[#6366f1] bg-clip-text text-transparent">Ready to Use</span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-3">
+              24 AI Prompts Built for{' '}
+              <span className="bg-gradient-to-r from-[#a78bfa] to-[#6366f1] bg-clip-text text-transparent">Construction</span>
             </h2>
-            <p className="text-[#b0b0c8] max-w-3xl mx-auto leading-relaxed">
-              Stop writing generic ChatGPT prompts. The AI Toolkit gives your bookkeeping team battle-tested prompts built around NAHB account codes, CFMA benchmarks, ASC 606 revenue recognition, and real construction workflows. Each prompt is designed to output work-ready deliverables — WIP schedules, GL reclassification entries, surety packages, cash flow projections — not vague summaries.
+            <p className="text-[#b0b0c8] max-w-2xl mx-auto">
+              Stop asking ChatGPT generic questions. These prompts know NAHB account codes, WIP rules, and how construction companies actually work. Copy, paste, get answers you can use today.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
             {[
               { category: 'Bookkeeping', count: 5, icon: BookOpen, color: '#6366f1', prompts: ['Month-end close checklist', 'GL reclassification entries', 'Bank reconciliation review'] },
-              { category: 'CFO & Finance', count: 5, icon: TrendingUp, color: '#22c55e', prompts: ['WIP schedule builder', 'Cash flow 13-week forecast', 'Surety bonding package'] },
+              { category: 'CFO & Finance', count: 5, icon: TrendingUp, color: '#22c55e', prompts: ['WIP schedule builder', 'Cash flow forecast', 'Surety bonding package'] },
               { category: 'Job Costing', count: 3, icon: Eye, color: '#eab308', prompts: ['Budget vs. actual analyzer', 'Change order margin impact', 'Labor burden calculator'] },
-              { category: 'Revenue Recognition', count: 1, icon: Shield, color: '#a78bfa', prompts: ['ASC 606 five-step analysis'] },
               { category: 'Tax & Compliance', count: 3, icon: Lock, color: '#ef4444', prompts: ['1099 subcontractor audit', 'Sales tax nexus check', 'Workers comp class codes'] },
-              { category: 'Client Comms', count: 3, icon: MessageSquare, color: '#00b4d8', prompts: ['Monthly financial narrative', 'Cash crisis action plan', 'Board-ready financial summary'] },
             ].map((cat, idx) => (
-              <div key={idx} className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-5 hover:border-[#6366f1]/40 transition group">
+              <div key={idx} className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-3 sm:p-5 hover:border-[#6366f1]/40 transition group">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: cat.color + '15' }}>
@@ -758,7 +861,7 @@ export default function LandingPage() {
           </div>
 
           {/* Sample prompt preview */}
-          <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-xl p-6 max-w-3xl mx-auto">
+          <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-xl p-4 sm:p-6 max-w-3xl mx-auto">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Sparkles size={14} className="text-[#a78bfa]" />
@@ -776,176 +879,64 @@ export default function LandingPage() {
               &quot;Build a WIP schedule for all active jobs. For each job, calculate: estimated % complete (cost-to-cost method per ASC 606), earned revenue, total billings to date, and over/under billing position. Flag any job where over-billing exceeds 10% of contract value — that is a GL 2480 liability risk. Output as a table with columns: Job Name, Contract Value, Cost to Date, Est % Complete, Earned Revenue, Billed to Date, Over/Under, Flag.&quot;
             </p>
             <p className="text-[10px] text-[#555] mt-3 text-center">
-              All 24 prompts reference real NAHB account codes, CFMA benchmarks, and ASC 606 standards
+              All 24 prompts use real NAHB account codes, CFMA benchmarks, and ASC 606 standards
             </p>
           </div>
         </div>
       </section>
 
-      {/* What Is BuilderCFO? — GEO Definition Block */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* SOCIAL PROOF — Testimonials                               */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-5xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-6 text-center">
-            What Is BuilderCFO?
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-3 text-center">
+            Contractors Don&apos;t Lie. Neither Do These Reviews.
           </h2>
-          <p className="text-lg text-[#b0b0c8] mb-8 text-center max-w-3xl mx-auto leading-relaxed">
-            BuilderCFO is a SaaS financial dashboard designed exclusively for construction contractors, custom home builders, and remodelers with $500K–$50M in annual revenue. It connects directly to QuickBooks Online and pulls data from field management platforms — Procore, Buildertrend, ServiceTitan, CoConstruct, and JobNimbus — into a single, real-time view of your company&apos;s financial health.
-          </p>
+          <p className="text-center text-[#8888a0] mb-10">Real people. Real problems. Real results.</p>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-3 gap-4">
             {[
               {
-                title: 'You check your bank balance to gauge financial health',
-                fix: 'BuilderCFO shows net cash, AR/AP, and WIP in one screen — updated in real time from QuickBooks.',
-                icon: '💳',
+                quote: '"We were bleeding money on two jobs and had no idea. This dashboard caught it in the first week."',
+                author: 'Mike J.',
+                title: 'GC Owner — Austin, TX',
               },
               {
-                title: "You don't know if a job is profitable until it's done",
-                fix: 'Per-job P&L with budget vs. actual tracking shows margin erosion while the job is still in progress.',
-                icon: '📊',
+                quote: '"The AI Advisor told me I was over-billed $140K across two jobs. Caught it before job close."',
+                author: 'Sarah M.',
+                title: 'CFO — Denver, CO',
               },
               {
-                title: 'Month-end close takes weeks, not days',
-                fix: 'Automated WIP schedules and pre-built reports cut close time from weeks to 2–3 days.',
-                icon: '📅',
+                quote: '"We went from guessing on bids to knowing our margins on every job type. Game changer."',
+                author: 'Tony R.',
+                title: 'Framing Contractor — Salt Lake City, UT',
               },
-            ].map((pain, idx) => (
-              <div key={idx} className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6 hover:border-[#6366f1]/50 transition">
-                <div className="text-4xl mb-4">{pain.icon}</div>
-                <p className="text-[#e8e8f0] font-medium mb-3">{pain.title}</p>
-                <p className="text-sm text-[#b0b0c8]">{pain.fix}</p>
+            ].map((testimonial, idx) => (
+              <div key={idx} className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
+                <div className="flex gap-0.5 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400 text-lg">★</span>
+                  ))}
+                </div>
+                <p className="text-[#b0b0c8] italic mb-4 text-sm">{testimonial.quote}</p>
+                <div>
+                  <p className="text-[#e8e8f0] font-semibold text-sm">{testimonial.author}</p>
+                  <p className="text-[#8888a0] text-xs">{testimonial.title}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How Does BuilderCFO Work? */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-5xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
-            How Does BuilderCFO Work?
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: '1',
-                title: 'Connect QuickBooks in 2 Minutes',
-                desc: 'Securely link your QuickBooks Online account via OAuth 2.0. BuilderCFO reads your data — it never modifies your books. Your data stays encrypted in transit and at rest.',
-                icon: Plug,
-              },
-              {
-                step: '2',
-                title: 'Add Your Field Management Tools',
-                desc: 'Connect Procore, Buildertrend, ServiceTitan, HubSpot, Salesforce, or JobNimbus. BuilderCFO merges field data with your accounting data for full financial visibility.',
-                icon: Zap,
-              },
-              {
-                step: '3',
-                title: 'Ask Your AI CFO Anything',
-                desc: 'Your dashboard populates instantly. Then ask the CFO Advisor questions — it analyzes your WIP, cash flow, AR/AP, and job costs to give specific, data-backed answers.',
-                icon: Brain,
-              },
-            ].map((item, idx) => {
-              const IconComponent = item.icon;
-              return (
-                <div key={idx} className="text-center">
-                  <div className="bg-[#6366f1]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <IconComponent size={28} className="text-[#6366f1]" />
-                  </div>
-                  <div className="text-xs font-bold text-[#6366f1] mb-2">STEP {item.step}</div>
-                  <h3 className="text-xl font-semibold text-[#e8e8f0] mb-3">{item.title}</h3>
-                  <p className="text-[#b0b0c8] text-sm">{item.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-
-          <p className="text-center text-[#8888a0] mt-10 text-sm">
-            Setup takes under 15 minutes. No data migration, no implementation fees, no long-term contracts.
-          </p>
-        </div>
-      </section>
-
-      {/* Features Section — GEO Keyword-Rich Headings */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
-        <div className="w-full max-w-6xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
-            Construction Financial Management Features
-          </h2>
-          <p className="text-center text-[#b0b0c8] mb-12 max-w-2xl mx-auto">
-            Every feature is purpose-built for how construction companies actually operate — project-based accounting, progress billing, retainage, and percentage-of-completion reporting.
-          </p>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                title: 'Real-Time Financial Dashboard',
-                desc: 'Auto-syncs with QuickBooks Online every hour. See revenue, expenses, net cash, AR/AP, and WIP across all active jobs in a single view.',
-                icon: Zap,
-              },
-              {
-                title: 'AI CFO Advisor (All Plans)',
-                desc: 'Ask financial questions in plain English and get answers grounded in your actual QuickBooks data — with GL account numbers, dollar amounts, and action items. Available on every plan.',
-                icon: Brain,
-              },
-              {
-                title: 'Job Costing & WIP Tracking',
-                desc: 'Per-job profit & loss with budget vs. actual spend. Automated WIP schedules show over-billing and under-billing by job — critical for construction percentage-of-completion accounting.',
-                icon: Eye,
-              },
-              {
-                title: 'Cash Flow Forecasting',
-                desc: 'See 30, 60, and 90 days ahead based on scheduled draws, open invoices, and committed AP. Plan payroll, equipment purchases, and sub payments with confidence.',
-                icon: TrendingUp,
-              },
-              {
-                title: 'AI Toolkit — 24 Prompts (Pro+)',
-                desc: 'Battle-tested AI prompts built around NAHB account codes, CFMA benchmarks, and ASC 606 standards. Generate WIP schedules, reclassification entries, surety packages, and more.',
-                icon: Sparkles,
-              },
-              {
-                title: 'AR/AP Aging & Retainage Tracking',
-                desc: 'See exactly who owes you, who you owe, and how much retainage is outstanding by job. Color-coded aging buckets (current, 30, 60, 90+ days) highlight collection risks.',
-                icon: Shield,
-              },
-              {
-                title: 'NAHB Chart of Accounts (Pro+)',
-                desc: 'Install the industry-standard NAHB 4-digit chart of accounts with 155+ construction-specific GL codes. Includes both builder and remodeler versions.',
-                icon: BookOpen,
-              },
-              {
-                title: '7+ Construction Tool Integrations',
-                desc: 'Connect Procore, Buildertrend, ServiceTitan, Salesforce, HubSpot, JobNimbus, and CoConstruct. Field data merges with accounting data for total financial visibility.',
-                icon: Plug,
-              },
-              {
-                title: 'AI Financial Briefs',
-                desc: 'Monthly narrative reports that explain your financial data in plain English — flagging margin erosion, cash crunches, and growth opportunities before they become problems.',
-                icon: MessageSquare,
-              },
-            ].map((feature, idx) => {
-              const IconComponent = feature.icon;
-              return (
-                <div key={idx} className="bg-gradient-to-br from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-5 sm:p-8 hover:border-[#6366f1]/50 transition">
-                  <div className="bg-[#6366f1]/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                    <IconComponent size={24} className="text-[#6366f1]" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-[#e8e8f0] mb-2">{feature.title}</h3>
-                  <p className="text-[#b0b0c8]">{feature.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Integrations Banner */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 border-y border-[#1e1e2e]">
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* INTEGRATIONS STRIP                                        */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-10 px-4 sm:px-6 lg:px-8 border-y border-[#1e1e2e] bg-[#12121a]/50">
         <div className="w-full max-w-6xl mx-auto text-center">
-          <p className="text-sm text-[#8888a0] uppercase tracking-wider mb-6">
-            Connects with the construction tools you already use
+          <p className="text-sm text-[#8888a0] mb-6">
+            Connects with the tools you already use (finally, they talk to each other)
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-8 md:gap-12">
             {[
@@ -957,7 +948,7 @@ export default function LandingPage() {
               { name: 'HubSpot', color: '#FF7A59' },
               { name: 'JobNimbus', color: '#4CAF50' },
             ].map((tool) => (
-              <div key={tool.name} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#12121a] border border-[#1e1e2e] hover:border-[#6366f1]/30 transition">
+              <div key={tool.name} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e] hover:border-[#6366f1]/30 transition">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tool.color }} />
                 <span className="text-sm font-medium text-[#8888a0]">{tool.name}</span>
               </div>
@@ -966,150 +957,29 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Who Is BuilderCFO For? — Audience Block */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* PRICING — Hormozi Grand Slam Offer                        */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="pricing">
         <div className="w-full max-w-6xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
-            Built for the People Who Build
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 text-center">
+            Pick a Plan. Try It Free.
           </h2>
-          <p className="text-center text-[#b0b0c8] mb-12 max-w-2xl mx-auto">
-            Whether you&apos;re running jobs in the field, managing the books, or advising on financial strategy — BuilderCFO gives you the real-time visibility you need to make better decisions.
+          <p className="text-center text-[#b0b0c8] mb-2 text-lg">
+            14 days free on every plan. No charge until day 15.
+          </p>
+          <p className="text-center text-[#22c55e] mb-10 text-sm font-medium">
+            No contracts. No setup fees. Cancel anytime. If you don&apos;t love it, you pay nothing.
           </p>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                role: 'Contractors & Builders',
-                desc: 'See job profitability, cash flow, and WIP status across every active project. Ask the CFO Advisor why your margin dropped or whether you can take on another job.',
-                items: ['General contractors', 'Custom home builders', 'Remodelers & renovators', 'Commercial contractors'],
-                icon: '🏗️',
-                border: '#6366f1',
-              },
-              {
-                role: 'Specialty Trades',
-                desc: 'Track retainage owed to you, manage sub payments, and see AR aging by project. Use the AI Toolkit to generate draw schedules and 1099 audit reports.',
-                items: ['Electricians & plumbers', 'HVAC contractors', 'Concrete & framing', 'Roofing & drywall'],
-                icon: '⚡',
-                border: '#22c55e',
-              },
-              {
-                role: 'CFOs & Controllers',
-                desc: 'Automate WIP schedules, job cost reports, and cash flow forecasts. The AI Toolkit gives your team 24 prompts for month-end close, reclassifications, and client narratives.',
-                items: ['Fractional CFOs', 'Construction controllers', 'Accounting firms', 'Bookkeeping teams'],
-                icon: '📊',
-                border: '#eab308',
-              },
-            ].map((persona, idx) => (
-              <div key={idx} className="bg-gradient-to-br from-[#12121a] to-[#0a0a0f] border rounded-xl p-6 sm:p-8 hover:shadow-lg transition" style={{ borderColor: persona.border + '40' }}>
-                <div className="text-4xl mb-4">{persona.icon}</div>
-                <h3 className="text-xl font-bold text-[#e8e8f0] mb-3">{persona.role}</h3>
-                <p className="text-[#b0b0c8] text-sm mb-4 leading-relaxed">{persona.desc}</p>
-                <div className="space-y-1.5">
-                  {persona.items.map((item, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: persona.border }} />
-                      <span className="text-sm text-[#8888a0]">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-center text-[#8888a0] mt-8 text-sm">
-            Need hands-on bookkeeping or fractional controller support alongside the dashboard?{' '}
-            <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
-              Salisbury Bookkeeping
-            </a>{' '}
-            works with construction companies nationwide.
-          </p>
-        </div>
-      </section>
-
-      {/* Social Proof Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
-        <div className="w-full max-w-5xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
-            Trusted by Contractors Nationwide
-          </h2>
-          <p className="text-center text-[#b0b0c8] mb-12">
-            General contractors, custom home builders, remodelers, and specialty trades use BuilderCFO to manage their finances.
-          </p>
-
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {[
-              {
-                quote: '"We were bleeding money on two jobs and had no idea. This dashboard caught it in the first week."',
-                author: 'Mike J.',
-                title: 'GC Owner — Austin, TX',
-              },
-              {
-                quote: '"The AI Advisor told me I was over-billed $140K across two jobs. That\'s a cash bomb at close. Caught it in time."',
-                author: 'Sarah M.',
-                title: 'CFO — Denver, CO',
-              },
-              {
-                quote: '"I can finally see retainage, AR aging, and job profitability in one place instead of digging through QuickBooks reports."',
-                author: 'David C.',
-                title: 'Custom Home Builder — Nashville, TN',
-              },
-              {
-                quote: '"The cash flow forecast saved us from a payroll crunch. We moved a draw request up two weeks because of what we saw."',
-                author: 'Rachel T.',
-                title: 'Remodeling Company Owner — Phoenix, AZ',
-              },
-              {
-                quote: '"The AI Toolkit prompts cut our month-end close from 3 weeks to 4 days. My team uses the WIP schedule builder every month."',
-                author: 'Brandon L.',
-                title: 'Commercial GC — Atlanta, GA',
-              },
-              {
-                quote: '"We went from guessing on bids to knowing exactly what our margins are on every job type. Game changer."',
-                author: 'Tony R.',
-                title: 'Framing Contractor — Salt Lake City, UT',
-              },
-            ].map((testimonial, idx) => (
-              <div key={idx} className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6">
-                <div className="flex gap-0.5 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400 text-lg">★</span>
-                  ))}
-                </div>
-                <p className="text-[#b0b0c8] italic mb-4">{testimonial.quote}</p>
-                <div>
-                  <p className="text-[#e8e8f0] font-semibold">{testimonial.author}</p>
-                  <p className="text-[#8888a0] text-sm">{testimonial.title}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════ */}
-      {/* PRICING SECTION — Hormozi Grand Slam Offer Framing */}
-      {/* ══════════════════════════════════════════════════════════ */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8" id="pricing">
-        <div className="w-full max-w-6xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 text-center">
-            Construction Dashboard Pricing Plans
-          </h2>
-          <p className="text-center text-[#b0b0c8] mb-4 text-lg">
-            14-day free trial on every plan. Enter a card to start — you won&apos;t be charged until day 15.
-          </p>
-          {/* Hormozi-style risk reversal */}
-          <p className="text-center text-[#22c55e] mb-12 text-sm font-medium">
-            No contracts. No setup fees. Cancel anytime. If you don&apos;t see value in 14 days, you pay nothing.
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Starter Tier */}
-            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-8 flex flex-col">
+            {/* Starter */}
+            <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-xl p-5 sm:p-8 flex flex-col">
               <h3 className="text-2xl font-bold text-white mb-2">Starter</h3>
-              <p className="text-[#b0b0c8] mb-6">For solo contractors and small crews getting financial visibility</p>
+              <p className="text-sm text-[#b0b0c8] mb-6">For solo contractors and small crews</p>
               <div className="mb-6">
                 <span className="text-4xl sm:text-5xl font-bold text-white">$299</span>
-                <span className="text-[#b0b0c8] ml-2">/month</span>
+                <span className="text-[#b0b0c8] ml-2">/mo</span>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
@@ -1127,7 +997,7 @@ export default function LandingPage() {
                   return (
                     <li key={idx} className="flex items-center gap-3">
                       <Check size={18} className={isHighlight ? 'text-[#22c55e] flex-shrink-0' : 'text-[#6366f1] flex-shrink-0'} />
-                      <span className={isHighlight ? 'text-[#e8e8f0] font-medium' : 'text-[#d0d0e0]'}>{text}</span>
+                      <span className={`text-sm ${isHighlight ? 'text-[#e8e8f0] font-medium' : 'text-[#d0d0e0]'}`}>{text}</span>
                     </li>
                   );
                 })}
@@ -1138,27 +1008,27 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Professional Tier */}
-            <div className="bg-gradient-to-br from-[#6366f1]/10 to-transparent border-2 border-[#6366f1]/60 rounded-xl p-8 relative flex flex-col shadow-lg shadow-[#6366f1]/10">
+            {/* Professional */}
+            <div className="bg-gradient-to-br from-[#6366f1]/10 to-transparent border-2 border-[#6366f1]/60 rounded-xl p-5 sm:p-8 relative flex flex-col shadow-lg shadow-[#6366f1]/10">
               <div className="absolute -top-3 left-6 bg-[#6366f1] text-white text-xs font-bold px-4 py-1 rounded-full tracking-wide">
                 MOST POPULAR
               </div>
 
               <h3 className="text-2xl font-bold text-white mb-2">Professional</h3>
-              <p className="text-[#b0b0c8] mb-6">For growing construction companies with $1M–$10M revenue</p>
+              <p className="text-sm text-[#b0b0c8] mb-6">For growing companies ($1M–$10M revenue)</p>
               <div className="mb-6">
                 <span className="text-4xl sm:text-5xl font-bold text-white">$499</span>
-                <span className="text-[#b0b0c8] ml-2">/month</span>
+                <span className="text-[#b0b0c8] ml-2">/mo</span>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Everything in Starter',
-                  'Buildertrend + HubSpot + JobNimbus integrations',
+                  'Buildertrend + HubSpot + JobNimbus',
                   'Sales pipeline dashboard',
-                  { text: 'AI CFO Advisor — unlimited questions', highlight: true },
+                  { text: 'AI CFO Advisor — unlimited', highlight: true },
                   { text: 'AI Toolkit — 24 construction prompts', highlight: true },
-                  { text: 'NAHB Standard Chart of Accounts', highlight: true },
+                  { text: 'NAHB Chart of Accounts', highlight: true },
                   'AR/AP aging reports by job',
                   'Priority support',
                 ].map((feature, idx) => {
@@ -1167,7 +1037,7 @@ export default function LandingPage() {
                   return (
                     <li key={idx} className="flex items-center gap-3">
                       <Check size={18} className={isHighlight ? 'text-[#22c55e] flex-shrink-0' : 'text-[#6366f1] flex-shrink-0'} />
-                      <span className={isHighlight ? 'text-[#e8e8f0] font-medium' : 'text-[#d0d0e0]'}>{text}</span>
+                      <span className={`text-sm ${isHighlight ? 'text-[#e8e8f0] font-medium' : 'text-[#d0d0e0]'}`}>{text}</span>
                     </li>
                   );
                 })}
@@ -1178,22 +1048,22 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Enterprise Tier */}
-            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-8 flex flex-col">
+            {/* Enterprise */}
+            <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-xl p-5 sm:p-8 flex flex-col">
               <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
-              <p className="text-[#b0b0c8] mb-6">For scaling operations with $10M+ revenue and multiple project managers</p>
+              <p className="text-sm text-[#b0b0c8] mb-6">For $10M+ operations with multiple PMs</p>
               <div className="mb-6">
                 <span className="text-4xl sm:text-5xl font-bold text-white">$699</span>
-                <span className="text-[#b0b0c8] ml-2">/month</span>
+                <span className="text-[#b0b0c8] ml-2">/mo</span>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Everything in Professional',
-                  'Procore + Salesforce + ServiceTitan integrations',
+                  'Procore + Salesforce + ServiceTitan',
                   'All 7+ integrations included',
                   { text: 'AI CFO Advisor — priority responses', highlight: true },
-                  { text: 'AI Toolkit — all 24 prompts + custom', highlight: true },
+                  { text: 'AI Toolkit — all 24 + custom prompts', highlight: true },
                   { text: 'NAHB Chart of Accounts + trade appendices', highlight: true },
                   'Crew utilization tracking',
                   'Quarterly strategy call with Salisbury Bookkeeping',
@@ -1204,7 +1074,7 @@ export default function LandingPage() {
                   return (
                     <li key={idx} className="flex items-center gap-3">
                       <Check size={18} className={isHighlight ? 'text-[#22c55e] flex-shrink-0' : 'text-[#6366f1] flex-shrink-0'} />
-                      <span className={isHighlight ? 'text-[#e8e8f0] font-medium' : 'text-[#d0d0e0]'}>{text}</span>
+                      <span className={`text-sm ${isHighlight ? 'text-[#e8e8f0] font-medium' : 'text-[#d0d0e0]'}`}>{text}</span>
                     </li>
                   );
                 })}
@@ -1216,119 +1086,115 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Hormozi-style value anchor */}
-          <div className="mt-12 bg-[#12121a] border border-[#2a2a3d] rounded-xl p-6 sm:p-8 max-w-3xl mx-auto text-center">
-            <p className="text-sm text-[#8888a0] mb-2">Consider the alternative</p>
-            <p className="text-lg text-[#e8e8f0] font-medium mb-4">
-              A fractional controller costs $3,000–$8,000/month. A single missed over-billing can cost $50K+ at job close. BuilderCFO gives you both the dashboard and the AI advisor — starting at $299/month.
+          {/* Hormozi value anchor */}
+          <div className="mt-10 bg-[#0a0a0f] border border-[#2a2a3d] rounded-xl p-6 sm:p-8 max-w-3xl mx-auto text-center">
+            <p className="text-sm text-[#8888a0] mb-2">Let&apos;s do the math</p>
+            <p className="text-lg text-[#e8e8f0] font-medium mb-2">
+              A fractional controller costs $3,000–$8,000/month.
             </p>
-            <Link href="/signup" className="inline-flex items-center gap-2 text-[#6366f1] hover:text-[#818cf8] font-semibold transition">
-              Start Free Trial <ArrowRight size={16} />
-            </Link>
+            <p className="text-lg text-[#e8e8f0] font-medium mb-2">
+              One missed over-billing costs $50K+ at job close.
+            </p>
+            <p className="text-lg text-[#6366f1] font-bold mb-4">
+              BuilderCFO starts at $299/month. With an AI CFO included.
+            </p>
+            <p className="text-sm text-[#8888a0]">
+              You do the math. Actually, BuilderCFO will do the math for you.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* FAQ Section — GEO Optimized */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="faq">
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* FAQ — GEO-Optimized, simple language                      */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8" id="faq">
         <div className="w-full max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
-            Frequently Asked Questions About BuilderCFO
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-10 text-center">
+            Questions? We&apos;ve Got Answers.
           </h2>
 
-          <div className="space-y-6 sm:space-y-8">
+          <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is BuilderCFO and who is it for?</h3>
-              <p className="text-[#b0b0c8]">
-                BuilderCFO is a real-time financial dashboard built specifically for construction contractors, custom home builders, and remodelers. It connects to QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to provide instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging. Every plan includes an AI CFO Advisor that answers financial questions using your actual data.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is BuilderCFO?</h3>
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                BuilderCFO is a financial dashboard made for construction companies. It connects to QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan. You see your job costs, WIP, cash flow, and AR/AP — all in one place. Every plan comes with an AI CFO Advisor that answers your money questions using your real data.
               </p>
             </div>
 
             <div>
               <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is the AI CFO Advisor?</h3>
-              <p className="text-[#b0b0c8]">
-                The AI CFO Advisor is an AI chat interface included on every BuilderCFO plan. You can ask financial questions in plain English — like &quot;Why did my margin drop on the Henderson job?&quot; or &quot;Can I afford to hire next quarter?&quot; — and the Advisor answers using your real QuickBooks data, job cost reports, and WIP schedules. It references specific GL accounts, dollar amounts, and provides actionable next steps.
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                It&apos;s like texting a CFO who already knows your books. Ask a question in plain English — like &quot;Why did my margin drop on the Henderson job?&quot; — and it gives you a real answer with dollar amounts and next steps. It&apos;s on every plan. No extra charge.
               </p>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is the AI Toolkit?</h3>
-              <p className="text-[#b0b0c8]">
-                The AI Toolkit is a library of 24 battle-tested AI prompts built specifically for construction bookkeeping and financial management. Each prompt references real NAHB account codes (like GL 1265 for underbilling and GL 2480 for overbilling), CFMA industry benchmarks, and ASC 606 revenue recognition standards. It is available on Professional and Enterprise plans and covers categories including bookkeeping, CFO analysis, job costing, tax compliance, and client communications.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How does it connect to QuickBooks?</h3>
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                Two clicks. BuilderCFO uses a secure connection (OAuth 2.0) to read your QuickBooks data. It never changes anything in your books. Read-only. Your data is encrypted the whole time. Setup takes about 2 minutes.
               </p>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How does BuilderCFO connect to QuickBooks Online?</h3>
-              <p className="text-[#b0b0c8]">
-                BuilderCFO uses OAuth 2.0 to securely connect to your QuickBooks Online account. The connection is read-only — BuilderCFO never modifies your books. Your financial data is encrypted in transit and at rest using industry-standard AES-256 encryption. Setup takes under 2 minutes.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is WIP tracking and why should I care?</h3>
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                WIP tells you if you&apos;ve billed more or less than the work you&apos;ve done. If you&apos;ve done 60% of a job but billed 80%, you&apos;re over-billed. That means you might owe money back when the job ends. BuilderCFO shows you this for every job, automatically, using your real numbers. No spreadsheets.
               </p>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is WIP tracking and why does it matter for contractors?</h3>
-              <p className="text-[#b0b0c8]">
-                WIP (Work in Progress) tracking compares the percentage of work completed on a job against the percentage billed. If you&apos;ve completed 60% of a job but billed 80%, you&apos;re over-billed by 20% — which means you may owe money back or face cash flow problems when the job finishes. BuilderCFO automates WIP schedule calculations using QuickBooks data and field management progress reports, giving you accurate over/under billing figures for every active job.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How much does it cost?</h3>
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                Starter is $299/month. Professional is $499/month. Enterprise is $699/month. Every plan gets a 14-day free trial and includes the AI CFO Advisor. No setup fees. No contracts. Cancel anytime.
               </p>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How much does BuilderCFO cost?</h3>
-              <p className="text-[#b0b0c8]">
-                BuilderCFO starts at $299/month (Starter), $499/month (Professional), or $699/month (Enterprise). Every plan includes a 14-day free trial, the real-time financial dashboard, and the AI CFO Advisor. Professional and Enterprise plans add the AI Toolkit (24 construction prompts), the NAHB Standard Chart of Accounts, and additional integrations. No setup fees, no contracts — cancel anytime.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Is my data safe?</h3>
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                Yes. Your data is encrypted at rest and in transit. The QuickBooks connection is read-only — we can&apos;t touch your books. Payments go through Stripe (PCI compliant). We take this very seriously.
               </p>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Who built BuilderCFO?</h3>
-              <p className="text-[#b0b0c8]">
-                BuilderCFO was built by{' '}
-                <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
-                  Salisbury Bookkeeping
-                </a>
-                , a fractional controller and construction bookkeeping firm that works with custom home builders, general contractors, and remodelers nationwide. The dashboard was created from real client needs — the same WIP schedules, job costing reports, and cash flow forecasts that Salisbury&apos;s controllers build manually for clients, now automated and available in real time.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Is my financial data secure?</h3>
-              <p className="text-[#b0b0c8]">
-                Yes. BuilderCFO uses Supabase for secure database hosting with row-level security policies, and Stripe for PCI-compliant payment processing. All data is encrypted in transit (TLS 1.3) and at rest (AES-256). The QuickBooks connection is read-only — BuilderCFO cannot create, modify, or delete any data in your accounting system.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Can I cancel my BuilderCFO subscription at any time?</h3>
-              <p className="text-[#b0b0c8]">
-                Yes. There are no long-term contracts, no cancellation fees, and no setup fees. You can cancel your subscription at any time and retain access through the end of your current billing cycle. Every plan starts with a 14-day free trial — you enter a card upfront but are not charged until day 15.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Can I cancel anytime?</h3>
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                Yes. No contracts. No fees. No guilt trip. Cancel whenever you want and keep access through the end of your billing period. Start with the 14-day free trial — if you don&apos;t love it, you never pay a dime.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section — Hormozi "Make them feel stupid saying no" */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* FINAL CTA — "Make them feel stupid saying no"             */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-[#12121a]/50">
         <div className="absolute inset-0 bg-gradient-to-r from-[#6366f1]/5 via-transparent to-[#a78bfa]/5 pointer-events-none" />
 
         <div className="w-full max-w-3xl mx-auto text-center relative">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4">
-            Your Dashboard. Your AI CFO. Your Numbers — Finally Clear.
+            Your Money. Your Jobs. Finally Clear.
           </h2>
-          <p className="text-lg text-[#b0b0c8] mb-8">
-            Join contractors, CFOs, and controllers nationwide who use BuilderCFO to see where every dollar goes on every job — and have an AI advisor on call 24/7 who already knows their books.
+          <p className="text-lg text-[#b0b0c8] mb-3">
+            14 days free. AI CFO included. Real answers from your real data.
+          </p>
+          <p className="text-sm text-[#8888a0] mb-8">
+            The only risk is not knowing what your numbers are telling you right now.
           </p>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-lg"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-lg shadow-lg shadow-[#6366f1]/20"
           >
-            Start 14-Day Free Trial <ChevronRight size={18} />
+            Start Your Free Trial <ChevronRight size={18} />
           </Link>
           <p className="text-sm text-[#8888a0] mt-4">
-            No charge for 14 days. Cancel anytime. Built by{' '}
+            Built by{' '}
             <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
               Salisbury Bookkeeping
-            </a>.
+            </a>{' '}
+            — Fractional Controllers for Construction Companies
           </p>
         </div>
       </section>
