@@ -268,8 +268,6 @@ export default function RootLayout({
         <PWARegister />
         {children}
 
-        {/* GHL Form Embed Script */}
-        <script src="https://link.msgsndr.com/js/form_embed.js" async />
       </body>
     </html>
   );
