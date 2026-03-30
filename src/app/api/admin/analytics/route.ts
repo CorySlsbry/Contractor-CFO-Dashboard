@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const PAGE_SIZE = 10000;
+const PAGE_SIZE = 1000;
 
 /**
  * Fetches ALL rows from a Supabase table matching the query,
