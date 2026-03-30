@@ -1099,13 +1099,11 @@ export default function LandingPage() {
               Book a free 15-minute scope call with Salisbury Bookkeeping. We&apos;ll look at your QuickBooks, show you what BuilderCFO sees, and answer any questions. No pitch. No pressure.
             </p>
           </div>
-          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl overflow-hidden shadow-lg">
-            <div
-              className="calendly-inline-widget"
-              data-url="https://calendly.com/salisbury-bookkeeping/scope?hide_event_type_details=1&hide_gdpr_banner=1&background_color=12121a&text_color=e8e8f0&primary_color=6366f1"
-              style={{ minWidth: '320px', height: '660px' }}
-            />
-          </div>
+          <div
+            className="calendly-inline-widget"
+            data-url="https://calendly.com/salisbury-bookkeeping/scope?hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a0a0f&text_color=e8e8f0&primary_color=6366f1"
+            style={{ minWidth: '320px', height: '750px' }}
+          />
         </div>
         <Script
           src="https://assets.calendly.com/assets/external/widget.js"
