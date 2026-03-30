@@ -36,7 +36,7 @@ export default function LandingPage() {
       if (data.ok) {
         setLeadSuccess(true);
         // Open the GHL-hosted PDF in a new tab
-        window.open(data.downloadUrl || 'https://assets.cdn.filesafe.space/d6snrvwPYgsUbjfj6Dox/media/69caaff3a400ae8403f5de70.pdf', '_blank');
+        window.open(data.downloadUrl || 'https://assets.cdn.filesafe.space/d6snrvwPYgsUbjfj6Dox/media/69cabaf3db6d4f5d3e7554df.pdf', '_blank');
       } else {
         setLeadError(data.error || 'Something went wrong.');
       }
