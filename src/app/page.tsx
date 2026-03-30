@@ -15,15 +15,7 @@ export default function LandingPage() {
   ]);
   const [advisorInput, setAdvisorInput] = useState('');
   const [rotatingPain, setRotatingPain] = useState(0);
-  // GHL popup form handles lead capture — trigger via openGHLForm()
-  const openGHLForm = () => {
-    const popup = document.getElementById('popup-EW1NZq3b7bQ6esVKfgyE');
-    if (popup) {
-      popup.style.display = 'block';
-      // Re-dispatch to GHL embed script
-      window.dispatchEvent(new Event('message'));
-    }
-  };
+  // GHL inline form handles lead capture natively
 
   const painPoints = [
     "Are we making money on the Henderson job?",
@@ -235,12 +227,26 @@ export default function LandingPage() {
             <p className="text-sm text-[#8888a0] mb-5 max-w-md mx-auto">
               Copy-paste prompts for job costing, WIP, cash flow, retainage, bonding & more. Works with ChatGPT, Claude, or BuilderCFO.
             </p>
-            <button
-              onClick={openGHLForm}
-              className="px-6 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-base cursor-pointer"
-            >
-              Get Your Free AI Prompts
-            </button>
+            {/* GHL Inline Form */}
+            <div className="max-w-lg mx-auto">
+              <iframe
+                src="https://api.leadconnectorhq.com/widget/form/EW1NZq3b7bQ6esVKfgyE"
+                style={{ width: '100%', height: '388px', border: 'none', borderRadius: '3px' }}
+                id="inline-EW1NZq3b7bQ6esVKfgyE"
+                data-layout="{'id':'INLINE'}"
+                data-trigger-type="alwaysShow"
+                data-trigger-value=""
+                data-activation-type="alwaysActivated"
+                data-activation-value=""
+                data-deactivation-type="neverDeactivate"
+                data-deactivation-value=""
+                data-form-name="BuilderCFO"
+                data-height="388"
+                data-layout-iframe-id="inline-EW1NZq3b7bQ6esVKfgyE"
+                data-form-id="EW1NZq3b7bQ6esVKfgyE"
+                title="BuilderCFO"
+              />
+            </div>
             <p className="text-[10px] text-[#555] mt-3">No spam. Just the PDF. Unsubscribe anytime.</p>
           </div>
         </div>

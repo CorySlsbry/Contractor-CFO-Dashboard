@@ -268,24 +268,7 @@ export default function RootLayout({
         <PWARegister />
         {children}
 
-        {/* GHL Popup Form — BuilderCFO AI Prompts Lead Magnet */}
-        <iframe
-          src="https://api.leadconnectorhq.com/widget/form/EW1NZq3b7bQ6esVKfgyE"
-          style={{ display: 'none', width: '100%', height: '100%', border: 'none', borderRadius: '3px' }}
-          id="popup-EW1NZq3b7bQ6esVKfgyE"
-          data-layout="{'id':'POPUP'}"
-          data-trigger-type="alwaysShow"
-          data-trigger-value=""
-          data-activation-type="alwaysActivated"
-          data-activation-value=""
-          data-deactivation-type="neverDeactivate"
-          data-deactivation-value=""
-          data-form-name="BuilderCFO"
-          data-height="279"
-          data-layout-iframe-id="popup-EW1NZq3b7bQ6esVKfgyE"
-          data-form-id="EW1NZq3b7bQ6esVKfgyE"
-          title="BuilderCFO"
-        />
+        {/* GHL Form Embed Script */}
         <script src="https://link.msgsndr.com/js/form_embed.js" async />
       </body>
     </html>

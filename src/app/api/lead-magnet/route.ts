@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const downloadUrl = '/BuilderCFO-AI-Prompts-for-Contractors.pdf';
+  const downloadUrl = 'https://assets.cdn.filesafe.space/d6snrvwPYgsUbjfj6Dox/media/69caaff3a400ae8403f5de70.pdf';
 
   try {
     const { email, firstName, source } = await request.json();
