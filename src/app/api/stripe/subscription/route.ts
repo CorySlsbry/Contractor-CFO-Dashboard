@@ -83,11 +83,43 @@ export async function GET(request: NextRequest) {
     let trialEndsAt: string | null = null;
 
     // ────────────────────────────────────────────────────────────
-    // AUTO-SYNC: If org has a Stripe subscription, verify the plan
-    // matches what Stripe says. Fixes cases where the webhook
-    // couldn't map the price ID (e.g. missing env vars).
+    // AUTO-SYNC: Verify the DB plan matches Stripe.
+    // Layer 1: Use stored stripe_subscription_id
+    // Layer 2: Use stored stripe_customer_id to find subscription
+    // Layer 3: Look up Stripe customer by user email
     // ────────────────────────────────────────────────────────────
-    const stripeSubId = (org as any).stripe_subscription_id;
+    let stripeSubId = (org as any).stripe_subscription_id;
+    let stripeCustomerId = (org as any).stripe_customer_id;
+
+    // If we don't have a subscription ID, try to find one via customer
+    if (!stripeSubId) {
+      try {
+        // Layer 2: lookup by stored customer ID
+        if (stripeCustomerId) {
+          console.log(`[subscription-sync] No sub ID, looking up by customer ${stripeCustomerId}`);
+          const subs = await stripeService.getCustomerSubscriptions(stripeCustomerId);
+          if (subs.length > 0) {
+            stripeSubId = subs[0].id;
+          }
+        }
+
+        // Layer 3: lookup by user email
+        if (!stripeSubId && user.email) {
+          console.log(`[subscription-sync] No sub ID or customer, looking up by email ${user.email}`);
+          const customer = await stripeService.findCustomerByEmail(user.email);
+          if (customer) {
+            stripeCustomerId = customer.id;
+            const subs = await stripeService.getCustomerSubscriptions(customer.id);
+            if (subs.length > 0) {
+              stripeSubId = subs[0].id;
+            }
+          }
+        }
+      } catch (lookupError) {
+        console.error("[subscription-sync] Stripe lookup failed:", lookupError);
+      }
+    }
+
     if (stripeSubId) {
       try {
         const stripeSub = await stripeService.getSubscription(stripeSubId);
@@ -95,7 +127,7 @@ export async function GET(request: NextRequest) {
         const stripeStatus = stripeService.mapSubscriptionStatus(stripeSub.status);
 
         // If Stripe says a different plan, trust Stripe and update the DB
-        if (stripePlan !== plan || stripeStatus !== status) {
+        if (stripePlan !== plan || stripeStatus !== status || !(org as any).stripe_subscription_id) {
           console.log(`[subscription-sync] Mismatch detected for org ${(profile as any).organization_id}: DB=${plan}/${status} Stripe=${stripePlan}/${stripeStatus}. Syncing...`);
           plan = stripePlan;
           status = stripeStatus;
@@ -105,8 +137,14 @@ export async function GET(request: NextRequest) {
           const updatePayload: Record<string, any> = {
             plan: stripePlan,
             subscription_status: stripeStatus,
+            stripe_subscription_id: stripeSubId,
             updated_at: new Date().toISOString(),
           };
+
+          // Also backfill customer ID if we discovered it
+          if (stripeCustomerId && !(org as any).stripe_customer_id) {
+            updatePayload.stripe_customer_id = stripeCustomerId;
+          }
 
           if (stripeSub.trial_end) {
             updatePayload.trial_ends_at = new Date(stripeSub.trial_end * 1000).toISOString();
@@ -118,7 +156,7 @@ export async function GET(request: NextRequest) {
             .update(updatePayload)
             .eq("id", (profile as any).organization_id);
 
-          console.log(`[subscription-sync] Updated org ${(profile as any).organization_id} to plan=${stripePlan}, status=${stripeStatus}`);
+          console.log(`[subscription-sync] Updated org ${(profile as any).organization_id} to plan=${stripePlan}, status=${stripeStatus}, sub=${stripeSubId}`);
         }
       } catch (syncError) {
         // Non-fatal — if Stripe call fails, serve what we have in DB
