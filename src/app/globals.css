@@ -342,3 +342,17 @@ html {
     @apply md:hidden;
   }
 }
+
+/* Calendly embed — strip iframe border and internal card outline */
+.calendly-inline-widget iframe {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.calendly-inline-widget {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
