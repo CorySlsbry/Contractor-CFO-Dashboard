@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, Download } from 'lucide-react';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, Download, ShieldCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { LandingTracker } from '@/components/landing-tracker';
 
@@ -164,7 +164,7 @@ export default function LandingPage() {
                 </a>
               </div>
               <p className="text-xs text-[#22c55e] mt-3 font-medium">
-                No charge for 14 days. Cancel anytime. Seriously.
+                No charge for 14 days. 30-day money-back guarantee. Seriously.
               </p>
             </div>
 
@@ -894,9 +894,18 @@ export default function LandingPage() {
           <p className="text-center text-[#b0b0c8] mb-1">
             14 days free on every plan. No charge until day 15.
           </p>
-          <p className="text-center text-[#22c55e] mb-8 text-sm font-medium">
+          <p className="text-center text-[#22c55e] mb-4 text-sm font-medium">
             No contracts. No setup fees. Cancel anytime.
           </p>
+
+          {/* 30-Day Money-Back Guarantee — Hormozi risk reversal */}
+          <div className="flex items-center justify-center gap-3 mb-8 px-4 py-3 rounded-lg bg-[#22c55e]/8 border border-[#22c55e]/20 max-w-lg mx-auto">
+            <ShieldCheck size={20} className="text-[#22c55e] flex-shrink-0" />
+            <p className="text-sm text-[#e8e8f0]">
+              <span className="font-bold text-[#22c55e]">30-Day Money-Back Guarantee.</span>{' '}
+              If BuilderCFO doesn&apos;t give you clearer financial visibility in 30 days, we&apos;ll refund every penny. No questions asked.
+            </p>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
             {/* Starter */}
@@ -1017,9 +1026,15 @@ export default function LandingPage() {
             <p className="text-base sm:text-lg text-[#6366f1] font-bold mb-3">
               BuilderCFO starts at $299/month. With an AI CFO included.
             </p>
-            <p className="text-sm text-[#8888a0]">
+            <p className="text-sm text-[#8888a0] mb-3">
               You do the math. Actually, BuilderCFO will do the math for you.
             </p>
+            <div className="flex items-center justify-center gap-2">
+              <ShieldCheck size={16} className="text-[#22c55e]" />
+              <p className="text-sm text-[#22c55e] font-medium">
+                30-day money-back guarantee on every plan.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -1058,7 +1073,7 @@ export default function LandingPage() {
             <div>
               <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">Can I cancel anytime?</h3>
               <p className="text-[#b0b0c8] text-sm leading-relaxed">
-                Yes. No contracts. No fees. Cancel whenever you want and keep access through the end of your billing period. Start with the 14-day free trial — if you don&apos;t love it, you never pay a dime.
+                Yes. No contracts. No fees. Cancel whenever you want and keep access through the end of your billing period. Plus, every plan comes with a 30-day money-back guarantee — if BuilderCFO doesn&apos;t deliver clearer financial visibility, you get a full refund.
               </p>
             </div>
           </div>
@@ -1075,10 +1090,10 @@ export default function LandingPage() {
             Your Money. Your Jobs. Finally Clear.
           </h2>
           <p className="text-base text-[#b0b0c8] mb-2">
-            14 days free. AI CFO included. Real answers from your real data.
+            14 days free. AI CFO included. 30-day money-back guarantee.
           </p>
           <p className="text-sm text-[#8888a0] mb-6">
-            The only risk is not knowing what your numbers are telling you right now.
+            Zero risk. If you don&apos;t get clearer financial visibility in 30 days, you get every penny back.
           </p>
           <Link
             href="/signup"
