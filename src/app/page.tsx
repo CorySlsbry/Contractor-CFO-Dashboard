@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, Download, ShieldCheck } from 'lucide-react';
+import Script from 'next/script';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, Download, ShieldCheck, CalendarCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { LandingTracker } from '@/components/landing-tracker';
 
@@ -92,6 +93,7 @@ export default function LandingPage() {
             <a href="#cfo-advisor" className="hover:text-[#e8e8f0] transition">CFO Advisor</a>
             <a href="#pricing" className="hover:text-[#e8e8f0] transition">Pricing</a>
             <a href="#faq" className="hover:text-[#e8e8f0] transition">FAQ</a>
+            <a href="#schedule" className="hover:text-[#e8e8f0] transition">Book a Call</a>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-sm text-[#e8e8f0] hover:text-[#6366f1] transition">
@@ -1078,6 +1080,37 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* SECTION 8.5 — SCHEDULE A CALL (Calendly)                  */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-[#0a0a0f]" id="schedule">
+        <div className="w-full max-w-3xl mx-auto">
+          <div className="text-center mb-6">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <CalendarCheck size={20} className="text-[#6366f1]" />
+              <span className="text-xs font-semibold text-[#a5b4fc] uppercase tracking-wider">Talk to a Human</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-2">
+              Want Us to Walk You Through It?
+            </h2>
+            <p className="text-sm text-[#8888a0] max-w-lg mx-auto">
+              Book a free 15-minute scope call with Salisbury Bookkeeping. We&apos;ll look at your QuickBooks, show you what BuilderCFO sees, and answer any questions. No pitch. No pressure.
+            </p>
+          </div>
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl overflow-hidden shadow-lg">
+            <div
+              className="calendly-inline-widget"
+              data-url="https://calendly.com/salisbury-bookkeeping/scope?hide_event_type_details=1&hide_gdpr_banner=1&background_color=12121a&text_color=e8e8f0&primary_color=6366f1"
+              style={{ minWidth: '320px', height: '660px' }}
+            />
+          </div>
+        </div>
+        <Script
+          src="https://assets.calendly.com/assets/external/widget.js"
+          strategy="lazyOnload"
+        />
       </section>
 
       {/* ═══════════════════════════════════════════════════════════ */}
