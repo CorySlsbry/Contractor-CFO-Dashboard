@@ -15,40 +15,14 @@ export default function LandingPage() {
   ]);
   const [advisorInput, setAdvisorInput] = useState('');
   const [rotatingPain, setRotatingPain] = useState(0);
-  const [leadEmail, setLeadEmail] = useState('');
-  const [leadName, setLeadName] = useState('');
-  const [leadSubmitting, setLeadSubmitting] = useState(false);
-  const [leadSuccess, setLeadSuccess] = useState(false);
-  const [leadError, setLeadError] = useState('');
-
-  const handleLeadMagnet = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!leadEmail.includes('@')) { setLeadError('Enter a valid email.'); return; }
-    setLeadSubmitting(true);
-    setLeadError('');
-    try {
-      const res = await fetch('/api/lead-magnet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: leadEmail, firstName: leadName, source: 'ai-prompts-lead-magnet' }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setLeadSuccess(true);
-        // Auto-download the PDF
-        const link = document.createElement('a');
-        link.href = data.downloadUrl || '/BuilderCFO-AI-Prompts-for-Contractors.pdf';
-        link.download = 'BuilderCFO-AI-Prompts-for-Contractors.pdf';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        setLeadError(data.error || 'Something went wrong.');
-      }
-    } catch {
-      setLeadError('Network error. Try again.');
+  // GHL popup form handles lead capture — trigger via openGHLForm()
+  const openGHLForm = () => {
+    const popup = document.getElementById('popup-EW1NZq3b7bQ6esVKfgyE');
+    if (popup) {
+      popup.style.display = 'block';
+      // Re-dispatch to GHL embed script
+      window.dispatchEvent(new Event('message'));
     }
-    setLeadSubmitting(false);
   };
 
   const painPoints = [
@@ -251,60 +225,23 @@ export default function LandingPage() {
       <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-2xl mx-auto">
           <div className="bg-[#12121a] border border-[#6366f1]/30 rounded-xl p-5 sm:p-8 text-center shadow-lg shadow-[#6366f1]/5">
-            {!leadSuccess ? (
-              <>
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <Download size={18} className="text-[#6366f1]" />
-                  <span className="text-xs font-semibold text-[#a5b4fc] uppercase tracking-wider">Free Download</span>
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-2">
-                  12 AI Prompts That Save Contractors Real Money
-                </h2>
-                <p className="text-sm text-[#8888a0] mb-5 max-w-md mx-auto">
-                  Copy-paste prompts for job costing, WIP, cash flow, retainage, bonding & more. Works with ChatGPT, Claude, or BuilderCFO.
-                </p>
-                <form onSubmit={handleLeadMagnet} className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto">
-                  <input
-                    type="text"
-                    placeholder="First name"
-                    value={leadName}
-                    onChange={(e) => setLeadName(e.target.value)}
-                    className="px-4 py-2.5 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:border-[#6366f1] focus:outline-none sm:w-32"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Your email"
-                    value={leadEmail}
-                    onChange={(e) => setLeadEmail(e.target.value)}
-                    required
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:border-[#6366f1] focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    disabled={leadSubmitting}
-                    className="px-5 py-2.5 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-sm disabled:opacity-50 whitespace-nowrap cursor-pointer"
-                  >
-                    {leadSubmitting ? 'Sending...' : 'Get the Prompts'}
-                  </button>
-                </form>
-                {leadError && <p className="text-xs text-[#ef4444] mt-2">{leadError}</p>}
-                <p className="text-[10px] text-[#555] mt-3">No spam. Just the PDF. Unsubscribe anytime.</p>
-              </>
-            ) : (
-              <div className="py-4">
-                <p className="text-2xl mb-2">🎉</p>
-                <h3 className="text-lg font-bold text-[#22c55e] mb-1">Downloading now!</h3>
-                <p className="text-sm text-[#8888a0] mb-4">
-                  Check your downloads folder. We also sent it to your email.
-                </p>
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-sm"
-                >
-                  Want the AI to do this automatically? Try BuilderCFO Free <ArrowRight size={14} />
-                </Link>
-              </div>
-            )}
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Download size={18} className="text-[#6366f1]" />
+              <span className="text-xs font-semibold text-[#a5b4fc] uppercase tracking-wider">Free Download</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-2">
+              12 AI Prompts That Save Contractors Real Money
+            </h2>
+            <p className="text-sm text-[#8888a0] mb-5 max-w-md mx-auto">
+              Copy-paste prompts for job costing, WIP, cash flow, retainage, bonding & more. Works with ChatGPT, Claude, or BuilderCFO.
+            </p>
+            <button
+              onClick={openGHLForm}
+              className="px-6 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-base cursor-pointer"
+            >
+              Get Your Free AI Prompts
+            </button>
+            <p className="text-[10px] text-[#555] mt-3">No spam. Just the PDF. Unsubscribe anytime.</p>
           </div>
         </div>
       </section>
