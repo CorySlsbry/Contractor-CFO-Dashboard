@@ -21,17 +21,12 @@ function mapSubscriptionStatus(
 }
 
 /**
- * Gets plan from subscription
+ * Gets plan from subscription — uses price-amount fallback when env vars are missing
  */
 async function getPlanFromSubscription(
   subscription: Stripe.Subscription
 ): Promise<"basic" | "pro" | "enterprise"> {
-  if (!subscription.items.data[0]?.price.id) {
-    return "basic";
-  }
-
-  const plan = stripeService.getPlanFromPriceId(subscription.items.data[0].price.id);
-  return plan || "basic";
+  return stripeService.getPlanFromSubscription(subscription);
 }
 
 export async function POST(request: NextRequest) {

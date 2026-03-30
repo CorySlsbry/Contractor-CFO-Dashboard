@@ -182,16 +182,40 @@ export class StripeService {
    * Gets the plan from a price ID
    */
   getPlanFromPriceId(priceId: string): "basic" | "pro" | "enterprise" | null {
-    if (priceId === this.enterprisePriceId) {
+    if (this.enterprisePriceId && priceId === this.enterprisePriceId) {
       return "enterprise";
     }
-    if (priceId === this.proPriceId) {
+    if (this.proPriceId && priceId === this.proPriceId) {
       return "pro";
     }
-    if (priceId === this.basicPriceId) {
+    if (this.basicPriceId && priceId === this.basicPriceId) {
       return "basic";
     }
     return null;
+  }
+
+  /**
+   * Gets the plan from a subscription by checking the actual price amount.
+   * This is a fallback when price IDs are not configured in env vars.
+   */
+  getPlanFromSubscription(subscription: Stripe.Subscription): "basic" | "pro" | "enterprise" {
+    const item = subscription.items?.data?.[0];
+    if (!item?.price) return "basic";
+
+    // First try exact price ID match
+    const byId = this.getPlanFromPriceId(item.price.id);
+    if (byId) return byId;
+
+    // Fallback: match by price amount (in cents)
+    const amountCents = item.price.unit_amount;
+    if (amountCents === 69900) return "enterprise";
+    if (amountCents === 49900) return "pro";
+    if (amountCents === 29900) return "basic";
+
+    // Fallback: match by price amount ranges (handles minor variations)
+    if (amountCents && amountCents >= 60000) return "enterprise";
+    if (amountCents && amountCents >= 40000) return "pro";
+    return "basic";
   }
 
   /**

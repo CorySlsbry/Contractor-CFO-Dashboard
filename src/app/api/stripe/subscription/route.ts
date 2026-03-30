@@ -1,13 +1,16 @@
 /**
  * Get Current Subscription Info Endpoint
  * GET /api/stripe/subscription
- * Returns the current subscription details for the authenticated user's organization
+ * Returns the current subscription details for the authenticated user's organization.
+ * Auto-syncs plan from Stripe if a mismatch is detected (e.g. missing env vars during webhook).
  */
 
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { stripeService } from "@/lib/stripe";
 import { getPlanName, getPlanPrice } from "@/lib/plan-features";
 import type { ApiResponse } from "@/types";
 
@@ -75,22 +78,67 @@ export async function GET(request: NextRequest) {
       .eq("id", user.id)
       .single() as any;
 
-    const plan = (org as any).plan || 'basic';
+    let plan: 'basic' | 'pro' | 'enterprise' = (org as any).plan || 'basic';
+    let status = (org as any).subscription_status || 'trialing';
+    let trialEndsAt: string | null = null;
+
+    // ────────────────────────────────────────────────────────────
+    // AUTO-SYNC: If org has a Stripe subscription, verify the plan
+    // matches what Stripe says. Fixes cases where the webhook
+    // couldn't map the price ID (e.g. missing env vars).
+    // ────────────────────────────────────────────────────────────
+    const stripeSubId = (org as any).stripe_subscription_id;
+    if (stripeSubId) {
+      try {
+        const stripeSub = await stripeService.getSubscription(stripeSubId);
+        const stripePlan = stripeService.getPlanFromSubscription(stripeSub);
+        const stripeStatus = stripeService.mapSubscriptionStatus(stripeSub.status);
+
+        // If Stripe says a different plan, trust Stripe and update the DB
+        if (stripePlan !== plan || stripeStatus !== status) {
+          console.log(`[subscription-sync] Mismatch detected for org ${(profile as any).organization_id}: DB=${plan}/${status} Stripe=${stripePlan}/${stripeStatus}. Syncing...`);
+          plan = stripePlan;
+          status = stripeStatus;
+
+          // Update DB using admin client (no RLS restrictions)
+          const adminSupabase = createAdminClient();
+          const updatePayload: Record<string, any> = {
+            plan: stripePlan,
+            subscription_status: stripeStatus,
+            updated_at: new Date().toISOString(),
+          };
+
+          if (stripeSub.trial_end) {
+            updatePayload.trial_ends_at = new Date(stripeSub.trial_end * 1000).toISOString();
+            trialEndsAt = updatePayload.trial_ends_at;
+          }
+
+          await (adminSupabase
+            .from("organizations") as any)
+            .update(updatePayload)
+            .eq("id", (profile as any).organization_id);
+
+          console.log(`[subscription-sync] Updated org ${(profile as any).organization_id} to plan=${stripePlan}, status=${stripeStatus}`);
+        }
+      } catch (syncError) {
+        // Non-fatal — if Stripe call fails, serve what we have in DB
+        console.error("[subscription-sync] Failed to sync from Stripe:", syncError);
+      }
+    }
+
     const planName = getPlanName(plan);
     const price = getPlanPrice(plan);
     const includesAiToolkit = plan === 'pro' || plan === 'enterprise';
-    const status = (org as any).subscription_status || 'trialing';
 
     // Calculate trial info
-    let trialEndsAt: string | null = null;
     let trialDaysRemaining: number | null = null;
 
     if (status === 'trialing') {
-      // Use trial_ends_at if available (set by webhook from Stripe),
+      // Use trial_ends_at if available (set by webhook or sync above),
       // otherwise calculate from created_at + 14 days
-      if ((org as any).trial_ends_at) {
+      if (!trialEndsAt && (org as any).trial_ends_at) {
         trialEndsAt = (org as any).trial_ends_at;
-      } else if ((org as any).created_at) {
+      } else if (!trialEndsAt && (org as any).created_at) {
         const createdDate = new Date((org as any).created_at);
         const trialEnd = new Date(createdDate.getTime() + 14 * 24 * 60 * 60 * 1000);
         trialEndsAt = trialEnd.toISOString();
