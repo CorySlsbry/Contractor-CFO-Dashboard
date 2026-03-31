@@ -57,6 +57,12 @@ async function createCalendarEvent(payload: BookingPayload): Promise<{ success: 
 
     const companyStr = payload.company ? ` (${payload.company})` : '';
 
+    // Block 1 full hour on calendar (30 min call + 30 min buffer)
+    // Parse start time and add 60 minutes for the calendar block end
+    const startDate = new Date(`${payload.start}`);
+    const blockEndDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+    const blockEnd = blockEndDate.toISOString().replace('Z', '').split('.')[0];
+
     // Create the event
     const eventRes = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?sendUpdates=all&conferenceDataVersion=1`,
@@ -75,14 +81,15 @@ async function createCalendarEvent(payload: BookingPayload): Promise<{ success: 
             `Email: ${payload.email}`,
             payload.company ? `Company: ${payload.company}` : null,
             ``,
-            `This is a free 15-minute call to review their QuickBooks and show what BuilderCFO can do.`,
+            `30-minute scope call + 30-minute buffer.`,
+            `Review their QuickBooks and show what BuilderCFO can do.`,
           ].filter(Boolean).join('\n'),
           start: {
             dateTime: `${payload.start}`,
             timeZone: TIMEZONE,
           },
           end: {
-            dateTime: `${payload.end}`,
+            dateTime: blockEnd,
             timeZone: TIMEZONE,
           },
           attendees: [

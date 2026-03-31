@@ -17,8 +17,9 @@ export const dynamic = 'force-dynamic';
 
 const TIMEZONE = 'America/Denver';
 const SLOT_MINUTES = 30;
-const START_HOUR = 9;   // 9 AM
-const END_HOUR = 17;    // 5 PM (last slot starts at 4:30)
+const BLOCK_MINUTES = 60; // Each booking blocks 1 hour on calendar (30 min appt + 30 min buffer)
+const START_HOUR = 11;  // 11 AM
+const END_HOUR = 14;    // 2 PM (last slot starts at 1:30, blocks until 2:30)
 const CALENDAR_ID = 'cory.salisbury@gmail.com';
 
 interface Slot {
@@ -85,7 +86,9 @@ async function getBusyPeriods(dateStr: string): Promise<{ start: string; end: st
 
     // Free/busy query
     const timeMin = `${dateStr}T${String(START_HOUR).padStart(2, '0')}:00:00`;
-    const timeMax = `${dateStr}T${String(END_HOUR).padStart(2, '0')}:00:00`;
+    // Extend window by BLOCK_MINUTES/60 to cover buffer after last slot
+    const bufferHours = Math.ceil(BLOCK_MINUTES / 60);
+    const timeMax = `${dateStr}T${String(END_HOUR + bufferHours).padStart(2, '0')}:00:00`;
 
     const fbRes = await fetch('https://www.googleapis.com/calendar/v3/freeBusy', {
       method: 'POST',
@@ -110,18 +113,21 @@ async function getBusyPeriods(dateStr: string): Promise<{ start: string; end: st
 }
 
 /**
- * Check if a slot overlaps any busy period
+ * Check if a slot overlaps any busy period.
+ * Uses BLOCK_MINUTES (1 hour) instead of slot duration to account for the
+ * 30-min buffer after each appointment.
  */
-function isSlotBusy(slot: Slot, busyPeriods: { start: string; end: string }[], dateStr: string): boolean {
+function isSlotBusy(slot: Slot, busyPeriods: { start: string; end: string }[]): boolean {
   for (const busy of busyPeriods) {
     const busyStart = new Date(busy.start).getTime();
     const busyEnd = new Date(busy.end).getTime();
     // Reconstruct slot times with timezone offset for comparison
     const slotStart = new Date(`${slot.start}-07:00`).getTime();
-    const slotEnd = new Date(`${slot.end}-07:00`).getTime();
+    // The full block = slot start + BLOCK_MINUTES (includes buffer)
+    const slotBlockEnd = slotStart + BLOCK_MINUTES * 60 * 1000;
 
-    // Overlap check: slot starts before busy ends AND slot ends after busy starts
-    if (slotStart < busyEnd && slotEnd > busyStart) {
+    // Overlap check: slot block starts before busy ends AND slot block ends after busy starts
+    if (slotStart < busyEnd && slotBlockEnd > busyStart) {
       return true;
     }
   }
@@ -168,7 +174,7 @@ export async function GET(request: NextRequest) {
   // Check Google Calendar for busy periods
   const busyPeriods = await getBusyPeriods(dateStr);
   if (busyPeriods.length > 0) {
-    allSlots = allSlots.filter(slot => !isSlotBusy(slot, busyPeriods, dateStr));
+    allSlots = allSlots.filter(slot => !isSlotBusy(slot, busyPeriods));
   }
 
   return NextResponse.json({ slots: allSlots });
