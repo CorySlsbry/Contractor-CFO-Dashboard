@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import Script from 'next/script';
 import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, Download, ShieldCheck, CalendarCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { LandingTracker } from '@/components/landing-tracker';
+import { BookingCalendar } from '@/components/booking-calendar';
 
 type DemoTab = 'overview' | 'ar' | 'ap' | 'wip' | 'retainage' | 'sales';
 
@@ -1099,19 +1099,10 @@ export default function LandingPage() {
               Book a free 15-minute scope call with Salisbury Bookkeeping. We&apos;ll look at your QuickBooks, show you what BuilderCFO sees, and answer any questions. No pitch. No pressure.
             </p>
           </div>
-          {/* Overflow wrapper clips the Calendly iframe's internal border/shadow */}
-          <div className="overflow-hidden" style={{ margin: '0 -16px' }}>
-            <div
-              className="calendly-inline-widget"
-              data-url="https://calendly.com/salisbury-bookkeeping/scope?hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a0a0f&text_color=e8e8f0&primary_color=6366f1"
-              style={{ minWidth: '320px', height: '820px', margin: '-8px -8px 0 -8px', padding: '0 8px' }}
-            />
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-5 sm:p-8">
+            <BookingCalendar />
           </div>
         </div>
-        <Script
-          src="https://assets.calendly.com/assets/external/widget.js"
-          strategy="lazyOnload"
-        />
       </section>
 
       {/* ═══════════════════════════════════════════════════════════ */}
