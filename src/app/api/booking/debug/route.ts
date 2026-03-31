@@ -1,11 +1,9 @@
 /**
- * GET /api/booking/debug
+ * GET /api/booking/debug?key=salisbury
+ * GET /api/booking/debug?key=salisbury&test_slots=2026-03-31
  *
- * Diagnostic endpoint to verify Google Calendar credentials and API connectivity.
- * Returns detailed status of each step: env vars → token refresh → free/busy → event creation.
- *
- * Protected by a simple query param: ?key=salisbury
- * Remove this endpoint once everything is confirmed working.
+ * Diagnostic endpoint. If test_slots param is provided, simulates the
+ * full slots route logic with verbose intermediate output.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -14,6 +12,35 @@ export const dynamic = 'force-dynamic';
 
 const CALENDAR_ID = 'cory.salisbury@gmail.com';
 const TIMEZONE = 'America/Denver';
+const SLOT_MINUTES = 30;
+const BLOCK_MINUTES = 60;
+const START_HOUR = 11;
+const END_HOUR = 14;
+
+function getMountainOffset(dateStr: string): string {
+  const date = new Date(`${dateStr}T12:00:00Z`);
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: TIMEZONE,
+    timeZoneName: 'shortOffset',
+  });
+  const parts = formatter.formatToParts(date);
+  const tzPart = parts.find(p => p.type === 'timeZoneName');
+  if (tzPart?.value) {
+    const match = tzPart.value.match(/GMT([+-])(\d+)/);
+    if (match) {
+      const sign = match[1];
+      const hours = match[2].padStart(2, '0');
+      return `${sign}${hours}:00`;
+    }
+  }
+  const utcHour = date.getUTCHours();
+  const localStr = date.toLocaleString('en-US', { timeZone: TIMEZONE, hour: 'numeric', hour12: false });
+  const localHour = parseInt(localStr, 10);
+  const diff = localHour - utcHour;
+  const sign = diff <= 0 ? '-' : '+';
+  const absDiff = Math.abs(diff);
+  return `${sign}${String(absDiff).padStart(2, '0')}:00`;
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -21,12 +48,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const results: Record<string, unknown> = {};
-
-  // Step 1: Check env vars
   const clientId = process.env.GOOGLE_CALENDAR_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
   const refreshToken = process.env.GOOGLE_CALENDAR_REFRESH_TOKEN;
+
+  const results: Record<string, unknown> = {};
 
   results.envVars = {
     GOOGLE_CALENDAR_CLIENT_ID: clientId ? `${clientId.substring(0, 12)}...` : 'MISSING',
@@ -37,49 +63,63 @@ export async function GET(request: NextRequest) {
   };
 
   if (!clientId || !clientSecret || !refreshToken) {
-    results.error = 'Missing Google Calendar credentials. Cannot proceed.';
+    results.error = 'Missing Google Calendar credentials.';
     return NextResponse.json(results);
   }
 
-  // Step 2: Token refresh
-  try {
-    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        refresh_token: refreshToken,
-        grant_type: 'refresh_token',
-      }),
-    });
-    const tokenData = await tokenRes.json();
+  // Get access token
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
+    }),
+  });
+  const tokenData = await tokenRes.json();
+  results.tokenRefresh = {
+    status: tokenRes.status,
+    hasAccessToken: !!tokenData.access_token,
+    scope: tokenData.scope || null,
+    error: tokenData.error || null,
+  };
 
-    results.tokenRefresh = {
-      status: tokenRes.status,
-      hasAccessToken: !!tokenData.access_token,
-      scope: tokenData.scope || null,
-      error: tokenData.error || null,
-      errorDescription: tokenData.error_description || null,
-    };
+  if (!tokenData.access_token) return NextResponse.json(results);
+  const accessToken = tokenData.access_token;
 
-    if (!tokenData.access_token) {
-      return NextResponse.json(results);
+  // If test_slots param provided, simulate the full slots route
+  const testDate = searchParams.get('test_slots');
+  if (testDate) {
+    const offset = getMountainOffset(testDate);
+    results.slotsSimulation = { dateStr: testDate, offset };
+
+    // Generate slots
+    const slots: { start: string; end: string; label: string }[] = [];
+    for (let hour = START_HOUR; hour < END_HOUR; hour++) {
+      for (let min = 0; min < 60; min += SLOT_MINUTES) {
+        const endMin = min + SLOT_MINUTES;
+        const endHour = hour + Math.floor(endMin / 60);
+        const endMinRem = endMin % 60;
+        if (endHour > END_HOUR || (endHour === END_HOUR && endMinRem > 0)) continue;
+        const startDT = `${testDate}T${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}:00`;
+        const endDT = `${testDate}T${String(endHour).padStart(2, '0')}:${String(endMinRem).padStart(2, '0')}:00`;
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+        const label = `${displayHour}:${String(min).padStart(2, '0')} ${ampm}`;
+        slots.push({ start: startDT, end: endDT, label });
+      }
     }
+    (results.slotsSimulation as Record<string, unknown>).allSlots = slots.map(s => s.label);
 
-    const accessToken = tokenData.access_token;
+    // Free/busy query
+    const timeMin = `${testDate}T${String(START_HOUR).padStart(2, '0')}:00:00${offset}`;
+    const bufferHours = Math.ceil(BLOCK_MINUTES / 60);
+    const timeMax = `${testDate}T${String(END_HOUR + bufferHours).padStart(2, '0')}:00:00${offset}`;
 
-    // Step 3: Token info (check scopes)
-    const infoRes = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${accessToken}`);
-    const infoData = await infoRes.json();
-    results.tokenInfo = {
-      scope: infoData.scope,
-      email: infoData.email,
-      expiresIn: infoData.expires_in,
-    };
+    (results.slotsSimulation as Record<string, unknown>).freeBusyQuery = { timeMin, timeMax };
 
-    // Step 4: Free/busy check
-    const today = new Date().toISOString().split('T')[0];
     const fbRes = await fetch('https://www.googleapis.com/calendar/v3/freeBusy', {
       method: 'POST',
       headers: {
@@ -87,104 +127,84 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        timeMin: `${today}T00:00:00-06:00`,
-        timeMax: `${today}T23:59:59-06:00`,
+        timeMin,
+        timeMax,
         timeZone: TIMEZONE,
         items: [{ id: CALENDAR_ID }],
       }),
     });
     const fbData = await fbRes.json();
-    results.freeBusy = {
-      status: fbRes.status,
-      busyPeriods: fbData?.calendars?.[CALENDAR_ID]?.busy?.length ?? 0,
-      calendarErrors: fbData?.calendars?.[CALENDAR_ID]?.errors || null,
-      apiError: fbData.error || null,
-    };
+    const busyPeriods = fbData?.calendars?.[CALENDAR_ID]?.busy || [];
+    (results.slotsSimulation as Record<string, unknown>).rawBusyPeriods = busyPeriods;
+    (results.slotsSimulation as Record<string, unknown>).calendarErrors = fbData?.calendars?.[CALENDAR_ID]?.errors || null;
 
-    // Step 5: Test event creation (create then delete)
-    const testEvent = {
-      summary: 'DEBUG TEST — safe to delete',
-      start: { dateTime: '2026-12-31T11:00:00', timeZone: TIMEZONE },
-      end: { dateTime: '2026-12-31T11:30:00', timeZone: TIMEZONE },
-    };
-    const createRes = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?sendUpdates=none`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(testEvent),
-      }
-    );
-    const createData = await createRes.json();
-    results.eventCreation = {
-      status: createRes.status,
-      success: !!createData.id,
-      eventId: createData.id || null,
-      error: createData.error || null,
-    };
+    // Now trace overlap check for each slot
+    const slotAnalysis = slots.map(slot => {
+      const slotStartWithOffset = `${slot.start}${offset}`;
+      const slotStartMs = new Date(slotStartWithOffset).getTime();
+      const slotBlockEndMs = slotStartMs + BLOCK_MINUTES * 60 * 1000;
 
-    // Clean up test event
-    if (createData.id) {
-      const delRes = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events/${createData.id}?sendUpdates=none`,
-        { method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      results.eventCreation = {
-        ...results.eventCreation as Record<string, unknown>,
-        cleanedUp: delRes.status === 204,
+      const overlaps = busyPeriods.map((busy: { start: string; end: string }) => {
+        const busyStartMs = new Date(busy.start).getTime();
+        const busyEndMs = new Date(busy.end).getTime();
+        const overlapping = slotStartMs < busyEndMs && slotBlockEndMs > busyStartMs;
+        return {
+          busyStart: busy.start,
+          busyEnd: busy.end,
+          busyStartMs,
+          busyEndMs,
+          slotStartMs,
+          slotBlockEndMs,
+          slotStartLtBusyEnd: slotStartMs < busyEndMs,
+          slotBlockEndGtBusyStart: slotBlockEndMs > busyStartMs,
+          overlapping,
+        };
+      });
+
+      const isBusy = overlaps.some((o: { overlapping: boolean }) => o.overlapping);
+
+      return {
+        label: slot.label,
+        slotStart: slot.start,
+        slotStartWithOffset: slotStartWithOffset,
+        slotStartMs,
+        slotBlockEndMs,
+        slotBlockEndUTC: new Date(slotBlockEndMs).toISOString(),
+        isBusy,
+        overlaps,
       };
-    }
+    });
 
-    // Step 6: Test event with attendees + Meet (like real booking)
-    const meetEvent = {
-      summary: 'DEBUG TEST with Meet — safe to delete',
-      start: { dateTime: '2026-12-30T11:00:00', timeZone: TIMEZONE },
-      end: { dateTime: '2026-12-30T12:00:00', timeZone: TIMEZONE },
-      attendees: [
-        { email: CALENDAR_ID },
-        { email: 'cory@salisburybookkeeping.com' },
-      ],
-      conferenceData: {
-        createRequest: {
-          conferenceSolutionKey: { type: 'hangoutsMeet' },
-          requestId: `debug-${Date.now()}`,
-        },
-      },
-    };
-    const meetRes = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?sendUpdates=none&conferenceDataVersion=1`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(meetEvent),
-      }
-    );
-    const meetData = await meetRes.json();
-    results.meetEventCreation = {
-      status: meetRes.status,
-      success: !!meetData.id,
-      hasMeetLink: !!meetData.hangoutLink,
-      meetLink: meetData.hangoutLink || null,
-      attendees: meetData.attendees?.map((a: { email: string; responseStatus: string }) => a.email) || null,
-      error: meetData.error || null,
-    };
+    (results.slotsSimulation as Record<string, unknown>).slotAnalysis = slotAnalysis;
 
-    if (meetData.id) {
-      await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events/${meetData.id}?sendUpdates=none`,
-        { method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-    }
+    const availableSlots = slotAnalysis.filter(s => !s.isBusy).map(s => s.label);
+    const blockedSlots = slotAnalysis.filter(s => s.isBusy).map(s => s.label);
+    (results.slotsSimulation as Record<string, unknown>).availableSlots = availableSlots;
+    (results.slotsSimulation as Record<string, unknown>).blockedSlots = blockedSlots;
 
-  } catch (err) {
-    results.fatalError = String(err);
+    return NextResponse.json(results, { status: 200 });
   }
+
+  // Default: basic credential check
+  const fbRes = await fetch('https://www.googleapis.com/calendar/v3/freeBusy', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      timeMin: new Date().toISOString(),
+      timeMax: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      timeZone: TIMEZONE,
+      items: [{ id: CALENDAR_ID }],
+    }),
+  });
+  const fbData = await fbRes.json();
+  results.freeBusy = {
+    status: fbRes.status,
+    busyPeriods: fbData?.calendars?.[CALENDAR_ID]?.busy || [],
+    calendarErrors: fbData?.calendars?.[CALENDAR_ID]?.errors || null,
+  };
 
   return NextResponse.json(results, { status: 200 });
 }
