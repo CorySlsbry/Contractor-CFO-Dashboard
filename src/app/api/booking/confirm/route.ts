@@ -2,10 +2,11 @@
  * POST /api/booking/confirm
  *
  * Confirms a booking:
- * 1. Creates a Google Calendar event on cory.salisbury@gmail.com
- *    with Google Meet link — sends invite emails to all parties
- * 2. Creates/updates a GHL contact tagged "scope-call-booked"
- * 3. Returns confirmation with calendar + GHL status
+ * 1. Checks Google Calendar free/busy to reject double-bookings
+ * 2. Creates a Google Calendar event on cory.salisbury@gmail.com
+ *    with Google Meet link — sends invite emails to attendees
+ * 3. Creates/updates a GHL contact tagged "scope-call-booked"
+ * 4. Returns confirmation with calendar + GHL status
  *
  * Body: { name, email, company?, start, end }
  */
@@ -25,6 +26,28 @@ interface BookingPayload {
   company?: string;
   start: string; // e.g. "2026-04-02T11:00:00"
   end: string;
+}
+
+/**
+ * Get the current UTC offset for America/Denver (handles MST/MDT automatically).
+ */
+function getMountainOffset(dateStr: string): string {
+  const date = new Date(`${dateStr}T12:00:00Z`);
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: TIMEZONE,
+    timeZoneName: 'shortOffset',
+  });
+  const parts = formatter.formatToParts(date);
+  const tzPart = parts.find(p => p.type === 'timeZoneName');
+  if (tzPart?.value) {
+    const match = tzPart.value.match(/GMT([+-])(\d+)/);
+    if (match) {
+      const sign = match[1];
+      const hours = match[2].padStart(2, '0');
+      return `${sign}${hours}:00`;
+    }
+  }
+  return '-07:00'; // Safe fallback (MST)
 }
 
 /**
@@ -69,27 +92,72 @@ async function getAccessToken(): Promise<string | null> {
 }
 
 /**
- * Create a Google Calendar event via OAuth2
+ * Check if the requested time slot conflicts with existing events.
+ * Returns true if the slot is available, false if there's a conflict.
  */
-async function createCalendarEvent(payload: BookingPayload): Promise<{ success: boolean; eventId?: string; meetLink?: string; error?: string }> {
-  let accessToken: string | null;
+async function checkAvailability(accessToken: string, payload: BookingPayload): Promise<{ available: boolean; error?: string }> {
   try {
-    accessToken = await getAccessToken();
+    const datePart = payload.start.split('T')[0];
+    const offset = getMountainOffset(datePart);
+
+    // Check the full block (slot + buffer)
+    const [startH, startM] = payload.start.split('T')[1].split(':').map(Number);
+    const totalMinutes = startH * 60 + startM + BLOCK_MINUTES;
+    const endH = Math.floor(totalMinutes / 60);
+    const endM = totalMinutes % 60;
+
+    const timeMin = `${payload.start}${offset}`;
+    const timeMax = `${datePart}T${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00${offset}`;
+
+    const fbRes = await fetch('https://www.googleapis.com/calendar/v3/freeBusy', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        timeMin,
+        timeMax,
+        timeZone: TIMEZONE,
+        items: [{ id: CALENDAR_ID }],
+      }),
+    });
+    const fbData = await fbRes.json();
+
+    if (fbData.error) {
+      console.error('[booking/confirm] Free/busy check error:', fbData.error);
+      // Don't block booking if free/busy check fails — allow it through
+      return { available: true };
+    }
+
+    const busy = fbData?.calendars?.[CALENDAR_ID]?.busy || [];
+    console.log(`[booking/confirm] Conflict check for ${timeMin} → ${timeMax}: ${busy.length} conflicts`);
+
+    if (busy.length > 0) {
+      return { available: false, error: 'This time slot is no longer available. Please choose a different time.' };
+    }
+
+    return { available: true };
   } catch (err) {
-    console.error('[booking/confirm] Token fetch threw:', err);
-    return { success: false, error: 'Failed to authenticate with Google' };
+    console.error('[booking/confirm] Availability check threw:', err);
+    // Don't block booking on error
+    return { available: true };
   }
+}
 
-  if (!accessToken) {
-    return { success: false, error: 'Calendar not configured or auth failed' };
-  }
-
+/**
+ * Create a Google Calendar event via OAuth2.
+ *
+ * IMPORTANT: Do NOT add the calendar owner (CALENDAR_ID) as an attendee.
+ * Adding the owner as attendee sets their responseStatus to "needsAction",
+ * which causes the free/busy API to NOT report the event as busy — breaking
+ * availability checks for future bookings.
+ */
+async function createCalendarEvent(accessToken: string, payload: BookingPayload): Promise<{ success: boolean; eventId?: string; meetLink?: string; error?: string }> {
   try {
     const companyStr = payload.company ? ` (${payload.company})` : '';
 
-    // Calculate the block end time (30 min call + 30 min buffer = 60 min total)
-    // We work with the raw datetime string and add minutes manually to avoid
-    // timezone conversion issues on servers running in UTC
+    // Calculate block end time (30 min call + 30 min buffer = 60 min total)
     const [datePart, timePart] = payload.start.split('T');
     const [startH, startM] = timePart.split(':').map(Number);
     const totalMinutes = startH * 60 + startM + BLOCK_MINUTES;
@@ -117,11 +185,11 @@ async function createCalendarEvent(payload: BookingPayload): Promise<{ success: 
         dateTime: blockEnd,
         timeZone: TIMEZONE,
       },
-      // Attendees: include calendar owner, business email, AND prospect
-      // Google sends invite emails to all attendees via sendUpdates=all
+      // ONLY external attendees — NOT the calendar owner.
+      // Adding the calendar owner as attendee causes responseStatus=needsAction
+      // which makes the event invisible to free/busy checks.
       attendees: [
-        { email: CALENDAR_ID },           // cory.salisbury@gmail.com (calendar owner — gets notification)
-        { email: OWNER_EMAIL },            // cory@salisburybookkeeping.com (business email)
+        { email: OWNER_EMAIL },            // cory@salisburybookkeeping.com (business email — gets invite)
         { email: payload.email, displayName: payload.name }, // prospect
       ],
       conferenceData: {
@@ -137,7 +205,7 @@ async function createCalendarEvent(payload: BookingPayload): Promise<{ success: 
           { method: 'email', minutes: 60 },
         ],
       },
-      guestsCanSeeOtherGuests: false, // Prospects shouldn't see Cory's other emails
+      guestsCanSeeOtherGuests: false,
     };
 
     console.log('[booking/confirm] Creating calendar event:', {
@@ -249,9 +317,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Invalid email.' }, { status: 400 });
     }
 
-    // Run both in parallel
+    // Get access token first (needed for both conflict check and event creation)
+    let accessToken: string | null;
+    try {
+      accessToken = await getAccessToken();
+    } catch {
+      accessToken = null;
+    }
+
+    // Server-side conflict check: reject double-bookings
+    if (accessToken) {
+      const availability = await checkAvailability(accessToken, body);
+      if (!availability.available) {
+        return NextResponse.json({
+          ok: false,
+          error: availability.error || 'Time slot is no longer available.',
+        }, { status: 409 });
+      }
+    }
+
+    // Create calendar event and push to GHL in parallel
     const [calResult, ghlResult] = await Promise.all([
-      createCalendarEvent(body),
+      accessToken
+        ? createCalendarEvent(accessToken, body)
+        : Promise.resolve({ success: false as const, error: 'Calendar not configured', meetLink: undefined }),
       pushToGHL(body),
     ]);
 
