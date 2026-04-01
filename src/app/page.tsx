@@ -157,13 +157,22 @@ export default function LandingPage() {
               </div>
 
               {/* Cost math box */}
-              <div className="bg-[#12121a] border border-[#2a2a3d] rounded-lg p-4 mb-6">
+              <div className="bg-[#12121a] border border-[#2a2a3d] rounded-lg p-4 mb-4">
                 <div className="space-y-1.5 mb-3">
                   <p className="text-sm text-[#8888a0] line-through">Fractional controller: $3,000–$8,000/mo</p>
                   <p className="text-sm text-[#8888a0] line-through">One missed over-billing: $50,000+ at job close</p>
                 </div>
                 <p className="text-lg font-bold text-[#6366f1]">
                   BuilderCFO: $299/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
+                </p>
+              </div>
+
+              {/* Done-for-you setup promise */}
+              <div className="flex items-start gap-2 mb-5 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5">
+                <ShieldCheck size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-[#e8e8f0]">
+                  <span className="font-semibold text-[#22c55e]">We set it up for you.</span>{' '}
+                  Connects to QuickBooks, Buildertrend, Procore — whatever you use. If you get stuck, our team does the integration for you. Zero tech headaches.
                 </p>
               </div>
 
