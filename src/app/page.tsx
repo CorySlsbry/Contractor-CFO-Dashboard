@@ -136,6 +136,15 @@ export default function LandingPage() {
                 </span>
               </h1>
 
+              {/* Done-for-you setup promise — above the fold, before pain copy */}
+              <div className="flex items-start gap-2 mb-4 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5">
+                <ShieldCheck size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-[#e8e8f0]">
+                  <span className="font-semibold text-[#22c55e]">We set it up for you.</span>{' '}
+                  Connects to QuickBooks, Buildertrend, Procore — whatever you use. If you get stuck, our team does the integration for you. Zero tech headaches.
+                </p>
+              </div>
+
               <p className="text-base sm:text-lg text-[#b0b0c8] mb-2 leading-relaxed">
                 You know the feeling. You billed $200K last month, but your bank account tells a different story. Jobs look profitable on paper. Then you close them out and the money&apos;s just... gone.
               </p>
@@ -164,15 +173,6 @@ export default function LandingPage() {
                 </div>
                 <p className="text-lg font-bold text-[#6366f1]">
                   BuilderCFO: $299/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
-                </p>
-              </div>
-
-              {/* Done-for-you setup promise */}
-              <div className="flex items-start gap-2 mb-5 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5">
-                <ShieldCheck size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-[#e8e8f0]">
-                  <span className="font-semibold text-[#22c55e]">We set it up for you.</span>{' '}
-                  Connects to QuickBooks, Buildertrend, Procore — whatever you use. If you get stuck, our team does the integration for you. Zero tech headaches.
                 </p>
               </div>
 
