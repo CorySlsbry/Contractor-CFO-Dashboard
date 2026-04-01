@@ -136,8 +136,8 @@ export default function LandingPage() {
                 </span>
               </h1>
 
-              {/* Done-for-you setup promise — above the fold, before pain copy */}
-              <div className="flex items-start gap-2 mb-4 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5">
+              {/* Done-for-you setup — mobile only (desktop version in right column) */}
+              <div className="flex items-start gap-2 mb-4 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5 lg:hidden">
                 <ShieldCheck size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-[#e8e8f0]">
                   <span className="font-semibold text-[#22c55e]">We set it up for you.</span>{' '}
@@ -195,8 +195,17 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Right — dashboard preview */}
+            {/* Right — done-for-you callout + dashboard preview */}
             <div className="hidden lg:block">
+              {/* Done-for-you setup promise — desktop only, above the dashboard preview */}
+              <div className="flex items-start gap-2 mb-4 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5">
+                <ShieldCheck size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-[#e8e8f0]">
+                  <span className="font-semibold text-[#22c55e]">We set it up for you.</span>{' '}
+                  Connects to QuickBooks, Buildertrend, Procore — whatever you use. If you get stuck, our team does the integration for you. Zero tech headaches.
+                </p>
+              </div>
+
               <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-4 shadow-2xl">
                 {/* Mini KPIs */}
                 <div className="grid grid-cols-2 gap-2 mb-3">
