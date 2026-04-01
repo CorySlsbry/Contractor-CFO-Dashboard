@@ -165,8 +165,8 @@ export default function LandingPage() {
                 <p className="text-xs text-[#8888a0] mt-1">— Zach, Custom Home Builder <span className="text-yellow-400">★★★★★</span></p>
               </div>
 
-              {/* Cost math box */}
-              <div className="bg-[#12121a] border border-[#2a2a3d] rounded-lg p-4 mb-4">
+              {/* Cost math box — mobile only (desktop version in right column) */}
+              <div className="bg-[#12121a] border border-[#2a2a3d] rounded-lg p-4 mb-4 lg:hidden">
                 <div className="space-y-1.5 mb-3">
                   <p className="text-sm text-[#8888a0] line-through">Fractional controller: $3,000–$8,000/mo</p>
                   <p className="text-sm text-[#8888a0] line-through">One missed over-billing: $50,000+ at job close</p>
@@ -203,6 +203,17 @@ export default function LandingPage() {
                 <p className="text-sm text-[#e8e8f0]">
                   <span className="font-semibold text-[#22c55e]">We set it up for you.</span>{' '}
                   Connects to QuickBooks, Buildertrend, Procore — whatever you use. If you get stuck, our team does the integration for you. Zero tech headaches.
+                </p>
+              </div>
+
+              {/* Cost math box — desktop only */}
+              <div className="bg-[#12121a] border border-[#2a2a3d] rounded-lg p-4 mb-4">
+                <div className="space-y-1.5 mb-3">
+                  <p className="text-sm text-[#8888a0] line-through">Fractional controller: $3,000–$8,000/mo</p>
+                  <p className="text-sm text-[#8888a0] line-through">One missed over-billing: $50,000+ at job close</p>
+                </div>
+                <p className="text-lg font-bold text-[#6366f1]">
+                  BuilderCFO: $299/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
                 </p>
               </div>
 
