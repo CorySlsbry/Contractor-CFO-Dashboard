@@ -116,21 +116,31 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left — copy */}
             <div>
-              <p className="text-sm text-[#8888a0] mb-3">
-                For contractors who are tired of asking{' '}
-                <span className="text-[#ef4444] font-medium">&quot;where did all the money go?&quot;</span>
-              </p>
+              {/* Social proof bar — above everything */}
+              <div className="flex items-center gap-3 mb-4 flex-wrap">
+                <div className="flex items-center gap-1">
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-yellow-400 text-sm">★</span>
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold text-[#e8e8f0] ml-1">5.0</span>
+                </div>
+                <span className="text-sm text-[#b0b0c8]">from 8 contractors who stopped guessing</span>
+              </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8e8f0] mb-4 leading-tight">
-                See Every Dollar.<br />
+                You&apos;re Busy Building.<br />
                 <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
-                  On Every Job.
-                </span><br />
-                Right Now.
+                  We&apos;ll Watch Your Money.
+                </span>
               </h1>
 
-              <p className="text-base sm:text-lg text-[#b0b0c8] mb-4 leading-relaxed">
-                BuilderCFO plugs into your QuickBooks and shows you what&apos;s really going on with your money. No more guessing. No more surprises at job close.
+              <p className="text-base sm:text-lg text-[#b0b0c8] mb-2 leading-relaxed">
+                You know the feeling. You billed $200K last month, but your bank account tells a different story. Jobs look profitable on paper. Then you close them out and the money&apos;s just... gone.
+              </p>
+              <p className="text-base sm:text-lg text-[#e8e8f0] font-medium mb-4">
+                BuilderCFO shows you exactly where every dollar went. On every job. Before it&apos;s too late.
               </p>
 
               {/* Rotating pain point */}
@@ -138,6 +148,12 @@ export default function LandingPage() {
                 <p className="text-[#6366f1] font-medium text-sm sm:text-base animate-pulse">
                   &quot;{painPoints[rotatingPain]}&quot;
                 </p>
+              </div>
+
+              {/* Social proof mini-quote */}
+              <div className="bg-[#12121a] border border-[#6366f1]/20 rounded-lg p-3 mb-4">
+                <p className="text-sm text-[#b0b0c8] italic">&quot;Recovered $8K in unbilled change orders in 60 days. System makes billable work slip through nearly impossible.&quot;</p>
+                <p className="text-xs text-[#8888a0] mt-1">— Zach, Custom Home Builder <span className="text-yellow-400">★★★★★</span></p>
               </div>
 
               {/* Cost math box */}
@@ -156,17 +172,17 @@ export default function LandingPage() {
                   href="/signup"
                   className="px-6 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2 text-base shadow-lg shadow-[#6366f1]/20"
                 >
-                  Try It Free for 14 Days <ChevronRight size={18} />
+                  Start Free — See Your Numbers in 10 Min <ChevronRight size={18} />
                 </Link>
                 <a
-                  href="#live-demo"
+                  href="#schedule"
                   className="px-6 py-3 rounded-lg font-semibold text-[#6366f1] border border-[#6366f1]/40 hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center text-base"
                 >
-                  See It In Action
+                  Book a Free Scope Call
                 </a>
               </div>
               <p className="text-xs text-[#22c55e] mt-3 font-medium">
-                No charge for 14 days. 30-day money-back guarantee. Seriously.
+                14 days free. Cancel anytime. 30-day money-back guarantee.
               </p>
             </div>
 
@@ -228,17 +244,36 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 2 — SCROLL TRIGGER (single proof number)          */}
+      {/* SECTION 2 — SCROLL TRIGGER (proof numbers + trust strip)  */}
       {/* ═══════════════════════════════════════════════════════════ */}
       <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-[#6366f1]/10 via-[#6366f1]/5 to-[#6366f1]/10">
-        <div className="w-full max-w-3xl mx-auto text-center">
-          <p className="text-5xl sm:text-6xl font-bold text-[#6366f1] mb-3">$140K</p>
-          <p className="text-base sm:text-lg text-[#e8e8f0] mb-2">
-            caught in over-billing across two jobs. Before job close. In the first week.
-          </p>
-          <p className="text-sm text-[#8888a0]">
-            — Sarah M., CFO, Denver CO
-          </p>
+        <div className="w-full max-w-4xl mx-auto">
+          {/* Big number proof */}
+          <div className="text-center mb-6">
+            <p className="text-5xl sm:text-6xl font-bold text-[#6366f1] mb-3">$140K</p>
+            <p className="text-base sm:text-lg text-[#e8e8f0] mb-2">
+              caught in over-billing across two jobs. Before job close. In the first week.
+            </p>
+            <p className="text-sm text-[#8888a0]">
+              — Sarah M., CFO, Denver CO
+            </p>
+          </div>
+
+          {/* Trust strip — real results from real contractors */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+            {[
+              { number: '$34K', label: 'forgotten retainage recovered', who: 'Rachel K., Electrical Sub' },
+              { number: '4x', label: 'ROI in first 60 days', who: 'Zach, Custom Home Builder' },
+              { number: '21 days', label: 'faster AR collection', who: 'Adam, Commercial GC' },
+              { number: '$8K', label: 'unbilled change orders found', who: 'Zach, Custom Homes' },
+            ].map((stat, idx) => (
+              <div key={idx} className="text-center">
+                <p className="text-xl sm:text-2xl font-bold text-[#e8e8f0]">{stat.number}</p>
+                <p className="text-xs text-[#b0b0c8] mt-0.5">{stat.label}</p>
+                <p className="text-[10px] text-[#8888a0] mt-0.5">{stat.who}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -846,33 +881,66 @@ export default function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════ */}
       <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-5xl mx-auto">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <span key={i} className="text-yellow-400 text-lg">★</span>
+              ))}
+            </div>
+            <span className="text-lg font-bold text-[#e8e8f0]">5.0</span>
+            <span className="text-sm text-[#8888a0]">across Salisbury Bookkeeping + BuilderCFO clients</span>
+          </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-8 text-center">
-            Contractors Don&apos;t Lie. Neither Do These Reviews.
+            Builders Don&apos;t Sugarcoat. Here&apos;s What They Said.
           </h2>
 
           <div className="grid sm:grid-cols-3 gap-4">
             {[
               {
-                quote: '"We were bleeding money on two jobs and had no idea. This dashboard caught it in the first week."',
-                author: 'Mike J.',
-                title: 'GC Owner — Austin, TX',
+                quote: '"Recovered $8K in unbilled change orders in 60 days. System makes billable work slip through nearly impossible."',
+                author: 'Zach',
+                title: 'Custom Home Builder',
+                result: '4x ROI in 60 days',
+              },
+              {
+                quote: '"P&L said we were profitable, but bank account disagreed. Now I see which jobs make money in real time."',
+                author: 'Dave',
+                title: 'Residential Remodeler',
+                result: '+2% pricing accuracy',
+              },
+              {
+                quote: '"Managing retainage across 8 GCs was a nightmare. Recovered $34K in forgotten retainage in Q1."',
+                author: 'Rachel K.',
+                title: 'Electrical Subcontractor',
+                result: '$34K recovered',
+              },
+              {
+                quote: '"Lender used to question draw requests. Now I submit bank-ready reports approved in days, not weeks."',
+                author: 'Marcus T.',
+                title: 'Spec Home Builder',
+                result: 'Bank-ready draws',
+              },
+              {
+                quote: '"Knowing cash position 2 months out changed everything. Bank conversations easier, numbers finally trustworthy."',
+                author: 'Adam',
+                title: 'Commercial Contractor',
+                result: '21-day AR reduction',
               },
               {
                 quote: '"The AI Advisor told me I was over-billed $140K across two jobs. Caught it before job close."',
                 author: 'Sarah M.',
                 title: 'CFO — Denver, CO',
-              },
-              {
-                quote: '"We went from guessing on bids to knowing our margins on every job type. Game changer."',
-                author: 'Tony R.',
-                title: 'Framing Contractor — Salt Lake City, UT',
+                result: '$140K caught',
               },
             ].map((testimonial, idx) => (
               <div key={idx} className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-5">
-                <div className="flex gap-0.5 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400 text-base">★</span>
-                  ))}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-yellow-400 text-base">★</span>
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-semibold text-[#22c55e] bg-[#22c55e]/10 px-2 py-0.5 rounded-full">{testimonial.result}</span>
                 </div>
                 <p className="text-[#b0b0c8] italic mb-3 text-sm">{testimonial.quote}</p>
                 <div>
