@@ -172,7 +172,7 @@ export default function LandingPage() {
                   <p className="text-sm text-[#8888a0] line-through">One missed over-billing: $50,000+ at job close</p>
                 </div>
                 <p className="text-lg font-bold text-[#6366f1]">
-                  BuilderCFO: $299/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
+                  BuilderCFO: $199/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
                 </p>
               </div>
 
@@ -213,7 +213,7 @@ export default function LandingPage() {
                   <p className="text-sm text-[#8888a0] line-through">One missed over-billing: $50,000+ at job close</p>
                 </div>
                 <p className="text-lg font-bold text-[#6366f1]">
-                  BuilderCFO: $299/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
+                  BuilderCFO: $199/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
                 </p>
               </div>
 
@@ -1012,7 +1012,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold text-white mb-1">Starter</h3>
               <p className="text-sm text-[#b0b0c8] mb-5">Solo contractors and small crews</p>
               <div className="mb-5">
-                <span className="text-4xl sm:text-5xl font-bold text-white">$299</span>
+                <span className="text-4xl sm:text-5xl font-bold text-white">$199</span>
                 <span className="text-[#b0b0c8] ml-2">/mo</span>
               </div>
               <ul className="space-y-2.5 mb-6 flex-1">
@@ -1048,7 +1048,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold text-white mb-1">Professional</h3>
               <p className="text-sm text-[#b0b0c8] mb-5">Growing companies ($1M–$10M)</p>
               <div className="mb-5">
-                <span className="text-4xl sm:text-5xl font-bold text-white">$499</span>
+                <span className="text-4xl sm:text-5xl font-bold text-white">$399</span>
                 <span className="text-[#b0b0c8] ml-2">/mo</span>
               </div>
               <ul className="space-y-2.5 mb-6 flex-1">
@@ -1082,7 +1082,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold text-white mb-1">Enterprise</h3>
               <p className="text-sm text-[#b0b0c8] mb-5">$10M+ with multiple PMs</p>
               <div className="mb-5">
-                <span className="text-4xl sm:text-5xl font-bold text-white">$699</span>
+                <span className="text-4xl sm:text-5xl font-bold text-white">$599</span>
                 <span className="text-[#b0b0c8] ml-2">/mo</span>
               </div>
               <ul className="space-y-2.5 mb-6 flex-1">
@@ -1123,7 +1123,7 @@ export default function LandingPage() {
               One missed over-billing costs $50K+ at job close.
             </p>
             <p className="text-base sm:text-lg text-[#6366f1] font-bold mb-3">
-              BuilderCFO starts at $299/month. With an AI CFO included.
+              BuilderCFO starts at $199/month. With an AI CFO included.
             </p>
             <p className="text-sm text-[#8888a0] mb-3">
               You do the math. Actually, BuilderCFO will do the math for you.
@@ -1158,7 +1158,7 @@ export default function LandingPage() {
             <div>
               <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">How much does it cost?</h3>
               <p className="text-[#b0b0c8] text-sm leading-relaxed">
-                Starter is $299/month. Professional is $499/month. Enterprise is $699/month. Every plan gets a 14-day free trial and includes the AI CFO Advisor. No setup fees. No contracts. Cancel anytime.
+                Starter is $199/month. Professional is $399/month. Enterprise is $599/month. Every plan gets a 14-day free trial and includes the AI CFO Advisor. No setup fees. No contracts. Cancel anytime.
               </p>
             </div>
 

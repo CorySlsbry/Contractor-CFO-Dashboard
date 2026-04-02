@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'BuilderCFO | Construction Financial Dashboard for Contractors & Home Builders',
   description:
-    'Real-time financial dashboard for construction companies. Job costing, WIP tracking, cash flow forecasting, AR/AP aging, and 7+ integrations including QuickBooks, Procore, and Buildertrend. Built by Salisbury Bookkeeping. Plans from $299/mo with 14-day free trial.',
+    'Real-time financial dashboard for construction companies. Job costing, WIP tracking, cash flow forecasting, AR/AP aging, and 7+ integrations including QuickBooks, Procore, and Buildertrend. Built by Salisbury Bookkeeping. Plans from $199/mo with 14-day free trial.',
   keywords: 'construction financial dashboard, contractor CFO, job costing software, WIP tracking, construction bookkeeping, cash flow forecasting, QuickBooks construction, Procore integration, Buildertrend integration, construction accounting',
   manifest: '/manifest.json',
   openGraph: {
@@ -77,11 +77,11 @@ const jsonLd = {
       {
         '@type': 'Offer',
         name: 'Starter Plan',
-        price: '299',
+        price: '199',
         priceCurrency: 'USD',
         priceSpecification: {
           '@type': 'UnitPriceSpecification',
-          price: '299',
+          price: '199',
           priceCurrency: 'USD',
           billingDuration: 'P1M',
         },
@@ -90,11 +90,11 @@ const jsonLd = {
       {
         '@type': 'Offer',
         name: 'Professional Plan',
-        price: '499',
+        price: '399',
         priceCurrency: 'USD',
         priceSpecification: {
           '@type': 'UnitPriceSpecification',
-          price: '499',
+          price: '399',
           priceCurrency: 'USD',
           billingDuration: 'P1M',
         },
@@ -103,11 +103,11 @@ const jsonLd = {
       {
         '@type': 'Offer',
         name: 'Enterprise Plan',
-        price: '699',
+        price: '599',
         priceCurrency: 'USD',
         priceSpecification: {
           '@type': 'UnitPriceSpecification',
-          price: '699',
+          price: '599',
           priceCurrency: 'USD',
           billingDuration: 'P1M',
         },
@@ -199,7 +199,7 @@ const jsonLd = {
         name: 'How much does BuilderCFO cost compared to a full-time CFO?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'BuilderCFO starts at $299/month (Starter), $499/month (Professional), or $699/month (Enterprise). A full-time construction CFO typically costs $120,000–$200,000+ per year in salary and benefits. BuilderCFO provides real-time dashboards, automated WIP, and AI analysis for $3,588–$8,388 per year — roughly 3–5% the cost of a dedicated hire. Every plan includes a 14-day free trial.',
+          text: 'BuilderCFO starts at $199/month (Starter), $399/month (Professional), or $599/month (Enterprise). A full-time construction CFO typically costs $120,000–$200,000+ per year in salary and benefits. BuilderCFO provides real-time dashboards, automated WIP, and AI analysis for $2,388–$7,188 per year — roughly 2–4% the cost of a dedicated hire. Every plan includes a 14-day free trial.',
         },
       },
       {

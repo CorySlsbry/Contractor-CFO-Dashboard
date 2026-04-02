@@ -208,13 +208,13 @@ export class StripeService {
 
     // Fallback: match by price amount (in cents)
     const amountCents = item.price.unit_amount;
-    if (amountCents === 69900) return "enterprise";
-    if (amountCents === 49900) return "pro";
-    if (amountCents === 29900) return "basic";
+    if (amountCents === 59900) return "enterprise";
+    if (amountCents === 39900) return "pro";
+    if (amountCents === 19900) return "basic";
 
     // Fallback: match by price amount ranges (handles minor variations)
-    if (amountCents && amountCents >= 60000) return "enterprise";
-    if (amountCents && amountCents >= 40000) return "pro";
+    if (amountCents && amountCents >= 50000) return "enterprise";
+    if (amountCents && amountCents >= 30000) return "pro";
     return "basic";
   }
 
