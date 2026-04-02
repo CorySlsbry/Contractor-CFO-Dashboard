@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { createClient } from '@/lib/supabase/server';
 import { exchangeCode } from '@/lib/integrations';
+import { logError, logSuccess } from '@/lib/error-logger';
 import type { IntegrationProvider } from '@/types/integrations';
 
 export async function GET(request: NextRequest) {
@@ -81,11 +82,26 @@ export async function GET(request: NextRequest) {
 
     if (upsertError) {
       console.error('Failed to store integration:', upsertError);
+      await logError({
+        organizationId: orgId,
+        errorType: 'oauth_callback',
+        severity: 'error',
+        title: `Failed to store ${provider} connection`,
+        message: upsertError.message,
+        provider,
+      });
       return NextResponse.json(
         { error: 'Failed to store connection' },
         { status: 500 }
       );
     }
+
+    await logSuccess({
+      organizationId: orgId,
+      errorType: 'oauth_callback',
+      title: `${provider} connected successfully`,
+      provider,
+    });
 
     // Redirect to integrations page with success
     const response = NextResponse.redirect(
@@ -96,6 +112,12 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Integration Callback Error:', error);
+    await logError({
+      errorType: 'oauth_callback',
+      severity: 'error',
+      title: 'Integration OAuth callback failed',
+      message: error instanceof Error ? error.message : String(error),
+    });
     const response = NextResponse.redirect(
       `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/integrations?error=connection_failed`
     );

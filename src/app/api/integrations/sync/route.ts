@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { createClient } from '@/lib/supabase/server';
 import { syncIntegration, syncAllIntegrations, refreshToken, getConnector } from '@/lib/integrations';
+import { logError, logSuccess } from '@/lib/error-logger';
 import type { IntegrationProvider, IntegrationConnection } from '@/types/integrations';
 
 export async function POST(request: NextRequest) {
@@ -88,6 +89,15 @@ export async function POST(request: NextRequest) {
             };
           } catch (error) {
             console.error(`Token refresh failed for ${conn.provider}:`, error);
+            await logError({
+              organizationId: profile.organization_id,
+              errorType: 'token_refresh',
+              severity: 'error',
+              title: `Token refresh failed for ${conn.provider}`,
+              message: error instanceof Error ? error.message : String(error),
+              provider: conn.provider,
+              metadata: { connectionId: conn.id },
+            });
             // Mark as error
             await (supabase as any)
               .from('integration_connections')
@@ -251,6 +261,27 @@ export async function POST(request: NextRequest) {
           updated_at: new Date().toISOString(),
         })
         .eq('id', conn.id);
+
+      // Log to error_logs for admin visibility
+      if (result.success) {
+        await logSuccess({
+          organizationId: profile.organization_id,
+          errorType: 'integration_sync',
+          title: `${result.provider} sync completed — ${result.recordsTotal} records`,
+          provider: result.provider,
+          metadata: { duration: result.duration, projects: result.projects.length, contacts: result.contacts.length, deals: result.deals.length },
+        });
+      } else {
+        await logError({
+          organizationId: profile.organization_id,
+          errorType: 'integration_sync',
+          severity: 'error',
+          title: `${result.provider} sync failed`,
+          message: result.error,
+          provider: result.provider,
+          metadata: { duration: result.duration },
+        });
+      }
     }
 
     return NextResponse.json({

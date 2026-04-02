@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import { createAdminClient } from "@/lib/supabase/admin";
 import { stripeService } from "@/lib/stripe";
+import { logError, logSuccess } from "@/lib/error-logger";
 import type Stripe from "stripe";
 
 /**
@@ -101,8 +102,24 @@ export async function POST(request: NextRequest) {
             .eq("id", orgId);
 
           console.log(`Subscription created for org ${orgId}: ${status} ${plan}${subscription.trial_end ? ` (trial ends ${new Date(subscription.trial_end * 1000).toISOString()})` : ''}`);
+          await logSuccess({
+            organizationId: orgId,
+            errorType: 'stripe_webhook',
+            title: `Checkout completed — ${plan} plan (${status})`,
+            provider: 'stripe',
+            metadata: { customerId: session.customer, subscriptionId: session.subscription, plan, status },
+          });
         } catch (error) {
           console.error("Failed to process checkout session:", error);
+          await logError({
+            organizationId: orgId,
+            errorType: 'stripe_webhook',
+            severity: 'critical',
+            title: 'Failed to process checkout.session.completed',
+            message: error instanceof Error ? error.message : String(error),
+            provider: 'stripe',
+            metadata: { sessionId: session.id },
+          });
         }
         break;
       }
@@ -133,8 +150,24 @@ export async function POST(request: NextRequest) {
             .eq("id", orgId);
 
           console.log(`Subscription updated for org ${orgId}: ${status} ${plan}`);
+          await logSuccess({
+            organizationId: orgId,
+            errorType: 'stripe_webhook',
+            title: `Subscription updated — ${plan} (${status})`,
+            provider: 'stripe',
+            metadata: { subscriptionId: subscription.id, plan, status },
+          });
         } catch (error) {
           console.error("Failed to process subscription update:", error);
+          await logError({
+            organizationId: orgId,
+            errorType: 'stripe_webhook',
+            severity: 'critical',
+            title: 'Failed to process subscription update',
+            message: error instanceof Error ? error.message : String(error),
+            provider: 'stripe',
+            metadata: { subscriptionId: subscription.id },
+          });
         }
         break;
       }
@@ -160,8 +193,25 @@ export async function POST(request: NextRequest) {
             .eq("id", orgId);
 
           console.log(`Subscription canceled for org ${orgId}`);
+          await logError({
+            organizationId: orgId,
+            errorType: 'stripe_webhook',
+            severity: 'warning',
+            title: 'Subscription canceled',
+            provider: 'stripe',
+            metadata: { subscriptionId: subscription.id },
+          });
         } catch (error) {
           console.error("Failed to process subscription deletion:", error);
+          await logError({
+            organizationId: orgId,
+            errorType: 'stripe_webhook',
+            severity: 'critical',
+            title: 'Failed to process subscription cancellation',
+            message: error instanceof Error ? error.message : String(error),
+            provider: 'stripe',
+            metadata: { subscriptionId: subscription.id },
+          });
         }
         break;
       }

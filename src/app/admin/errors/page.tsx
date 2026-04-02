@@ -57,8 +57,10 @@ export default function ErrorLogPage() {
 
   const resolveError = async (errorId: string) => {
     try {
-      const res = await fetch(`/api/admin/errors/${errorId}/resolve`, {
-        method: 'POST',
+      const res = await fetch('/api/admin/errors', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error_id: errorId, resolved: true }),
       });
       if (res.ok) {
         setErrors(errors.map(e => e.id === errorId ? { ...e, resolved: true } : e));
