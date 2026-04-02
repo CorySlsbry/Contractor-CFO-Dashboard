@@ -6,17 +6,17 @@
 export const PLAN_FEATURES = {
   basic: {
     name: 'Essential',
-    price: 299,
+    price: 199,
     includesAiToolkit: false,
   },
   pro: {
     name: 'Professional',
-    price: 499,
+    price: 399,
     includesAiToolkit: true,
   },
   enterprise: {
     name: 'Enterprise',
-    price: 699,
+    price: 599,
     includesAiToolkit: true,
   },
 };
