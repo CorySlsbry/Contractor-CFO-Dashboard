@@ -5,7 +5,15 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-initialize Resend so the module can be imported at build time
+// even when RESEND_API_KEY is not yet set in the environment.
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY || '');
+  }
+  return _resend;
+}
 
 const FROM_EMAIL = process.env.EMAIL_FROM || 'BuilderCFO <hello@topbuildercfo.com>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://topbuildercfo.com';
@@ -168,7 +176,7 @@ function trialEndingHtml(name: string, daysLeft: number): string {
 
 export async function sendWelcomeEmail(to: string, name: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: 'Your BuilderCFO dashboard is ready.',
@@ -181,7 +189,7 @@ export async function sendWelcomeEmail(to: string, name: string) {
 
 export async function sendNudgeQuickBooks(to: string, name: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: 'Your dashboard is waiting — connect QuickBooks to see your real numbers',
@@ -194,7 +202,7 @@ export async function sendNudgeQuickBooks(to: string, name: string) {
 
 export async function sendWeekOneValue(to: string, name: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: "Here's what BuilderCFO catches in the first week for most contractors",
@@ -210,7 +218,7 @@ export async function sendTrialEnding(to: string, name: string, daysLeft: number
     const subject = daysLeft <= 1
       ? 'Your BuilderCFO trial ends today'
       : `Your free trial ends in ${daysLeft} days — here's what you'll lose access to`;
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject,

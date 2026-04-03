@@ -9,6 +9,8 @@
  * Day 14: Trial ending today
  */
 
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendNudgeQuickBooks, sendWeekOneValue, sendTrialEnding } from '@/lib/email';
