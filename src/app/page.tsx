@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, ShieldCheck, CalendarCheck } from 'lucide-react';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, ShieldCheck, CalendarCheck, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { LandingTracker } from '@/components/landing-tracker';
 import { BookingCalendar } from '@/components/booking-calendar';
@@ -9,6 +9,7 @@ import { BookingCalendar } from '@/components/booking-calendar';
 type DemoTab = 'overview' | 'ar' | 'ap' | 'wip' | 'retainage' | 'sales';
 
 export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [demoTab, setDemoTab] = useState<DemoTab>('overview');
   const [advisorMessages, setAdvisorMessages] = useState<{role: 'user' | 'ai'; text: string}[]>([
     { role: 'user', text: 'My gross margin on the Henderson job dropped from 22% to 14%. What happened?' },
@@ -65,14 +66,40 @@ export default function LandingPage() {
             <a href="#schedule" className="hover:text-[#e8e8f0] transition">Book a Call</a>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm text-[#e8e8f0] hover:text-[#6366f1] transition">
+            <Link href="/login" className="text-sm text-[#e8e8f0] hover:text-[#6366f1] transition hidden sm:inline">
               Sign In
             </Link>
-            <Link href="/signup" className="text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded bg-[#6366f1] text-white hover:bg-[#5558d9] transition">
+            <Link href="/signup" className="text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded bg-[#6366f1] text-white hover:bg-[#5558d9] transition hidden sm:inline-block">
               Start Free Trial
             </Link>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-[#e8e8f0] hover:text-[#6366f1] transition"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-[#0a0a0f] border-t border-[#1e1e2e] px-4 py-4 space-y-3">
+            <a href="#live-demo" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#8888a0] hover:text-[#e8e8f0] transition">Demo</a>
+            <a href="#cfo-advisor" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#8888a0] hover:text-[#e8e8f0] transition">CFO Advisor</a>
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#8888a0] hover:text-[#e8e8f0] transition">Pricing</a>
+            <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#8888a0] hover:text-[#e8e8f0] transition">FAQ</a>
+            <a href="#schedule" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#8888a0] hover:text-[#e8e8f0] transition">Book a Call</a>
+            <div className="pt-3 border-t border-[#1e1e2e] flex items-center gap-3">
+              <Link href="/login" className="text-sm text-[#e8e8f0] hover:text-[#6366f1] transition">
+                Sign In
+              </Link>
+              <Link href="/signup" className="text-sm px-4 py-2 rounded bg-[#6366f1] text-white hover:bg-[#5558d9] transition">
+                Start Free Trial
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* ═══════════════════════════════════════════════════════════ */}

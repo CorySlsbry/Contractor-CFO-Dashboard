@@ -5,25 +5,26 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Check } from 'lucide-react';
+import { PLAN_FEATURES } from '@/lib/plan-features';
 
 const plans = [
   {
     key: 'basic',
-    name: 'Starter',
-    price: 299,
+    name: PLAN_FEATURES.basic.name,
+    price: PLAN_FEATURES.basic.price,
     features: ['Financial dashboard', 'Job costing & WIP', 'Cash flow forecasting', 'QuickBooks sync'],
   },
   {
     key: 'pro',
-    name: 'Professional',
-    price: 499,
+    name: PLAN_FEATURES.pro.name,
+    price: PLAN_FEATURES.pro.price,
     popular: true,
     features: ['Everything in Starter', 'Buildertrend + HubSpot + JobNimbus', 'AI Bookkeeper Toolkit', 'Priority support'],
   },
   {
     key: 'enterprise',
-    name: 'Enterprise',
-    price: 699,
+    name: PLAN_FEATURES.enterprise.name,
+    price: PLAN_FEATURES.enterprise.price,
     features: ['Everything in Professional', 'Procore + Salesforce + ServiceTitan', 'Advanced AI Bookkeeper features', 'Quarterly strategy call + dedicated manager'],
   },
 ];
