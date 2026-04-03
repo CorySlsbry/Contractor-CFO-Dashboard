@@ -17,11 +17,20 @@ export const metadata: Metadata = {
     url: 'https://topbuildercfo.com',
     siteName: 'BuilderCFO',
     type: 'website',
+    images: [
+      {
+        url: 'https://topbuildercfo.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'BuilderCFO — Construction Financial Dashboard',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'BuilderCFO | Financial Dashboard for Contractors',
     description: 'Real-time job costing, WIP tracking, and cash flow forecasting for construction companies.',
+    images: ['https://topbuildercfo.com/og-image.png'],
   },
   alternates: {
     canonical: 'https://topbuildercfo.com',
@@ -226,6 +235,14 @@ const jsonLd = {
           text: 'Yes. There are no long-term contracts, no cancellation fees, and no setup fees. You can cancel your subscription at any time and retain access through the end of your current billing cycle. Every plan starts with a 14-day free trial — you enter a card upfront but are not charged until day 15.',
         },
       },
+      {
+        '@type': 'Question',
+        name: 'What integrations does BuilderCFO support?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'BuilderCFO integrates with 7+ tools used by construction companies: QuickBooks Online (accounting), Procore (project management), Buildertrend (project management), ServiceTitan (field service management), Salesforce (CRM), HubSpot (CRM), and JobNimbus (CRM). All integrations sync automatically so your financial dashboard always reflects the latest data from the field and your books.',
+        },
+      },
     ],
   },
 };
@@ -238,6 +255,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Google Tag Manager */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-K5TG5SHN');`,
+          }}
+        />
+        {/* End Google Tag Manager */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="BuilderCFO" />
@@ -265,6 +293,16 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} bg-[#0a0a0f] text-[#e8e8f0]`}>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-K5TG5SHN"
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
+        {/* End Google Tag Manager (noscript) */}
         <PWARegister />
         {children}
 

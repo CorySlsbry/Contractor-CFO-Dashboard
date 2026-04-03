@@ -1063,7 +1063,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 8 — FAQ (4 key questions)                         */}
+      {/* SECTION 8 — FAQ (8 key questions)                         */}
       {/* ═══════════════════════════════════════════════════════════ */}
       <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8" id="faq">
         <div className="w-full max-w-3xl mx-auto">
@@ -1097,6 +1097,34 @@ export default function LandingPage() {
               <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">Can I cancel anytime?</h3>
               <p className="text-[#b0b0c8] text-sm leading-relaxed">
                 Yes. No contracts. No fees. Cancel whenever you want and keep access through the end of your billing period. Plus, every plan comes with a 30-day money-back guarantee — if BuilderCFO doesn&apos;t deliver clearer financial visibility, you get a full refund.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">What integrations do you support?</h3>
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                QuickBooks Online, Procore, Buildertrend, ServiceTitan, Salesforce, HubSpot, and JobNimbus. All sync automatically — your dashboard always reflects the latest data from the field and your books.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">How does the AI CFO Advisor work?</h3>
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                Ask it anything about your financials — &quot;Why is cash tight this month?&quot; or &quot;Am I over-billed on the Henderson job?&quot; — and it pulls your actual QuickBooks data, job costs, and WIP numbers to give you a specific answer with actionable next steps.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">How long does setup take?</h3>
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                Under 5 minutes. Sign up, connect QuickBooks, and your dashboard starts populating immediately. If you want help with integrations, our team does it for you at no extra cost.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">Who built this?</h3>
+              <p className="text-[#b0b0c8] text-sm leading-relaxed">
+                Salisbury Bookkeeping — a fractional controller firm that works with custom home builders, GCs, and remodelers nationwide. BuilderCFO automates the same WIP schedules, job cost reports, and cash flow forecasts our controllers build manually for clients.
               </p>
             </div>
           </div>
@@ -1152,7 +1180,7 @@ export default function LandingPage() {
             <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
               Salisbury Bookkeeping
             </a>{' '}
-            — Fractional Controllers for Construction Companies
+            — Fractional CFO Services for Construction Companies
           </p>
         </div>
       </section>
@@ -1180,8 +1208,8 @@ export default function LandingPage() {
             <div>
               <h4 className="text-sm font-semibold text-[#8888a0] mb-3 uppercase">Legal</h4>
               <ul className="space-y-1.5 text-sm">
-                <li><a href="#" className="text-[#e8e8f0] hover:text-[#6366f1]">Privacy Policy</a></li>
-                <li><a href="#" className="text-[#e8e8f0] hover:text-[#6366f1]">Terms of Service</a></li>
+                <li><a href="/privacy" className="text-[#e8e8f0] hover:text-[#6366f1]">Privacy Policy</a></li>
+                <li><a href="/terms" className="text-[#e8e8f0] hover:text-[#6366f1]">Terms of Service</a></li>
               </ul>
             </div>
             <div>
