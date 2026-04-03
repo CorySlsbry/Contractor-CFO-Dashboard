@@ -15,7 +15,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendNudgeQuickBooks, sendWeekOneValue, sendTrialEnding } from '@/lib/email';
 
-export async function POST(request: NextRequest) {
+/** Shared handler — Vercel crons send GET, n8n/manual sends POST */
+async function handleDrip(request: NextRequest) {
   // Verify cron secret
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -93,4 +94,14 @@ export async function POST(request: NextRequest) {
     console.error('Drip email error:', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
+}
+
+// Vercel crons send GET requests
+export async function GET(request: NextRequest) {
+  return handleDrip(request);
+}
+
+// n8n / manual triggers send POST
+export async function POST(request: NextRequest) {
+  return handleDrip(request);
 }

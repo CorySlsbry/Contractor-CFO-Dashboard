@@ -3,11 +3,87 @@
  * POST /api/auth/signup
  * Creates user with auto-confirmed email, org, and profile in one transaction
  * Uses service role key to bypass email confirmation and RLS
+ * Also creates a GHL contact and enrolls in the BuilderCFO Onboarding Drip workflow
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendWelcomeEmail } from "@/lib/email";
+
+const GHL_ONBOARDING_WORKFLOW_ID = 'dca41be4-9ab1-45ec-b099-976217cf86c4';
+
+/**
+ * Create/upsert a GHL contact tagged "buildercfo-signup" and enroll in the
+ * BuilderCFO Onboarding Drip workflow. Non-blocking — failures are logged
+ * but never break the signup flow.
+ */
+async function pushToGHLOnboarding(email: string, fullName: string, companyName: string): Promise<void> {
+  const apiKey = process.env.GHL_API_KEY;
+  const locationId = process.env.GHL_LOCATION_ID || 'd6snrvwPYgsUbjfj6Dox';
+
+  if (!apiKey) {
+    console.warn('[signup] GHL_API_KEY not set — skipping GHL onboarding enrollment');
+    return;
+  }
+
+  try {
+    // Step 1: Create or upsert the contact
+    const nameParts = fullName.trim().split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    const contactRes = await fetch('https://services.leadconnectorhq.com/contacts/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28',
+      },
+      body: JSON.stringify({
+        locationId,
+        email,
+        firstName,
+        lastName,
+        companyName,
+        tags: ['buildercfo-signup'],
+        source: 'BuilderCFO App Signup',
+      }),
+    });
+
+    const contactData = await contactRes.json();
+    const contactId = contactData?.contact?.id;
+
+    if (!contactId) {
+      console.error('[signup] GHL contact creation returned no ID:', contactData);
+      return;
+    }
+
+    console.log(`[signup] GHL contact created/updated: ${contactId}`);
+
+    // Step 2: Enroll in the BuilderCFO Onboarding Drip workflow
+    const enrollRes = await fetch(
+      `https://services.leadconnectorhq.com/contacts/${contactId}/workflow/${GHL_ONBOARDING_WORKFLOW_ID}`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Version': '2021-07-28',
+        },
+        body: JSON.stringify({ eventStartTime: new Date().toISOString() }),
+      }
+    );
+
+    if (enrollRes.ok) {
+      console.log(`[signup] Contact ${contactId} enrolled in BuilderCFO Onboarding Drip`);
+    } else {
+      const enrollData = await enrollRes.text();
+      console.error(`[signup] Workflow enrollment failed (${enrollRes.status}):`, enrollData);
+    }
+  } catch (err) {
+    console.error('[signup] GHL onboarding push threw:', err);
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -117,8 +193,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send welcome email (non-blocking)
+    // Send welcome email + create GHL contact + enroll in onboarding (non-blocking)
     sendWelcomeEmail(email, fullName).catch(() => {});
+    pushToGHLOnboarding(email, fullName, companyName).catch(() => {});
 
     return NextResponse.json({
       success: true,
