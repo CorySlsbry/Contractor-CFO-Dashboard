@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
+import { OnboardingWizard } from './onboarding-wizard';
 import { Badge } from '@/components/ui/badge';
 import { formatCompactCurrency } from '@/lib/utils';
 import { useChartTheme } from '@/components/chart-theme-provider';
@@ -1929,6 +1930,43 @@ export default function DashboardContent() {
   const ds = theme.dashboard;
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showDemoBanner, setShowDemoBanner] = useState(true);
+  const [hasIntegrations, setHasIntegrations] = useState<boolean | null>(null);
+  const [orgName, setOrgName] = useState<string>('');
+
+  useEffect(() => {
+    async function checkIntegrations() {
+      try {
+        const res = await fetch('/api/integrations/status');
+        if (res.ok) {
+          const data = await res.json();
+          const connections = data.connections || [];
+          const connected = connections.filter((c: { status: string }) => c.status === 'connected');
+          setHasIntegrations(connected.length > 0);
+          if (data.org_name) setOrgName(data.org_name);
+        } else {
+          // If status check fails, show dashboard anyway
+          setHasIntegrations(true);
+        }
+      } catch {
+        setHasIntegrations(true);
+      }
+    }
+    checkIntegrations();
+  }, []);
+
+  // Show loading while checking
+  if (hasIntegrations === null) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-[#8888a0] text-sm">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  // Show onboarding wizard if no integrations connected
+  if (!hasIntegrations) {
+    return <OnboardingWizard orgName={orgName} />;
+  }
 
   return (
     <div className="space-y-6">

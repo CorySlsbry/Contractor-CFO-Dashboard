@@ -34,14 +34,30 @@ export default function LandingPage() {
 
   const handleAdvisorDemo = () => {
     if (!advisorInput.trim()) return;
-    const userMsg = advisorInput.trim();
+    const userMsg = advisorInput.trim().toLowerCase();
     setAdvisorInput('');
-    setAdvisorMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setAdvisorMessages(prev => [...prev, { role: 'user', text: advisorInput.trim() }]);
+
+    let response = '';
+
+    if (/margin|profit|drop|lost money/.test(userMsg)) {
+      response = 'Looking at the cost code detail — your framing labor came in at $47,200 vs. the $31,500 budget (GL 3800). That\'s a 50% overage driven by 3 un-re-estimated change orders and 340 crew hours vs. 220 budgeted. Recommendation: Submit a change order for the added scope ($15,700) and review crew allocation before drywall starts next week.';
+    } else if (/hire|afford|pm|project manager/.test(userMsg)) {
+      response = 'Based on your current cash flow — you have $744K net cash with $487K in AR. Your monthly burn is ~$180K. At current backlog ($3.2M signed, $1.8M remaining), you have 10 months of runway. A PM at $85K/yr ($7,083/mo) is affordable if you maintain 2+ jobs in production. Risk: your AR aging is stretching — collect the $28.7K in 61-90 day bucket first.';
+    } else if (/bill|draw|invoice/.test(userMsg)) {
+      response = 'Your draw schedule shows 3 invoices outstanding: Riverside Estate $125K (current), Heritage Park $125K (current), and Mountain View $32K (current). You also have $85K in 1-30 day past-due across two jobs. The Heritage Park job is 80% billed but only 65% complete — that\'s $141.5K in over-billing risk. Recommend slowing billing on Heritage until work catches up.';
+    } else if (/over.?bill|wip|overbill|under.?bill/.test(userMsg)) {
+      response = 'WIP analysis shows 2 jobs flagged: Riverside Estate is over-billed by $69K (82% billed vs 71% complete) and Heritage Park is over-billed by $141.5K (77% billed vs 52% complete). Combined over-billing exposure: $210.5K. That\'s cash you\'ll owe back at job close if completion percentages don\'t catch up. Heritage Park needs immediate attention.';
+    } else if (/retainage/.test(userMsg)) {
+      response = 'You have $196,500 in retainage held across 6 active jobs. The largest: Heritage Park at $62K (release date: 60 days after substantial completion), Riverside Estate at $48K (90-day holdback). Three jobs have retainage past their release date totaling $34K — that\'s money you\'re owed right now. Recommend sending release requests this week.';
+    } else if (/cash|flow|forecast|runway/.test(userMsg)) {
+      response = '60-day cash forecast: You\'ll collect ~$310K in current AR, plus $85K in 1-30 day AR (80% probability). Outflows: $312K AP + $180K monthly burn × 2 = $672K total. Projected net cash in 60 days: $467K. Risk flag: if Heritage Park AR ($125K) slips to 60+ days, net drops to $342K. Collections on the 31-60 day bucket ($63.5K) are critical.';
+    } else {
+      response = 'That\'s a great question — but the AI CFO needs your real QuickBooks data to answer it accurately. <a href="/signup" style="color:#6366f1;text-decoration:underline;font-weight:600;">Start your free trial</a> and ask this with your actual numbers. Setup takes under 10 minutes, and we\'ll do the integration for you.';
+    }
+
     setTimeout(() => {
-      setAdvisorMessages(prev => [...prev, {
-        role: 'ai',
-        text: 'Based on your QuickBooks data and job cost reports, I can see the issue. Let me pull the specific GL accounts and give you a breakdown with actionable next steps...'
-      }]);
+      setAdvisorMessages(prev => [...prev, { role: 'ai', text: response }]);
     }, 1200);
   };
 
@@ -178,7 +194,7 @@ export default function LandingPage() {
                 </Link>
               </div>
               <p className="text-xs text-[#b0b0c8] mt-3">
-                Starts at $199/mo. 14 days free. Or{' '}
+                Starts at $199/mo. 14 days free. Card required — cancel anytime. Or{' '}
                 <a href="#schedule" className="text-[#6366f1] hover:text-[#818cf8] font-medium transition">book a call</a> first.
               </p>
             </div>
@@ -313,6 +329,70 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* SECTION 3.5 — WHO THIS IS FOR (ICP)                       */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-3xl mx-auto">
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-5 text-center">
+              BuilderCFO Works For:
+            </h2>
+            <div className="space-y-3">
+              {[
+                'Custom home builders tracking 5–15 active jobs',
+                'General contractors managing subs and retainage',
+                'Remodelers who bill by phase or draw schedule',
+                'Electrical, plumbing, and HVAC subs with retainage across multiple GCs',
+                'Spec builders managing lender draws and cash flow',
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <Check size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-[#e8e8f0]">{item}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-center text-sm text-[#6366f1] font-medium mt-5">
+              If you use QuickBooks and run jobs, this was built for you.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* SECTION 3.6 — COMPETITOR COMPARISON                       */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-3xl mx-auto">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-5 text-center">
+            How Contractors Track Money Today
+          </h2>
+          <div className="space-y-3">
+            {[
+              { method: 'Excel spreadsheets', limitation: 'Manual entry, breaks constantly, no real-time visibility, no AI' },
+              { method: 'QuickBooks reports', limitation: 'Shows accounting, not job profitability or WIP status' },
+              { method: 'Monthly bookkeeper report', limitation: '30 days old by the time you see it' },
+              { method: 'Fractional controller', limitation: 'Great insight, $3,000–$8,000/month' },
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-start gap-3 bg-[#12121a] border border-[#1e1e2e] rounded-lg p-3 sm:p-4 opacity-60">
+                <span className="text-[#ef4444] text-sm mt-0.5">✗</span>
+                <div>
+                  <span className="text-sm text-[#e8e8f0] line-through">{item.method}</span>
+                  <span className="text-xs text-[#8888a0] ml-2">— {item.limitation}</span>
+                </div>
+              </div>
+            ))}
+            <div className="flex items-start gap-3 bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-lg p-3 sm:p-4">
+              <Check size={18} className="text-[#6366f1] flex-shrink-0 mt-0.5" />
+              <div>
+                <span className="text-sm text-[#e8e8f0] font-semibold">BuilderCFO</span>
+                <span className="text-xs text-[#b0b0c8] ml-2">— Real-time, automated, AI-powered, $199/month</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -799,8 +879,7 @@ export default function LandingPage() {
                       msg.role === 'user'
                         ? 'bg-[#6366f1] text-white'
                         : 'bg-[#1a1a26] border border-[#2a2a3d] text-[#c8c8d8]'
-                    }`}>
-                      {msg.text}
+                    }`} dangerouslySetInnerHTML={{ __html: msg.text }}>
                     </div>
                   </div>
                 ))}
@@ -907,6 +986,38 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════ */}
+      {/* SECTION 6.5 — COST OF INACTION (Hormozi math)             */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-3xl mx-auto">
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-6 text-center">
+              What You&apos;re Losing Every Month Without Financial Visibility
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <span className="text-[#6366f1] font-bold text-lg flex-shrink-0">$8K–$15K</span>
+                <span className="text-sm text-[#b0b0c8] pt-1">in unbilled change orders slipping through the cracks</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-[#6366f1] font-bold text-lg flex-shrink-0">$3K–$5K</span>
+                <span className="text-sm text-[#b0b0c8] pt-1">in retainage you forgot to collect</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-[#6366f1] font-bold text-lg flex-shrink-0">$2K–$4K</span>
+                <span className="text-sm text-[#b0b0c8] pt-1">in over-billing surprises that blow up at job close</span>
+              </div>
+            </div>
+            <div className="mt-6 pt-5 border-t border-[#2a2a3d] text-center">
+              <p className="text-lg font-bold text-[#e8e8f0]">
+                That&apos;s <span className="text-[#6366f1]">$13K–$24K per month</span>. BuilderCFO is <span className="text-[#22c55e]">$199</span>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
       {/* SECTION 7 — PRICING                                       */}
       {/* ═══════════════════════════════════════════════════════════ */}
       <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="pricing">
@@ -962,6 +1073,7 @@ export default function LandingPage() {
               <Link href="/signup?plan=basic" className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#2a2a3d] hover:bg-[#3a3a4d] transition text-center block">
                 Start Free Trial
               </Link>
+              <p className="text-center text-[10px] text-[#8888a0] mt-2">Card required. Cancel anytime.</p>
             </div>
 
             {/* Professional */}
@@ -999,6 +1111,7 @@ export default function LandingPage() {
               <Link href="/signup?plan=pro" className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-center block">
                 Start Free Trial
               </Link>
+              <p className="text-center text-[10px] text-[#8888a0] mt-2">Card required. Cancel anytime.</p>
             </div>
 
             {/* Enterprise */}
@@ -1034,6 +1147,7 @@ export default function LandingPage() {
               <Link href="/signup?plan=enterprise" className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#2a2a3d] hover:bg-[#3a3a4d] transition text-center block">
                 Start Free Trial
               </Link>
+              <p className="text-center text-[10px] text-[#8888a0] mt-2">Card required. Cancel anytime.</p>
             </div>
           </div>
 
@@ -1167,7 +1281,7 @@ export default function LandingPage() {
             14 days free. AI CFO included. 30-day money-back guarantee.
           </p>
           <p className="text-sm text-[#8888a0] mb-6">
-            14 days free. 30-day money-back guarantee. If your numbers aren&apos;t clearer, you pay nothing.
+            Card required. Cancel anytime. If your numbers aren&apos;t clearer, you pay nothing.
           </p>
           <Link
             href="/signup"

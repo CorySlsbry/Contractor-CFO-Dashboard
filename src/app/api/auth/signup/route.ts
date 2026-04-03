@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -115,6 +116,9 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(email, fullName).catch(() => {});
 
     return NextResponse.json({
       success: true,

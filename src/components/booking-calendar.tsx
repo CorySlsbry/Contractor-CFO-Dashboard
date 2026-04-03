@@ -141,9 +141,22 @@ export function BookingCalendar() {
         <p className="text-sm text-[#8888a0] mb-4">
           Check your email at <span className="text-[#a5b4fc]">{email}</span> for confirmation.
         </p>
-        <p className="text-xs text-[#555]">
+        <p className="text-xs text-[#555] mb-6">
           We&apos;ll send you a Google Meet link before the call.
         </p>
+
+        {/* Signup push */}
+        <div className="bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-lg p-4 max-w-sm">
+          <p className="text-sm text-[#b0b0c8] mb-3">
+            While you wait for our call, start your free trial and connect your QuickBooks. That way we can look at <span className="text-[#e8e8f0] font-medium">YOUR numbers</span> together — not sample data.
+          </p>
+          <a
+            href="/signup"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-sm"
+          >
+            Start Free Trial
+          </a>
+        </div>
       </div>
     );
   }

@@ -12,20 +12,23 @@ const plans = [
     key: 'basic',
     name: PLAN_FEATURES.basic.name,
     price: PLAN_FEATURES.basic.price,
-    features: ['Financial dashboard', 'Job costing & WIP', 'Cash flow forecasting', 'QuickBooks sync'],
+    audience: 'Solo contractors & small crews',
+    features: ['Financial dashboard', 'Job costing & WIP tracking', 'Cash flow forecasting', 'QuickBooks sync', 'AI CFO Advisor — unlimited', 'Monthly AI financial brief'],
   },
   {
     key: 'pro',
     name: PLAN_FEATURES.pro.name,
     price: PLAN_FEATURES.pro.price,
     popular: true,
-    features: ['Everything in Starter', 'Buildertrend + HubSpot + JobNimbus', 'AI Bookkeeper Toolkit', 'Priority support'],
+    audience: 'Growing companies ($1M–$10M)',
+    features: ['Everything in Starter', 'Buildertrend + HubSpot + JobNimbus', 'AI Bookkeeper Toolkit (24 prompts)', 'Weekly AI financial brief', 'AR/AP aging by job', 'Priority support'],
   },
   {
     key: 'enterprise',
     name: PLAN_FEATURES.enterprise.name,
     price: PLAN_FEATURES.enterprise.price,
-    features: ['Everything in Professional', 'Procore + Salesforce + ServiceTitan', 'Advanced AI Bookkeeper features', 'Quarterly strategy call + dedicated manager'],
+    audience: '$10M+ with multiple PMs',
+    features: ['Everything in Professional', 'Procore + Salesforce + ServiceTitan', 'AI Toolkit — all 24 + custom', 'Quarterly strategy call', 'Dedicated account manager', 'NAHB Chart of Accounts'],
   },
 ];
 
@@ -132,7 +135,7 @@ function SignupContent() {
             Start Your 14-Day Free Trial
           </h2>
           <p className="text-sm text-[#b0b0c8] mt-1">
-            No charge for 14 days. Cancel anytime.
+            No charge for 14 days. Card required — cancel anytime.
           </p>
         </div>
 
@@ -155,6 +158,7 @@ function SignupContent() {
                 </div>
               )}
               <div className="text-sm font-semibold text-[#e8e8f0]">{plan.name}</div>
+              <div className="text-[9px] text-[#8888a0] mt-0.5">{plan.audience}</div>
               <div className="mt-1">
                 <span className="text-lg font-bold text-[#e8e8f0]">${plan.price}</span>
                 <span className="text-xs text-[#8888a0]">/mo</span>
