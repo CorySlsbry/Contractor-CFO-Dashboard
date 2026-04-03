@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, Download, ShieldCheck, CalendarCheck } from 'lucide-react';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, ShieldCheck, CalendarCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { LandingTracker } from '@/components/landing-tracker';
 import { BookingCalendar } from '@/components/booking-calendar';
@@ -16,37 +16,6 @@ export default function LandingPage() {
   ]);
   const [advisorInput, setAdvisorInput] = useState('');
   const [rotatingPain, setRotatingPain] = useState(0);
-  const [leadEmail, setLeadEmail] = useState('');
-  const [leadName, setLeadName] = useState('');
-  const [leadSubmitting, setLeadSubmitting] = useState(false);
-  const [leadSuccess, setLeadSuccess] = useState(false);
-  const [leadError, setLeadError] = useState('');
-
-  const handleLeadMagnet = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!leadEmail.includes('@')) { setLeadError('Enter a valid email.'); return; }
-    setLeadSubmitting(true);
-    setLeadError('');
-    try {
-      const res = await fetch('/api/lead-magnet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: leadEmail, firstName: leadName, source: 'ai-prompts-lead-magnet' }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setLeadSuccess(true);
-        // Open the GHL-hosted PDF in a new tab
-        window.open(data.downloadUrl || 'https://assets.cdn.filesafe.space/d6snrvwPYgsUbjfj6Dox/media/69cabaf3db6d4f5d3e7554df.pdf', '_blank');
-      } else {
-        setLeadError(data.error || 'Something went wrong.');
-      }
-    } catch {
-      setLeadError('Network error. Try again.');
-    }
-    setLeadSubmitting(false);
-  };
-
   const painPoints = [
     "Are we making money on the Henderson job?",
     "Can I afford to hire another PM?",
@@ -126,13 +95,13 @@ export default function LandingPage() {
                   </div>
                   <span className="text-sm font-semibold text-[#e8e8f0] ml-1">5.0</span>
                 </div>
-                <span className="text-sm text-[#b0b0c8]">from 8 contractors who stopped guessing</span>
+                <span className="text-sm text-[#b0b0c8]">from contractors who stopped guessing</span>
               </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8e8f0] mb-4 leading-tight">
-                You&apos;re Busy Building.<br />
+                You Billed $200K Last Month.<br />
                 <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
-                  We&apos;ll Watch Your Money.
+                  Your Bank Account Disagrees.
                 </span>
               </h1>
 
@@ -145,11 +114,8 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <p className="text-base sm:text-lg text-[#b0b0c8] mb-2 leading-relaxed">
-                You know the feeling. You billed $200K last month, but your bank account tells a different story. Jobs look profitable on paper. Then you close them out and the money&apos;s just... gone.
-              </p>
-              <p className="text-base sm:text-lg text-[#e8e8f0] font-medium mb-4">
-                BuilderCFO shows you exactly where every dollar went. On every job. Before it&apos;s too late.
+              <p className="text-base sm:text-lg text-[#b0b0c8] mb-4 leading-relaxed">
+                Jobs look profitable on paper. Then you close them out and the money&apos;s just&hellip; gone. BuilderCFO connects to QuickBooks and your field tools so you see exactly where every dollar went — on every job — before it&apos;s too late.
               </p>
 
               {/* Rotating pain point */}
@@ -176,22 +142,17 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div>
                 <Link
                   href="/signup"
                   className="px-6 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2 text-base shadow-lg shadow-[#6366f1]/20"
                 >
                   Start Free — See Your Numbers in 10 Min <ChevronRight size={18} />
                 </Link>
-                <a
-                  href="#schedule"
-                  className="px-6 py-3 rounded-lg font-semibold text-[#6366f1] border border-[#6366f1]/40 hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center text-base"
-                >
-                  Book a Free Scope Call
-                </a>
               </div>
-              <p className="text-xs text-[#22c55e] mt-3 font-medium">
-                14 days free. Cancel anytime. 30-day money-back guarantee.
+              <p className="text-xs text-[#b0b0c8] mt-3">
+                Starts at $199/mo. 14 days free. Or{' '}
+                <a href="#schedule" className="text-[#6366f1] hover:text-[#818cf8] font-medium transition">book a call</a> first.
               </p>
             </div>
 
@@ -302,70 +263,6 @@ export default function LandingPage() {
                 <p className="text-[10px] text-[#8888a0] mt-0.5">{stat.who}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* LEAD MAGNET — Email capture (before 25% scroll)           */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-2xl mx-auto">
-          <div className="bg-[#12121a] border border-[#6366f1]/30 rounded-xl p-5 sm:p-8 text-center shadow-lg shadow-[#6366f1]/5">
-            {!leadSuccess ? (
-              <>
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <Download size={18} className="text-[#6366f1]" />
-                  <span className="text-xs font-semibold text-[#a5b4fc] uppercase tracking-wider">Free Download</span>
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-2">
-                  12 AI Prompts That Save Contractors Real Money
-                </h2>
-                <p className="text-sm text-[#8888a0] mb-5 max-w-md mx-auto">
-                  Copy-paste prompts for job costing, WIP, cash flow, retainage, bonding & more. Works with ChatGPT, Claude, or BuilderCFO.
-                </p>
-                <form onSubmit={handleLeadMagnet} className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto">
-                  <input
-                    type="text"
-                    placeholder="First name"
-                    value={leadName}
-                    onChange={(e) => setLeadName(e.target.value)}
-                    className="px-4 py-2.5 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:border-[#6366f1] focus:outline-none sm:w-32"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Your email"
-                    value={leadEmail}
-                    onChange={(e) => setLeadEmail(e.target.value)}
-                    required
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:border-[#6366f1] focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    disabled={leadSubmitting}
-                    className="px-5 py-2.5 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-sm disabled:opacity-50 whitespace-nowrap cursor-pointer"
-                  >
-                    {leadSubmitting ? 'Sending...' : 'Get the Prompts'}
-                  </button>
-                </form>
-                {leadError && <p className="text-xs text-[#ef4444] mt-2">{leadError}</p>}
-                <p className="text-[10px] text-[#555] mt-3">No spam. Just the PDF. Unsubscribe anytime.</p>
-              </>
-            ) : (
-              <div className="py-4">
-                <p className="text-2xl mb-2">🎉</p>
-                <h3 className="text-lg font-bold text-[#22c55e] mb-1">Your prompts are opening now!</h3>
-                <p className="text-sm text-[#8888a0] mb-4">
-                  Check your new tab for the PDF. We also sent it to your email.
-                </p>
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-sm"
-                >
-                  Want the AI to do this automatically? Try BuilderCFO Free <ArrowRight size={14} />
-                </Link>
-              </div>
-            )}
           </div>
         </div>
       </section>
@@ -821,7 +718,7 @@ export default function LandingPage() {
 
             <div className="mt-4 pt-3 border-t border-[#2a2a3d] text-center">
               <p className="text-[10px] sm:text-xs text-[#8888a0]">
-                This is sample data. <Link href="/signup" className="text-[#6366f1] hover:text-[#818cf8] font-medium transition">Start your free trial</Link> to see your real numbers.
+                This is fake data. Want to see yours? <Link href="/signup" className="text-[#6366f1] hover:text-[#818cf8] font-medium transition">Start your free trial</Link> — your real numbers load in 10 minutes.
               </p>
             </div>
           </div>
@@ -839,19 +736,19 @@ export default function LandingPage() {
                 <Brain size={14} /> ON EVERY PLAN — NO EXTRA CHARGE
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-3">
-                Your AI CFO.<br />
-                <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">Never Sleeps. Never Bills You.</span>
+                Your CPA Charges $300/hr for These Answers.<br />
+                <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">Your AI CFO Does It in Seconds.</span>
               </h2>
               <p className="text-sm sm:text-base text-[#b0b0c8] mb-5 leading-relaxed">
-                Ask a question about your money in plain English. Get a real answer with real numbers. No waiting. No digging through QuickBooks. Just answers.
+                Right now you wait days for your bookkeeper to pull a report — or pay your CPA $300/hr to answer one question. BuilderCFO answers in plain English, using your real numbers, the second you ask.
               </p>
 
               <div className="space-y-2.5">
                 {[
-                  { q: '"Why did my margin drop on the Henderson job?"', a: 'Points to the exact cost code and crew hours' },
-                  { q: '"Can I afford to hire another PM next quarter?"', a: 'Runs the cash flow math using your real AR and backlog' },
-                  { q: '"What should I bill this month?"', a: 'Tells you the draw amount per job to stay on schedule' },
-                  { q: '"Am I over-billed on any jobs right now?"', a: 'Flags the risk before it blows up at job close' },
+                  { q: '\u201cWhy did my margin drop on the Henderson job?\u201d', a: 'Without this, you find out at job close \u2014 $15K too late' },
+                  { q: '\u201cCan I afford to hire another PM next quarter?\u201d', a: 'Guessing this wrong costs you a bad hire or a missed opportunity' },
+                  { q: '\u201cWhat should I bill this month?\u201d', a: 'Under-billing by one draw cycle can choke your cash for 60 days' },
+                  { q: '\u201cAm I over-billed on any jobs right now?\u201d', a: 'One missed over-billing cost a contractor $140K. This catches it in real time.' },
                 ].map((item, idx) => (
                   <div key={idx} className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-3 hover:border-[#6366f1]/40 transition">
                     <p className="text-sm font-medium text-[#e8e8f0] mb-0.5">{item.q}</p>
@@ -1190,10 +1087,10 @@ export default function LandingPage() {
               <span className="text-xs font-semibold text-[#a5b4fc] uppercase tracking-wider">Talk to a Human</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-2">
-              Want Us to Walk You Through It?
+              Want to See What&apos;s Leaking in Your Books?
             </h2>
             <p className="text-sm text-[#8888a0] max-w-lg mx-auto">
-              Book a free 15-minute scope call with Salisbury Bookkeeping. We&apos;ll look at your QuickBooks, show you what BuilderCFO sees, and answer any questions. No pitch. No pressure.
+              15 minutes. We pull up your QuickBooks, show you what BuilderCFO sees, and tell you exactly where money is slipping through. If it&apos;s not for you, no hard feelings.
             </p>
           </div>
           <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-5 sm:p-8">
@@ -1209,13 +1106,13 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-[#6366f1]/5 via-transparent to-[#a78bfa]/5 pointer-events-none" />
         <div className="w-full max-w-3xl mx-auto text-center relative">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-3">
-            Your Money. Your Jobs. Finally Clear.
+            Stop Guessing. Start Seeing Where the Money Goes.
           </h2>
           <p className="text-base text-[#b0b0c8] mb-2">
             14 days free. AI CFO included. 30-day money-back guarantee.
           </p>
           <p className="text-sm text-[#8888a0] mb-6">
-            Zero risk. If you don&apos;t get clearer financial visibility in 30 days, you get every penny back.
+            14 days free. 30-day money-back guarantee. If your numbers aren&apos;t clearer, you pay nothing.
           </p>
           <Link
             href="/signup"
