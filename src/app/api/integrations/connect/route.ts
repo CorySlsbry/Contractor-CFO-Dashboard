@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/sherver';
 import { getAuthUrl } from '@/lib/integrations';
 import type { IntegrationProvider } from '@/types/integrations';
 import crypto from 'crypto';
@@ -17,6 +17,11 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const provider = searchParams.get('provider') as IntegrationProvider;
+
+    // QuickBooks has its own dedicated OAuth flow at /api/qbo/connect
+    if (provider === 'quickbooks') {
+      return NextResponse.redirect(new URL('/api/qbo/connect', request.url));
+    }
 
     if (!provider || !OAUTH_PROVIDERS.includes(provider)) {
       return NextResponse.json(
