@@ -13,27 +13,9 @@ import {
   Cell,
 } from 'recharts';
 
-// 12 months of actual data + 3 months of forecast
-const baseData = [
-  { month: 'Jan', inflows: 285000, outflows: 195000, net: 90000, isForecast: false },
-  { month: 'Feb', inflows: 312000, outflows: 218000, net: 94000, isForecast: false },
-  { month: 'Mar', inflows: 298000, outflows: 205000, net: 93000, isForecast: false },
-  { month: 'Apr', inflows: 425000, outflows: 289000, net: 136000, isForecast: false },
-  { month: 'May', inflows: 520000, outflows: 356000, net: 164000, isForecast: false },
-  { month: 'Jun', inflows: 498000, outflows: 334000, net: 164000, isForecast: false },
-  { month: 'Jul', inflows: 312000, outflows: 218000, net: 94000, isForecast: false },
-  { month: 'Aug', inflows: 425000, outflows: 289000, net: 136000, isForecast: false },
-  { month: 'Sep', inflows: 467000, outflows: 312000, net: 155000, isForecast: false },
-  { month: 'Oct', inflows: 489000, outflows: 334000, net: 155000, isForecast: false },
-  { month: 'Nov', inflows: 512000, outflows: 356000, net: 156000, isForecast: false },
-  { month: 'Dec', inflows: 520000, outflows: 345000, net: 175000, isForecast: false },
-  // 3-month forecast based on historical patterns and AR/AP projections
-  { month: 'Jan*', inflows: 310000, outflows: 220000, net: 90000, isForecast: true },
-  { month: 'Feb*', inflows: 335000, outflows: 235000, net: 100000, isForecast: true },
-  { month: 'Mar*', inflows: 380000, outflows: 265000, net: 115000, isForecast: true },
-];
+const baseData: any[] = [];
 
-const maxValue = Math.max(...baseData.map((d) => Math.max(d.inflows, d.outflows)));
+const maxValue = baseData.length > 0 ? Math.max(...baseData.map((d) => Math.max(d.inflows, d.outflows))) : 0;
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -71,6 +53,16 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export const CashFlowChart = () => {
+  if (baseData.length === 0) {
+    return (
+      <div className="w-full h-full">
+        <div className="text-[#8888a0] text-sm text-center py-10">
+          No cash flow data available
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full">
       {/* Overlapping bar chart — same style as landing page */}
