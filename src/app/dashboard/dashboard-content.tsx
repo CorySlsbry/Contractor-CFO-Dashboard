@@ -55,251 +55,35 @@ const tabs: { key: TabKey; label: string }[] = [
 // ── Mock Data ───────────────────────────────────────────
 
 // KPIs
-const kpis = [
-  { title: 'Revenue (YTD)', value: '$2,847,500', change: '+12.3%', positive: true, icon: DollarSign },
-  { title: 'Total AR Outstanding', value: '$487,200', change: '+3.1%', positive: false, icon: FileText },
-  { title: 'Total AP Outstanding', value: '$312,800', change: '-8.2%', positive: true, icon: TrendingDown },
-  { title: 'Net Cash Position', value: '$744,300', change: '+26.1%', positive: true, icon: Target },
-  { title: 'WIP Over-Billing', value: '$82,400', change: '-12.5%', positive: true, icon: TrendingUp },
-  { title: 'Total Retainage Held', value: '$196,500', change: '+4.3%', positive: false, icon: Building2 },
-];
+const kpis: any[] = [];
 
-const sparklineData = [
-  { value: 65 }, { value: 78 }, { value: 72 }, { value: 85 },
-  { value: 92 }, { value: 88 }, { value: 95 },
-];
+const sparklineData: any[] = [];
 
 // AR by Job
-const arByJob = [
-  { job: 'Riverside Estate Custom Home', customer: 'David & Sarah Mitchell', invoiceNum: 'INV-2024-142', amount: 125000, dueDate: '2024-02-15', daysPastDue: 0, status: 'Current' },
-  { job: 'Riverside Estate Custom Home', customer: 'David & Sarah Mitchell', invoiceNum: 'INV-2024-138', amount: 85000, dueDate: '2024-01-20', daysPastDue: 26, status: 'Past Due' },
-  { job: 'Mountain View Remodel', customer: 'Jennifer Pratt', invoiceNum: 'INV-2024-151', amount: 32000, dueDate: '2024-02-28', daysPastDue: 0, status: 'Current' },
-  { job: 'Mountain View Remodel', customer: 'Jennifer Pratt', invoiceNum: 'INV-2024-147', amount: 18500, dueDate: '2024-01-10', daysPastDue: 36, status: 'Past Due' },
-  { job: 'Heritage Park Commercial', customer: 'Heritage Park LLC', invoiceNum: 'INV-2024-155', amount: 125000, dueDate: '2024-03-05', daysPastDue: 0, status: 'Current' },
-  { job: 'Heritage Park Commercial', customer: 'Heritage Park LLC', invoiceNum: 'INV-2024-149', amount: 45000, dueDate: '2024-12-15', daysPastDue: 62, status: 'Past Due' },
-  { job: 'Oakwood Duplex', customer: 'Oakwood Investments', invoiceNum: 'INV-2024-133', amount: 28700, dueDate: '2023-11-30', daysPastDue: 92, status: 'Past Due' },
-  { job: 'Cedar Heights Addition', customer: 'Mark Thompson', invoiceNum: 'INV-2024-160', amount: 28000, dueDate: '2024-03-15', daysPastDue: 0, status: 'Current' },
-];
+const arByJob: any[] = [];
 
 // AP by Job
-const apByJob = [
-  { job: 'Riverside Estate Custom Home', vendor: 'Summit Lumber Supply', invoiceNum: 'BILL-4521', amount: 42500, dueDate: '2024-02-20', daysPastDue: 0, status: 'Current' },
-  { job: 'Riverside Estate Custom Home', vendor: 'Wasatch Electric Co', invoiceNum: 'BILL-4498', amount: 18200, dueDate: '2024-01-15', daysPastDue: 31, status: 'Past Due' },
-  { job: 'Riverside Estate Custom Home', vendor: 'Rocky Mtn Concrete', invoiceNum: 'BILL-4477', amount: 35000, dueDate: '2024-01-05', daysPastDue: 41, status: 'Past Due' },
-  { job: 'Mountain View Remodel', vendor: 'Premier Plumbing', invoiceNum: 'BILL-4533', amount: 12800, dueDate: '2024-02-28', daysPastDue: 0, status: 'Current' },
-  { job: 'Mountain View Remodel', vendor: 'Utah Tile & Stone', invoiceNum: 'BILL-4510', amount: 8500, dueDate: '2024-01-25', daysPastDue: 21, status: 'Past Due' },
-  { job: 'Heritage Park Commercial', vendor: 'Intermountain Steel', invoiceNum: 'BILL-4545', amount: 87000, dueDate: '2024-03-10', daysPastDue: 0, status: 'Current' },
-  { job: 'Heritage Park Commercial', vendor: 'Valley HVAC Systems', invoiceNum: 'BILL-4502', amount: 45300, dueDate: '2024-01-18', daysPastDue: 28, status: 'Past Due' },
-  { job: 'Cedar Heights Addition', vendor: 'Quality Drywall Inc', invoiceNum: 'BILL-4550', amount: 15500, dueDate: '2024-03-01', daysPastDue: 0, status: 'Current' },
-  { job: 'Cedar Heights Addition', vendor: 'Apex Roofing', invoiceNum: 'BILL-4488', amount: 22000, dueDate: '2024-01-08', daysPastDue: 38, status: 'Past Due' },
-  { job: 'Oakwood Duplex', vendor: 'Pro Paint Solutions', invoiceNum: 'BILL-4560', amount: 9800, dueDate: '2024-03-15', daysPastDue: 0, status: 'Current' },
-];
+const apByJob: any[] = [];
 
 // WIP Tracking per Job
-const wipData = [
-  {
-    job: 'Riverside Estate Custom Home',
-    contractAmount: 950000,
-    totalEstCost: 760000,
-    costToDate: 623000,
-    billedToDate: 710000,
-    percentComplete: 82,
-    estGrossProfit: 190000,
-    earnedRevenue: 779000,
-    overUnderBilled: -69000, // negative = over-billed
-  },
-  {
-    job: 'Mountain View Remodel',
-    contractAmount: 165000,
-    totalEstCost: 132000,
-    costToDate: 148000,
-    billedToDate: 125500,
-    percentComplete: 112,
-    estGrossProfit: -17000,
-    earnedRevenue: 165000,
-    overUnderBilled: 39500, // positive = under-billed
-  },
-  {
-    job: 'Heritage Park Commercial',
-    contractAmount: 1450000,
-    totalEstCost: 1160000,
-    costToDate: 890000,
-    billedToDate: 975000,
-    percentComplete: 77,
-    estGrossProfit: 290000,
-    earnedRevenue: 1116500,
-    overUnderBilled: -141500,
-  },
-  {
-    job: 'Cedar Heights Addition',
-    contractAmount: 210000,
-    totalEstCost: 168000,
-    costToDate: 157000,
-    billedToDate: 140000,
-    percentComplete: 93,
-    estGrossProfit: 42000,
-    earnedRevenue: 195300,
-    overUnderBilled: 55300,
-  },
-  {
-    job: 'Oakwood Duplex',
-    contractAmount: 380000,
-    totalEstCost: 304000,
-    costToDate: 285000,
-    billedToDate: 352000,
-    percentComplete: 94,
-    estGrossProfit: 76000,
-    earnedRevenue: 357200,
-    overUnderBilled: -5200,
-  },
-];
+const wipData: any[] = [];
 
 // Retainage Tracking per Job
-const retainageData = [
-  { job: 'Riverside Estate Custom Home', contractAmount: 950000, retainagePercent: 10, retainageReceivable: 71000, retainagePayable: 38200, netRetainage: 32800, releaseDate: '2024-06-15', status: 'Held' },
-  { job: 'Mountain View Remodel', contractAmount: 165000, retainagePercent: 10, retainageReceivable: 12550, retainagePayable: 7400, netRetainage: 5150, releaseDate: '2024-04-01', status: 'Due Soon' },
-  { job: 'Heritage Park Commercial', contractAmount: 1450000, retainagePercent: 10, retainageReceivable: 97500, retainagePayable: 52100, netRetainage: 45400, releaseDate: '2024-09-30', status: 'Held' },
-  { job: 'Cedar Heights Addition', contractAmount: 210000, retainagePercent: 5, retainageReceivable: 7000, retainagePayable: 4200, netRetainage: 2800, releaseDate: '2024-05-01', status: 'Due Soon' },
-  { job: 'Oakwood Duplex', contractAmount: 380000, retainagePercent: 10, retainageReceivable: 35200, retainagePayable: 18500, netRetainage: 16700, releaseDate: '2024-03-30', status: 'Ready to Release' },
-  { job: 'Lakeside Office Park', contractAmount: 520000, retainagePercent: 10, retainageReceivable: 28500, retainagePayable: 15600, netRetainage: 12900, releaseDate: '2023-12-15', status: 'Overdue' },
-  { job: 'Westfield Community Center', contractAmount: 680000, retainagePercent: 10, retainageReceivable: 31200, retainagePayable: 18900, netRetainage: 12300, releaseDate: '2023-11-20', status: 'Overdue' },
-  { job: 'Sunset Hills Renovations', contractAmount: 240000, retainagePercent: 5, retainageReceivable: 8500, retainagePayable: 4100, netRetainage: 4400, releaseDate: '2024-01-10', status: 'Overdue' },
-  { job: 'Pinnacle Tower Interiors', contractAmount: 890000, retainagePercent: 10, retainageReceivable: 65200, retainagePayable: 42100, netRetainage: 23100, releaseDate: '2023-10-30', status: 'Paid' },
-  { job: 'Summit Plaza Finishes', contractAmount: 445000, retainagePercent: 10, retainageReceivable: 18800, retainagePayable: 11200, netRetainage: 7600, releaseDate: '2023-09-15', status: 'Paid' },
-  { job: 'Riverfront Lofts', contractAmount: 620000, retainagePercent: 10, retainageReceivable: 22400, retainagePayable: 14300, netRetainage: 8100, releaseDate: '2023-08-20', status: 'Paid' },
-];
+const retainageData: any[] = [];
 
 // Sales Dashboard Data
-const salesPipelineData = [
-  { stage: 'Leads', count: 24, value: 4200000 },
-  { stage: 'Proposals', count: 8, value: 2850000 },
-  { stage: 'Negotiation', count: 4, value: 1680000 },
-  { stage: 'Won', count: 3, value: 1250000 },
-];
+const salesPipelineData: any[] = [];
 
-const salesByMonth = [
-  { month: 'Jul', closed: 380000, pipeline: 520000 },
-  { month: 'Aug', closed: 420000, pipeline: 610000 },
-  { month: 'Sep', closed: 290000, pipeline: 480000 },
-  { month: 'Oct', closed: 510000, pipeline: 720000 },
-  { month: 'Nov', closed: 340000, pipeline: 550000 },
-  { month: 'Dec', closed: 470000, pipeline: 680000 },
-  { month: 'Jan', closed: 560000, pipeline: 830000 },
-  { month: 'Feb', closed: 410000, pipeline: 710000 },
-];
+const salesByMonth: any[] = [];
 
-const recentDeals = [
-  { name: 'Silverstone Commercial Build', client: 'Silverstone Properties', value: 620000, probability: 85, stage: 'Negotiation', rep: 'Cory Salisbury' },
-  { name: 'Meadow Creek Townhomes (3 units)', client: 'Meadow Creek Dev', value: 890000, probability: 60, stage: 'Proposal', rep: 'Sarah Whitfield' },
-  { name: 'Summit Ridge Custom Home', client: 'The Andersons', value: 445000, probability: 90, stage: 'Negotiation', rep: 'Cory Salisbury' },
-  { name: 'Downtown Office Remodel', client: 'TechStart Inc', value: 185000, probability: 40, stage: 'Proposal', rep: 'Jake Mercer' },
-  { name: 'Lakewood Kitchen & Bath', client: 'Patricia Chen', value: 78000, probability: 95, stage: 'Won', rep: 'Marcus Reyes' },
-  { name: 'Hillcrest Garage + ADU', client: 'Robert Kim', value: 165000, probability: 70, stage: 'Proposal', rep: 'Sarah Whitfield' },
-  { name: 'Westfield Fire Station Reno', client: 'Westfield Township', value: 1250000, probability: 35, stage: 'Proposal', rep: 'Cory Salisbury' },
-  { name: 'Copper Ridge Spec Home', client: 'Salisbury Real Estate', value: 520000, probability: 75, stage: 'Negotiation', rep: 'Jake Mercer' },
-];
+const recentDeals: any[] = [];
 
-const leadSourceData = [
-  { name: 'Referrals', value: 42 },
-  { name: 'Google/SEO', value: 28 },
-  { name: 'Social Media', value: 15 },
-  { name: 'Direct Mail', value: 10 },
-  { name: 'Other', value: 5 },
-];
+const leadSourceData: any[] = [];
 
 const LEAD_COLORS = ['#6366f1', '#22c55e', '#eab308', '#ef9d44', '#8888a0'];
 
 // Sales Team Member Data
-const salesTeamMembers = [
-  {
-    name: 'Jake Mercer',
-    role: 'Senior Estimator',
-    avatar: 'JM',
-    deals: 8,
-    wonDeals: 4,
-    pipelineValue: 2150000,
-    wonValue: 890000,
-    quota: 1200000,
-    avgDealSize: 268750,
-    winRate: 50,
-    avgCycleTime: 32,
-    leadSource: 'Referrals',
-    monthlyTrend: [
-      { month: 'Sep', closed: 180000 },
-      { month: 'Oct', closed: 310000 },
-      { month: 'Nov', closed: 0 },
-      { month: 'Dec', closed: 220000 },
-      { month: 'Jan', closed: 180000 },
-      { month: 'Feb', closed: 0 },
-    ],
-  },
-  {
-    name: 'Sarah Whitfield',
-    role: 'Business Development',
-    avatar: 'SW',
-    deals: 12,
-    wonDeals: 5,
-    pipelineValue: 3450000,
-    wonValue: 1250000,
-    quota: 1500000,
-    avgDealSize: 287500,
-    winRate: 42,
-    avgCycleTime: 28,
-    leadSource: 'Google/SEO',
-    monthlyTrend: [
-      { month: 'Sep', closed: 110000 },
-      { month: 'Oct', closed: 200000 },
-      { month: 'Nov', closed: 340000 },
-      { month: 'Dec', closed: 250000 },
-      { month: 'Jan', closed: 380000 },
-      { month: 'Feb', closed: 410000 },
-    ],
-  },
-  {
-    name: 'Marcus Reyes',
-    role: 'Project Estimator',
-    avatar: 'MR',
-    deals: 6,
-    wonDeals: 2,
-    pipelineValue: 1680000,
-    wonValue: 420000,
-    quota: 900000,
-    avgDealSize: 280000,
-    winRate: 33,
-    avgCycleTime: 45,
-    leadSource: 'Direct Mail',
-    monthlyTrend: [
-      { month: 'Sep', closed: 0 },
-      { month: 'Oct', closed: 0 },
-      { month: 'Nov', closed: 0 },
-      { month: 'Dec', closed: 0 },
-      { month: 'Jan', closed: 0 },
-      { month: 'Feb', closed: 420000 },
-    ],
-  },
-  {
-    name: 'Cory Salisbury',
-    role: 'Owner / Lead Sales',
-    avatar: 'CS',
-    deals: 13,
-    wonDeals: 6,
-    pipelineValue: 4120000,
-    wonValue: 1820000,
-    quota: 2000000,
-    avgDealSize: 316923,
-    winRate: 46,
-    avgCycleTime: 21,
-    leadSource: 'Referrals',
-    monthlyTrend: [
-      { month: 'Sep', closed: 290000 },
-      { month: 'Oct', closed: 510000 },
-      { month: 'Nov', closed: 340000 },
-      { month: 'Dec', closed: 470000 },
-      { month: 'Jan', closed: 210000 },
-      { month: 'Feb', closed: 0 },
-    ],
-  },
-];
+const salesTeamMembers: any[] = [];
 
 const TEAM_COLORS = ['#6366f1', '#22c55e', '#eab308', '#a855f7'];
 
@@ -349,19 +133,9 @@ function KPICard({ title, value, change, positive, icon: Icon }: {
 
 // ── Tab Content Components ──────────────────────────────
 
-const cashFlowData = [
-  { week: 'This Week', inflow: 185000, outflow: 142000 },
-  { week: 'Week 2', inflow: 210000, outflow: 175000 },
-  { week: 'Week 3', inflow: 165000, outflow: 120000 },
-  { week: 'Week 4', inflow: 230000, outflow: 195000 },
-];
+const cashFlowData: any[] = [];
 
-const arAgingData = [
-  { range: 'Current', amount: 310000 },
-  { range: '1-30 Days', amount: 85000 },
-  { range: '31-60 Days', amount: 63500 },
-  { range: '61-90 Days', amount: 28700 },
-];
+const arAgingData: any[] = [];
 
 function OverviewTab() {
   const { theme } = useChartTheme();
@@ -372,6 +146,18 @@ function OverviewTab() {
   const [cashFlowType, setCashFlowType] = useChartType('cash-flow', 'area');
   const [pipelineType, setPipelineType] = useChartType('pipeline-mini', 'horizontalBar');
   const [wipSummaryType, setWipSummaryType] = useChartType('wip-summary', 'horizontalBar');
+
+  if (kpis.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#6366f1]/10 flex items-center justify-center mb-4">
+          <DollarSign size={28} className="text-[#6366f1]" />
+        </div>
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Financial Data Yet</h3>
+        <p className="text-sm text-[#8888a0] max-w-md">Connect QuickBooks from the Integrations tab to see your real-time financial overview, AR/AP aging, WIP tracking, and more.</p>
+      </div>
+    );
+  }
 
   const wipChartData = wipData.map(w => ({
     name: w.job.split(' ').slice(0, 2).join(' '),
@@ -664,6 +450,18 @@ function ARByJobTab() {
   const ds = theme.dashboard;
   const [arJobChartType, setArJobChartType] = useChartType('ar-by-job', 'bar');
 
+  if (arByJob.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#6366f1]/10 flex items-center justify-center mb-4">
+          <FileText size={28} className="text-[#6366f1]" />
+        </div>
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No AR Data Yet</h3>
+        <p className="text-sm text-[#8888a0] max-w-md">Connect QuickBooks from the Integrations tab to see your accounts receivable by job.</p>
+      </div>
+    );
+  }
+
   const grouped = arByJob.reduce((acc, inv) => {
     if (!acc[inv.job]) acc[inv.job] = [];
     acc[inv.job].push(inv);
@@ -845,6 +643,18 @@ function APByJobTab() {
   const ds = theme.dashboard;
   const [apJobChartType, setApJobChartType] = useChartType('ap-by-job', 'bar');
 
+  if (apByJob.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#6366f1]/10 flex items-center justify-center mb-4">
+          <FileText size={28} className="text-[#6366f1]" />
+        </div>
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No AP Data Yet</h3>
+        <p className="text-sm text-[#8888a0] max-w-md">Connect QuickBooks from the Integrations tab to see your accounts payable by job.</p>
+      </div>
+    );
+  }
+
   const grouped = apByJob.reduce((acc, bill) => {
     if (!acc[bill.job]) acc[bill.job] = [];
     acc[bill.job].push(bill);
@@ -1024,6 +834,18 @@ function WIPTrackingTab() {
   const ch = theme.chart;
   const ds = theme.dashboard;
   const [wipChartType, setWipChartType] = useChartType('wip-tracking', 'groupedBar');
+
+  if (wipData.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#6366f1]/10 flex items-center justify-center mb-4">
+          <Clock size={28} className="text-[#6366f1]" />
+        </div>
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No WIP Data Yet</h3>
+        <p className="text-sm text-[#8888a0] max-w-md">Connect QuickBooks from the Integrations tab to see your work-in-progress tracking and billing analysis.</p>
+      </div>
+    );
+  }
 
   const totalOverBilled = wipData.filter(w => w.overUnderBilled < 0).reduce((s, w) => s + Math.abs(w.overUnderBilled), 0);
   const totalUnderBilled = wipData.filter(w => w.overUnderBilled > 0).reduce((s, w) => s + w.overUnderBilled, 0);
@@ -1231,6 +1053,18 @@ function RetainageTab() {
   const ch = theme.chart;
   const ds = theme.dashboard;
   const [retChartType, setRetChartType] = useChartType('retainage-summary', 'bar');
+
+  if (retainageData.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#6366f1]/10 flex items-center justify-center mb-4">
+          <AlertTriangle size={28} className="text-[#6366f1]" />
+        </div>
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Retainage Data Yet</h3>
+        <p className="text-sm text-[#8888a0] max-w-md">Connect QuickBooks from the Integrations tab to see your retainage tracking across projects.</p>
+      </div>
+    );
+  }
 
   const totalReceivable = retainageData.reduce((s, r) => s + r.retainageReceivable, 0);
   const totalPayable = retainageData.reduce((s, r) => s + r.retainagePayable, 0);
@@ -1449,6 +1283,19 @@ function SalesDashboardTab() {
   const [leadSourceType, setLeadSourceType] = useChartType('lead-source', 'donut');
   const [teamSparkType, setTeamSparkType] = useChartType('team-spark', 'area');
   const [activeDealsType, setActiveDealsType] = useChartType('active-deals', 'horizontalBar');
+
+  if (recentDeals.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#6366f1]/10 flex items-center justify-center mb-4">
+          <TrendingUp size={28} className="text-[#6366f1]" />
+        </div>
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Sales Data Yet</h3>
+        <p className="text-sm text-[#8888a0] max-w-md">Connect your CRM from the Integrations tab to see your sales pipeline, deals, and team performance.</p>
+      </div>
+    );
+  }
+
   const totalPipeline = salesPipelineData.reduce((s, p) => s + p.value, 0);
   const wonDeals = recentDeals.filter(d => d.stage === 'Won');
   const wonValue = wonDeals.reduce((s, d) => s + d.value, 0);
