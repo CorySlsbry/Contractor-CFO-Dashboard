@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
-import { createClient } from '@/lib/supabase/sherver';
+import { createClient } from '@/lib/supabase/server';
 import { getAuthUrl } from '@/lib/integrations';
 import type { IntegrationProvider } from '@/types/integrations';
 import crypto from 'crypto';
