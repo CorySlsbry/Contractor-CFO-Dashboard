@@ -18,158 +18,7 @@ interface Invoice {
   daysOverdue: number;
 }
 
-const invoicesData: Invoice[] = [
-  {
-    id: '1',
-    number: '2024-001',
-    customer: 'Heritage Park Development',
-    amount: 125000,
-    issueDate: '2024-03-01',
-    dueDate: '2024-03-31',
-    status: 'Paid',
-    daysOverdue: 0,
-  },
-  {
-    id: '2',
-    number: '2024-002',
-    customer: 'Mrs. Sarah Mitchell',
-    amount: 85000,
-    issueDate: '2024-03-05',
-    dueDate: '2024-04-05',
-    status: 'Open',
-    daysOverdue: 0,
-  },
-  {
-    id: '3',
-    number: '2024-003',
-    customer: 'John & Patricia Johnson',
-    amount: 45200,
-    issueDate: '2024-02-20',
-    dueDate: '2024-03-20',
-    status: 'Overdue',
-    daysOverdue: 1,
-  },
-  {
-    id: '4',
-    number: '2024-004',
-    customer: 'Oakwood Properties LLC',
-    amount: 340000,
-    issueDate: '2024-02-15',
-    dueDate: '2024-03-15',
-    status: 'Paid',
-    daysOverdue: 0,
-  },
-  {
-    id: '5',
-    number: '2024-005',
-    customer: 'The Cedar Family',
-    amount: 62300,
-    issueDate: '2024-03-10',
-    dueDate: '2024-04-10',
-    status: 'Open',
-    daysOverdue: 0,
-  },
-  {
-    id: '6',
-    number: '2024-006',
-    customer: 'Riverside Development Corp',
-    amount: 198500,
-    issueDate: '2024-02-28',
-    dueDate: '2024-03-28',
-    status: 'Overdue',
-    daysOverdue: -3,
-  },
-  {
-    id: '7',
-    number: '2024-007',
-    customer: 'Mountain View Investors',
-    amount: 89700,
-    issueDate: '2024-03-08',
-    dueDate: '2024-04-08',
-    status: 'Open',
-    daysOverdue: 0,
-  },
-  {
-    id: '8',
-    number: '2024-008',
-    customer: 'Heritage Restoration Inc',
-    amount: 156200,
-    issueDate: '2024-01-30',
-    dueDate: '2024-02-28',
-    status: 'Overdue',
-    daysOverdue: 21,
-  },
-  {
-    id: '9',
-    number: '2024-009',
-    customer: 'Sunset Properties Group',
-    amount: 234500,
-    issueDate: '2024-02-10',
-    dueDate: '2024-03-10',
-    status: 'Paid',
-    daysOverdue: 0,
-  },
-  {
-    id: '10',
-    number: '2024-010',
-    customer: 'Premium Estates LLC',
-    amount: 112400,
-    issueDate: '2024-03-15',
-    dueDate: '2024-04-15',
-    status: 'Open',
-    daysOverdue: 0,
-  },
-  {
-    id: '11',
-    number: '2024-011',
-    customer: 'Summit Construction Partners',
-    issueDate: '2024-03-12',
-    dueDate: '2024-04-12',
-    amount: 78900,
-    status: 'Open',
-    daysOverdue: 0,
-  },
-  {
-    id: '12',
-    number: '2024-012',
-    customer: 'Aurora Building Group',
-    amount: 245600,
-    issueDate: '2024-02-01',
-    dueDate: '2024-03-01',
-    status: 'Overdue',
-    daysOverdue: 20,
-  },
-  {
-    id: '13',
-    number: '2024-013',
-    customer: 'Pinnacle Development LLC',
-    amount: 167800,
-    issueDate: '2024-03-18',
-    dueDate: '2024-04-18',
-    status: 'Open',
-    daysOverdue: 0,
-  },
-  {
-    id: '14',
-    number: '2024-014',
-    customer: 'Capital Building Solutions',
-    amount: 52300,
-    issueDate: '2024-03-01',
-    dueDate: '2024-04-01',
-    status: 'Open',
-    daysOverdue: 0,
-  },
-  {
-    id: '15',
-    number: '2024-015',
-    customer: 'Landmark Contractors',
-    amount: 321400,
-    issueDate: '2024-02-05',
-    dueDate: '2024-03-05',
-    status: 'Overdue',
-    daysOverdue: 16,
-  },
-];
+const invoicesData: Invoice[] = [];
 
 type SortField = 'number' | 'customer' | 'amount' | 'dueDate' | 'status';
 type SortOrder = 'asc' | 'desc';
@@ -248,6 +97,15 @@ export default function InvoicesPage() {
       .reduce((sum, inv) => sum + inv.amount, 0),
     avgDaysToPay: 34,
   };
+
+  if (invoicesData.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Invoices Yet</h3>
+        <p className="text-sm text-[#8888a0] max-w-md">Connect QuickBooks to see your invoices, payment status, and aging details.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
