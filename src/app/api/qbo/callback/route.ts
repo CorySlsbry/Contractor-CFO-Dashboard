@@ -88,6 +88,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Also upsert into integration_connections so the dashboard detects QBO
+    await (supabase as any)
+      .from("integration_connections")
+      .upsert({
+        organization_id: (profile as any).organization_id,
+        provider: "quickbooks",
+        status: "connected",
+        access_token: tokenResponse.access_token,
+        refresh_token: tokenResponse.refresh_token,
+        token_expires_at: expiresAt.toISOString(),
+        last_sync_status: "idle",
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "organization_id,provider" });
+
     // Create response redirecting to dashboard
     const response = NextResponse.redirect(
       `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?qbo_connected=true`
