@@ -11,22 +11,19 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const data = [
-  { month: 'Jan', revenue: 285000, expenses: 195000 },
-  { month: 'Feb', revenue: 312000, expenses: 218000 },
-  { month: 'Mar', revenue: 298000, expenses: 205000 },
-  { month: 'Apr', revenue: 425000, expenses: 289000 },
-  { month: 'May', revenue: 520000, expenses: 356000 },
-  { month: 'Jun', revenue: 498000, expenses: 334000 },
-  { month: 'Jul', revenue: 312000, expenses: 218000 },
-  { month: 'Aug', revenue: 425000, expenses: 289000 },
-  { month: 'Sep', revenue: 467000, expenses: 312000 },
-  { month: 'Oct', revenue: 489000, expenses: 334000 },
-  { month: 'Nov', revenue: 512000, expenses: 356000 },
-  { month: 'Dec', revenue: 520000, expenses: 345000 },
-];
+const data: any[] = [];
 
 export const RevenueChart = () => {
+  if (data.length === 0) {
+    return (
+      <div className="w-full h-full">
+        <div className="text-[#8888a0] text-sm text-center py-10">
+          No revenue data available
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full">
       <ResponsiveContainer width="100%" height={300}>
