@@ -22,158 +22,11 @@ interface Receivable {
   status: 'Expected' | 'At Risk';
 }
 
-const upcomingPayments: Payment[] = [
-  {
-    id: '1',
-    vendor: 'Summit Materials & Supply',
-    amount: 45200,
-    dueDate: '2024-03-25',
-    status: 'Due Soon',
-  },
-  {
-    id: '2',
-    vendor: 'Johnson Electrical Services',
-    amount: 28500,
-    dueDate: '2024-03-27',
-    status: 'Due Soon',
-  },
-  {
-    id: '3',
-    vendor: 'BuildRight Equipment Rental',
-    amount: 12800,
-    dueDate: '2024-03-28',
-    status: 'Scheduled',
-  },
-  {
-    id: '4',
-    vendor: 'Premium Lumber Co.',
-    amount: 67300,
-    dueDate: '2024-04-05',
-    status: 'Scheduled',
-  },
-  {
-    id: '5',
-    vendor: 'Concrete Innovations Ltd',
-    amount: 34900,
-    dueDate: '2024-04-10',
-    status: 'Scheduled',
-  },
-  {
-    id: '6',
-    vendor: 'Elite Construction Services',
-    amount: 52100,
-    dueDate: '2024-04-15',
-    status: 'Scheduled',
-  },
-  {
-    id: '7',
-    vendor: 'Steel & Iron Fabrication',
-    amount: 41200,
-    dueDate: '2024-04-18',
-    status: 'Scheduled',
-  },
-  {
-    id: '8',
-    vendor: 'ProCare Maintenance Inc',
-    amount: 8900,
-    dueDate: '2024-04-22',
-    status: 'Scheduled',
-  },
-  {
-    id: '9',
-    vendor: 'Safety First Equipment',
-    amount: 6700,
-    dueDate: '2024-04-25',
-    status: 'Scheduled',
-  },
-  {
-    id: '10',
-    vendor: 'FastTrack Delivery Services',
-    amount: 3500,
-    dueDate: '2024-04-30',
-    status: 'Scheduled',
-  },
-];
+const upcomingPayments: Payment[] = [];
 
-const upcomingReceivables: Receivable[] = [
-  {
-    id: '1',
-    customer: 'Heritage Park Development',
-    amount: 125000,
-    expectedDate: '2024-03-27',
-    status: 'Expected',
-  },
-  {
-    id: '2',
-    customer: 'Mrs. Sarah Mitchell',
-    amount: 50000,
-    expectedDate: '2024-03-30',
-    status: 'Expected',
-  },
-  {
-    id: '3',
-    customer: 'Oakwood Properties LLC',
-    amount: 35000,
-    expectedDate: '2024-04-05',
-    status: 'Expected',
-  },
-  {
-    id: '4',
-    customer: 'The Cedar Family',
-    amount: 20000,
-    expectedDate: '2024-04-10',
-    status: 'Expected',
-  },
-  {
-    id: '5',
-    customer: 'John & Patricia Johnson',
-    amount: 25000,
-    expectedDate: '2024-04-12',
-    status: 'At Risk',
-  },
-  {
-    id: '6',
-    customer: 'Riverside Development Corp',
-    amount: 88500,
-    expectedDate: '2024-04-20',
-    status: 'Expected',
-  },
-  {
-    id: '7',
-    customer: 'Mountain View Investors',
-    amount: 42300,
-    expectedDate: '2024-04-25',
-    status: 'Expected',
-  },
-  {
-    id: '8',
-    customer: 'Heritage Restoration Inc',
-    amount: 67200,
-    expectedDate: '2024-05-02',
-    status: 'Expected',
-  },
-  {
-    id: '9',
-    customer: 'Sunset Properties Group',
-    amount: 78900,
-    expectedDate: '2024-05-08',
-    status: 'Expected',
-  },
-  {
-    id: '10',
-    customer: 'Premium Estates LLC',
-    amount: 112400,
-    expectedDate: '2024-05-15',
-    status: 'Expected',
-  },
-];
+const upcomingReceivables: Receivable[] = [];
 
-const forecastData = [
-  { week: 'This Week', balance: 487200 },
-  { week: 'Week 2', balance: 512400 },
-  { week: 'Week 3', balance: 538900 },
-  { week: 'Week 4', balance: 562100 },
-];
+const forecastData = [];
 
 export default function CashFlowPage() {
   const totalUpcomingPayments = upcomingPayments.reduce(
@@ -184,6 +37,15 @@ export default function CashFlowPage() {
     (sum, r) => sum + r.amount,
     0
   );
+
+  if (upcomingPayments.length === 0 && upcomingReceivables.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Cash Flow Data Yet</h3>
+        <p className="text-sm text-[#8888a0] max-w-md">Connect QuickBooks to see your upcoming payments, receivables, and cash flow forecast.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -207,10 +69,10 @@ export default function CashFlowPage() {
       {/* Hero Card - Current Cash Position */}
       <Card className="p-8 bg-gradient-to-br from-[#6366f1]/10 to-[#1a1a26] border-[#6366f1]/20">
         <p className="text-[#8888a0] text-sm mb-2">Current Cash Position</p>
-        <h1 className="text-5xl font-bold text-[#e8e8f0] mb-4">$487,200</h1>
+        <h1 className="text-5xl font-bold text-[#e8e8f0] mb-4">$0</h1>
         <div className="flex items-center gap-2">
           <TrendingUp className="text-[#22c55e]" size={20} />
-          <span className="text-[#22c55e] font-semibold">+8.7% from last month</span>
+          <span className="text-[#22c55e] font-semibold">Pending connection</span>
         </div>
       </Card>
 
