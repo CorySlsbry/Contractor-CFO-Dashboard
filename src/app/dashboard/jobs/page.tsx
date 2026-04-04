@@ -25,98 +25,7 @@ interface Job {
   };
 }
 
-const jobsData: Job[] = [
-  {
-    id: '1',
-    name: 'Riverside Estate Custom Home',
-    customer: 'Mrs. Sarah Mitchell',
-    status: 'Active',
-    estimatedCost: 850000,
-    actualCost: 823000,
-    billed: 800000,
-    percentComplete: 85,
-    profitMargin: 3.2,
-    costs: {
-      labor: 285000,
-      materials: 312000,
-      subcontractors: 168000,
-      equipment: 58000,
-      other: 0,
-    },
-  },
-  {
-    id: '2',
-    name: 'Mountain View Remodel',
-    customer: 'John & Patricia Johnson',
-    status: 'Active',
-    estimatedCost: 125000,
-    actualCost: 148000,
-    billed: 100000,
-    percentComplete: 65,
-    profitMargin: -18.4,
-    costs: {
-      labor: 52000,
-      materials: 61000,
-      subcontractors: 28000,
-      equipment: 7000,
-      other: 0,
-    },
-  },
-  {
-    id: '3',
-    name: 'Heritage Park Commercial',
-    customer: 'Heritage Park Development',
-    status: 'Active',
-    estimatedCost: 1200000,
-    actualCost: 890000,
-    billed: 950000,
-    percentComplete: 67,
-    profitMargin: 25.8,
-    costs: {
-      labor: 385000,
-      materials: 245000,
-      subcontractors: 210000,
-      equipment: 50000,
-      other: 0,
-    },
-  },
-  {
-    id: '4',
-    name: 'Oakwood Duplex',
-    customer: 'Oakwood Properties LLC',
-    status: 'Completed',
-    estimatedCost: 340000,
-    actualCost: 285000,
-    billed: 340000,
-    percentComplete: 100,
-    profitMargin: 16.2,
-    costs: {
-      labor: 98000,
-      materials: 125000,
-      subcontractors: 52000,
-      equipment: 10000,
-      other: 0,
-    },
-  },
-  {
-    id: '5',
-    name: 'Cedar Heights Addition',
-    customer: 'The Cedar Family',
-    status: 'Active',
-    estimatedCost: 180000,
-    actualCost: 157000,
-    billed: 165000,
-    percentComplete: 78,
-    profitMargin: 12.8,
-    costs: {
-      labor: 65000,
-      materials: 58000,
-      subcontractors: 24000,
-      equipment: 10000,
-      other: 0,
-    },
-  },
-];
+const jobsData: Job[] = [];
 
 export default function JobsPage() {
   const [filterStatus, setFilterStatus] = useState<'All' | 'Active' | 'Completed' | 'Over Budget'>(
@@ -133,6 +42,15 @@ export default function JobsPage() {
 
   const totalActiveJobs = jobsData.filter((j) => j.status === 'Active').length;
   const totalEstimatedValue = jobsData.reduce((sum, j) => sum + j.estimatedCost, 0);
+
+  if (jobsData.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Jobs Yet</h3>
+        <p className="text-sm text-[#8888a0] max-w-md">Connect QuickBooks and your field management tool to see job costing data here.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
