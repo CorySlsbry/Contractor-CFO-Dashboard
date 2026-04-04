@@ -72,10 +72,26 @@ export interface Invoice {
   id: string;
   customer_name: string;
   amount: number;
+  balance: number;
   due_date: string;
   status: "draft" | "sent" | "viewed" | "paid" | "overdue";
   days_overdue: number;
   invoice_number?: string;
+}
+
+/**
+ * Bill data (accounts payable)
+ */
+export interface Bill {
+  id: string;
+  vendor_name: string;
+  amount: number;
+  balance: number;
+  due_date: string;
+  txn_date: string;
+  status: "unpaid" | "paid" | "overdue";
+  days_overdue: number;
+  doc_number?: string;
 }
 
 /**
@@ -102,6 +118,7 @@ export interface DashboardData {
   accounts_payable: number;
   jobs: JobData[];
   invoices: Invoice[];
+  bills: Bill[];
   cash_flow: CashFlowData[];
   metrics: FinancialMetric[];
   last_updated: string;

@@ -205,31 +205,81 @@ export class QBOClient {
   }
 
   /**
-   * Gets all invoices
+   * Gets invoices with pagination (fetches ALL invoices, not capped at 1000)
    */
   async getInvoices(accessToken: string, realmId: string): Promise<any> {
-    const query = encodeURIComponent("select * from Invoice maxresults 1000");
-    return this.makeRequest(
-      accessToken,
-      realmId,
-      `/query?query=${query}`
-    );
+    const allInvoices: any[] = [];
+    let startPosition = 1;
+    const pageSize = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+      const query = encodeURIComponent(
+        `select * from Invoice startposition ${startPosition} maxresults ${pageSize}`
+      );
+      const response = await this.makeRequest(
+        accessToken,
+        realmId,
+        `/query?query=${query}`
+      );
+
+      const invoices = response?.QueryResponse?.Invoice || [];
+      allInvoices.push(...invoices);
+
+      if (invoices.length < pageSize) {
+        hasMore = false;
+      } else {
+        startPosition += pageSize;
+      }
+    }
+
+    return {
+      QueryResponse: {
+        Invoice: allInvoices,
+        totalCount: allInvoices.length,
+      },
+    };
   }
 
   /**
-   * Gets all bills
+   * Gets all bills with pagination (for AP tracking)
    */
   async getBills(accessToken: string, realmId: string): Promise<any> {
-    const query = encodeURIComponent("select * from Bill maxresults 1000");
-    return this.makeRequest(
-      accessToken,
-      realmId,
-      `/query?query=${query}`
-    );
+    const allBills: any[] = [];
+    let startPosition = 1;
+    const pageSize = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+      const query = encodeURIComponent(
+        `select * from Bill startposition ${startPosition} maxresults ${pageSize}`
+      );
+      const response = await this.makeRequest(
+        accessToken,
+        realmId,
+        `/query?query=${query}`
+      );
+
+      const bills = response?.QueryResponse?.Bill || [];
+      allBills.push(...bills);
+
+      if (bills.length < pageSize) {
+        hasMore = false;
+      } else {
+        startPosition += pageSize;
+      }
+    }
+
+    return {
+      QueryResponse: {
+        Bill: allBills,
+        totalCount: allBills.length,
+      },
+    };
   }
 
   /**
-   * Gets all accounts
+   * Gets all accounts (chart of accounts)
    */
   async getAccounts(accessToken: string, realmId: string): Promise<any> {
     const query = encodeURIComponent("select * from Account");
@@ -237,6 +287,37 @@ export class QBOClient {
       accessToken,
       realmId,
       `/query?query=${query}`
+    );
+  }
+
+  /**
+   * Gets Profit & Loss report with monthly columns for trend data
+   */
+  async getProfitAndLossDetail(
+    accessToken: string,
+    realmId: string,
+    startDate: string,
+    endDate: string
+  ): Promise<any> {
+    return this.makeRequest(
+      accessToken,
+      realmId,
+      `/reports/ProfitAndLoss?start_date=${startDate}&end_date=${endDate}&summarize_column_by=Month`
+    );
+  }
+
+  /**
+   * Gets Balance Sheet report via the reports endpoint (structured)
+   */
+  async getBalanceSheetReport(
+    accessToken: string,
+    realmId: string
+  ): Promise<any> {
+    const today = new Date().toISOString().split("T")[0];
+    return this.makeRequest(
+      accessToken,
+      realmId,
+      `/reports/BalanceSheet?date=${today}`
     );
   }
 }

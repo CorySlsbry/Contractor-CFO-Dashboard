@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
             accounts_payable: 0,
             jobs: [],
             invoices: [],
+            bills: [],
             cash_flow: [],
             metrics: [],
             last_updated: new Date().toISOString(),

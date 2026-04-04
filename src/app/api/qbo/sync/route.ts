@@ -14,8 +14,10 @@ import {
   transformProfitAndLoss,
   transformBalanceSheet,
   transformInvoices,
+  transformBills,
   transformCashFlow,
   buildDashboardData,
+  buildAccountTypeMap,
 } from "@/lib/qbo-transform";
 import type { ApiResponse, DashboardData } from "@/types";
 
@@ -120,6 +122,18 @@ export async function POST(request: NextRequest) {
             updated_at: new Date().toISOString(),
           })
           .eq("id", (org as any).id);
+
+        // Also update integration_connections for consistency
+        await (supabase as any)
+          .from("integration_connections")
+          .update({
+            access_token: tokenResponse.access_token,
+            refresh_token: tokenResponse.refresh_token,
+            token_expires_at: expiresAt.toISOString(),
+            last_sync_at: new Date().toISOString(),
+          })
+          .eq("organization_id", (org as any).id)
+          .eq("provider", "quickbooks");
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);
         return NextResponse.json<ApiResponse<null>>(
@@ -131,26 +145,40 @@ export async function POST(request: NextRequest) {
 
     // Get date range for reports
     const { startDate, endDate } = getDateRange();
+    const realmId = (org as any).qbo_realm_id;
 
-    // Fetch data in parallel
-    const [plData, bsData, invoiceData, cfData] = await Promise.all([
-      qboClient.getProfitAndLoss(accessToken, (org as any).qbo_realm_id, startDate, endDate),
-      qboClient.getBalanceSheet(accessToken, (org as any).qbo_realm_id),
-      qboClient.getInvoices(accessToken, (org as any).qbo_realm_id),
-      qboClient.getCashFlow(accessToken, (org as any).qbo_realm_id, startDate, endDate),
+    // Fetch ALL data in parallel — P&L, Balance Sheet, Invoices, Bills, Accounts, Cash Flow
+    const [plData, bsData, invoiceData, billData, accountData, cfData] = await Promise.all([
+      qboClient.getProfitAndLossDetail(accessToken, realmId, startDate, endDate).catch((err) => {
+        console.error("P&L fetch failed, falling back to query:", err);
+        return qboClient.getProfitAndLoss(accessToken, realmId, startDate, endDate);
+      }),
+      qboClient.getBalanceSheetReport(accessToken, realmId).catch((err) => {
+        console.error("Balance Sheet report failed, falling back to query:", err);
+        return qboClient.getBalanceSheet(accessToken, realmId);
+      }),
+      qboClient.getInvoices(accessToken, realmId),
+      qboClient.getBills(accessToken, realmId),
+      qboClient.getAccounts(accessToken, realmId),
+      qboClient.getCashFlow(accessToken, realmId, startDate, endDate),
     ]);
+
+    // Build account type map for reliable cash flow classification
+    const accountTypeMap = buildAccountTypeMap(accountData);
 
     // Transform data
     const profitAndLoss = transformProfitAndLoss(plData);
     const balanceSheet = transformBalanceSheet(bsData);
     const invoices = transformInvoices(invoiceData);
-    const cashFlow = transformCashFlow(cfData);
+    const bills = transformBills(billData);
+    const cashFlow = transformCashFlow(cfData, accountTypeMap);
 
-    // Build complete dashboard data
+    // Build complete dashboard data with proper AR/AP calculations
     const dashboardData = buildDashboardData(
       profitAndLoss,
       balanceSheet,
       invoices,
+      bills,
       cashFlow
     );
 
@@ -170,6 +198,17 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Update last sync status on integration_connections
+    await (supabase as any)
+      .from("integration_connections")
+      .update({
+        last_sync_at: new Date().toISOString(),
+        last_sync_status: "success",
+        last_sync_error: null,
+      })
+      .eq("organization_id", (org as any).id)
+      .eq("provider", "quickbooks");
 
     return NextResponse.json<ApiResponse<DashboardData>>(
       {
