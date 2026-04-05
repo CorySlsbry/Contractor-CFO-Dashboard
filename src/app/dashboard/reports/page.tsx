@@ -217,6 +217,9 @@ export default function ReportsPage() {
           reportType,
           startDate,
           endDate,
+          clientCompanyId: typeof window !== 'undefined'
+            ? window.localStorage?.getItem?.('selectedClientId')
+            : null,
         }),
       });
 
@@ -698,21 +701,31 @@ function BalanceSheetContent({ data }: { data: any }) {
 function CashFlowContent({ data }: { data: any }) {
   return (
     <div className="space-y-6">
-      {/* Net Cash Flow */}
-      <div
-        className="border rounded-lg p-4"
-        style={{
-          backgroundColor: data.netCashFlow >= 0 ? '#22c55e/10' : '#ef4444/10',
-          borderColor: data.netCashFlow >= 0 ? '#22c55e/30' : '#ef4444/30',
-        }}
-      >
-        <p className="text-sm text-[#8888a0] mb-1">Net Cash Flow</p>
-        <p
-          className="text-2xl font-bold"
-          style={{ color: data.netCashFlow >= 0 ? '#22c55e' : '#ef4444' }}
+      {/* Summary Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-4">
+          <p className="text-sm text-[#8888a0] mb-1">Total Revenue</p>
+          <p className="text-2xl font-bold text-[#22c55e]">{formatCurrency(data.totalRevenue || 0)}</p>
+        </div>
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-4">
+          <p className="text-sm text-[#8888a0] mb-1">Total Expenses</p>
+          <p className="text-2xl font-bold text-[#ef4444]">{formatCurrency(data.totalExpenses || 0)}</p>
+        </div>
+        <div
+          className="border rounded-lg p-4"
+          style={{
+            backgroundColor: data.netCashFlow >= 0 ? '#14532d20' : '#7f1d1d20',
+            borderColor: data.netCashFlow >= 0 ? '#22c55e50' : '#ef444450',
+          }}
         >
-          {formatCurrency(data.netCashFlow)}
-        </p>
+          <p className="text-sm text-[#8888a0] mb-1">Net Cash Flow</p>
+          <p
+            className="text-2xl font-bold"
+            style={{ color: data.netCashFlow >= 0 ? '#22c55e' : '#ef4444' }}
+          >
+            {formatCurrency(data.netCashFlow)}
+          </p>
+        </div>
       </div>
 
       {/* Operating Activities */}

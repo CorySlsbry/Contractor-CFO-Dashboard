@@ -16,6 +16,7 @@ interface GenerateReportRequest {
   reportType: string;
   startDate: string;
   endDate: string;
+  clientCompanyId?: string;
 }
 
 /**
@@ -85,6 +86,10 @@ function transformPLReport(qboData: any): any {
   for (const section of rows) {
     const group = (section.group || section.Header?.ColData?.[0]?.value || "").toLowerCase();
 
+    // Skip "net" summary rows (NetOperatingIncome, NetIncome, NetOtherIncome)
+    // These are computed totals, not actual income/expense sections
+    if (group.startsWith("net")) continue;
+
     if (group.includes("income") || group.includes("revenue")) {
       const items = extractSectionRows(section);
       for (const item of items) {
@@ -97,8 +102,6 @@ function transformPLReport(qboData: any): any {
         expenses.push({ category: item.name, amount: Math.abs(item.amount) });
       }
       totalExpenses += Math.abs(getSectionTotal(section));
-    } else if (group.includes("net income") || group.includes("net earnings")) {
-      // Skip — we compute net income ourselves
     }
   }
 
@@ -237,28 +240,80 @@ function transformAPAgingReport(bills: any[]): any {
 
 /**
  * Generates Cash Flow report from P&L and Balance Sheet
+ * Shows full revenue and expense breakdown under Operating Activities
+ * Uses indirect method: starts with Net Income, then shows components
  */
 function transformCashFlowReport(plData: any, bsData: any): any {
   const pl = transformPLReport(plData);
-  const netIncome = pl.netIncome;
+  const bs = transformBalanceSheetReport(bsData);
 
-  const operating = [
-    { item: "Net Income", amount: netIncome },
-  ];
-  const operatingTotal = netIncome;
+  // Build operating activities with revenue and expense line items
+  const operating: Array<{ item: string; amount: number }> = [];
+
+  // Revenue items (positive = cash in)
+  for (const rev of pl.revenues) {
+    if (rev.amount > 0) {
+      operating.push({ item: rev.category, amount: rev.amount });
+    }
+  }
+
+  // Expense items (negative = cash out)
+  for (const exp of pl.expenses) {
+    if (exp.amount > 0) {
+      operating.push({ item: exp.category, amount: -exp.amount });
+    }
+  }
+
+  // If no line items, add summary
+  if (operating.length === 0) {
+    operating.push({ item: "Net Income", amount: pl.netIncome });
+  }
+
+  const operatingTotal = pl.totalRevenue - pl.totalExpenses;
+
+  // Investing: look for fixed asset changes in the balance sheet
+  const investing: Array<{ item: string; amount: number }> = [];
+  for (const asset of bs.assets) {
+    const cat = asset.category.toLowerCase();
+    if (cat.includes("fixed") || cat.includes("property") || cat.includes("equipment") || cat.includes("vehicle")) {
+      investing.push({ item: asset.category, amount: -asset.amount });
+    }
+  }
+  if (investing.length === 0) {
+    investing.push({ item: "No investing activity", amount: 0 });
+  }
+  const investingTotal = investing.reduce((sum, i) => sum + i.amount, 0);
+
+  // Financing: look for loan/debt changes in liabilities and equity distributions
+  const financing: Array<{ item: string; amount: number }> = [];
+  for (const liab of bs.liabilities) {
+    const cat = liab.category.toLowerCase();
+    if (cat.includes("loan") || cat.includes("note") || cat.includes("debt") || cat.includes("line of credit")) {
+      financing.push({ item: liab.category, amount: liab.amount });
+    }
+  }
+  for (const eq of bs.equity) {
+    const cat = eq.category.toLowerCase();
+    if (cat.includes("distribution") || cat.includes("draw") || cat.includes("dividend")) {
+      financing.push({ item: eq.category, amount: -eq.amount });
+    }
+  }
+  if (financing.length === 0) {
+    financing.push({ item: "No financing activity", amount: 0 });
+  }
+  const financingTotal = financing.reduce((sum, i) => sum + i.amount, 0);
 
   return {
     operating,
-    investing: [
-      { item: "No investing data available", amount: 0 },
-    ],
-    financing: [
-      { item: "No financing data available", amount: 0 },
-    ],
+    investing,
+    financing,
     operatingTotal,
-    investingTotal: 0,
-    financingTotal: 0,
-    netCashFlow: operatingTotal,
+    investingTotal,
+    financingTotal,
+    netCashFlow: operatingTotal + investingTotal + financingTotal,
+    // Include summary totals for the header cards
+    totalRevenue: pl.totalRevenue,
+    totalExpenses: pl.totalExpenses,
   };
 }
 
@@ -346,53 +401,79 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: org, error: orgError } = await supabase
-      .from("organizations")
-      .select("*")
-      .eq("id", (profile as any).organization_id)
-      .single() as any;
-
-    if (orgError || !org) {
-      return NextResponse.json<ApiResponse<null>>(
-        { success: false, error: "Organization not found" },
-        { status: 400 }
-      );
-    }
-
-    if (!(org as any).qbo_realm_id || !(org as any).qbo_access_token) {
-      return NextResponse.json<ApiResponse<null>>(
-        { success: false, error: "QuickBooks not connected. Please connect your QuickBooks account first." },
-        { status: 400 }
-      );
-    }
+    const orgId = (profile as any).organization_id;
 
     const body = (await request.json()) as GenerateReportRequest;
-    const { reportType, startDate, endDate } = body;
+    const { reportType, startDate, endDate, clientCompanyId } = body;
 
-    let accessToken = (org as any).qbo_access_token;
+    // Get QBO credentials from client_companies table (multi-client support)
+    let clientCompany: any = null;
+    let clientError: any = null;
 
-    if ((org as any).qbo_token_expires_at && isTokenExpired((org as any).qbo_token_expires_at)) {
-      if (!(org as any).qbo_refresh_token) {
+    if (clientCompanyId) {
+      const result = await (supabase as any)
+        .from("client_companies")
+        .select("*")
+        .eq("organization_id", orgId)
+        .eq("id", clientCompanyId)
+        .eq("is_active", true)
+        .single();
+      clientCompany = result.data;
+      clientError = result.error;
+    } else {
+      // Fallback: first active client
+      const result = await (supabase as any)
+        .from("client_companies")
+        .select("*")
+        .eq("organization_id", orgId)
+        .eq("is_active", true)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .single();
+      clientCompany = result.data;
+      clientError = result.error;
+    }
+
+    if (clientError || !clientCompany) {
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: "No client company found. Connect a QBO company first." },
+        { status: 400 }
+      );
+    }
+
+    if (!clientCompany.qbo_realm_id || !clientCompany.qbo_access_token) {
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: "QuickBooks not connected for this client. Please connect QuickBooks first." },
+        { status: 400 }
+      );
+    }
+
+    let accessToken = clientCompany.qbo_access_token;
+    const realmId = clientCompany.qbo_realm_id;
+
+    // Refresh token if expired
+    if (clientCompany.qbo_token_expires_at && isTokenExpired(clientCompany.qbo_token_expires_at)) {
+      if (!clientCompany.qbo_refresh_token) {
         return NextResponse.json<ApiResponse<null>>(
-          { success: false, error: "Cannot refresh QuickBooks token" },
+          { success: false, error: "Cannot refresh QuickBooks token — reconnect QBO" },
           { status: 400 }
         );
       }
 
       try {
-        const tokenResponse = await qboClient.refreshToken((org as any).qbo_refresh_token);
+        const tokenResponse = await qboClient.refreshToken(clientCompany.qbo_refresh_token);
         accessToken = tokenResponse.access_token;
 
         const expiresAt = new Date(Date.now() + tokenResponse.expires_in * 1000);
         await (supabase as any)
-          .from("organizations")
+          .from("client_companies")
           .update({
             qbo_access_token: tokenResponse.access_token,
             qbo_refresh_token: tokenResponse.refresh_token,
             qbo_token_expires_at: expiresAt.toISOString(),
             updated_at: new Date().toISOString(),
           })
-          .eq("id", (org as any).id);
+          .eq("id", clientCompany.id);
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);
         return NextResponse.json<ApiResponse<null>>(
@@ -409,7 +490,7 @@ export async function POST(request: NextRequest) {
         case "pl": {
           const plData = await qboClient.getProfitAndLoss(
             accessToken,
-            (org as any).qbo_realm_id,
+            realmId,
             startDate,
             endDate
           );
@@ -418,7 +499,7 @@ export async function POST(request: NextRequest) {
         }
 
         case "balance-sheet": {
-          const bsData = await qboClient.getBalanceSheet(accessToken, (org as any).qbo_realm_id);
+          const bsData = await qboClient.getBalanceSheet(accessToken, realmId);
           reportData = transformBalanceSheetReport(bsData);
           break;
         }
@@ -426,23 +507,23 @@ export async function POST(request: NextRequest) {
         case "cash-flow": {
           const plData = await qboClient.getProfitAndLoss(
             accessToken,
-            (org as any).qbo_realm_id,
+            realmId,
             startDate,
             endDate
           );
-          const bsData = await qboClient.getBalanceSheet(accessToken, (org as any).qbo_realm_id);
+          const bsData = await qboClient.getBalanceSheet(accessToken, realmId);
           reportData = transformCashFlowReport(plData, bsData);
           break;
         }
 
         case "ar-aging": {
-          const invoices = await qboClient.getInvoices(accessToken, (org as any).qbo_realm_id);
+          const invoices = await qboClient.getInvoices(accessToken, realmId);
           reportData = transformARAgingReport(invoices);
           break;
         }
 
         case "ap-aging": {
-          const bills = await qboClient.getBills(accessToken, (org as any).qbo_realm_id);
+          const bills = await qboClient.getBills(accessToken, realmId);
           reportData = transformAPAgingReport(bills);
           break;
         }
@@ -460,7 +541,7 @@ export async function POST(request: NextRequest) {
         case "tax": {
           const plData = await qboClient.getProfitAndLoss(
             accessToken,
-            (org as any).qbo_realm_id,
+            realmId,
             startDate,
             endDate
           );
@@ -476,7 +557,7 @@ export async function POST(request: NextRequest) {
         case "budget-actual": {
           const plData = await qboClient.getProfitAndLoss(
             accessToken,
-            (org as any).qbo_realm_id,
+            realmId,
             startDate,
             endDate
           );
@@ -492,7 +573,7 @@ export async function POST(request: NextRequest) {
       }
     } catch (qboError: any) {
       const errMsg = qboError?.message || String(qboError);
-      console.error("QBO API error:", errMsg, "| Report:", reportType, "| Realm:", (org as any).qbo_realm_id);
+      console.error("QBO API error:", errMsg, "| Report:", reportType, "| Realm:", realmId);
       return NextResponse.json<ApiResponse<null>>(
         { success: false, error: `Failed to fetch QuickBooks data: ${errMsg}` },
         { status: 500 }
