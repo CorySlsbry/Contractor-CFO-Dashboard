@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, Badge } from '@/components/ui/card';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { DollarSign, TrendingUp, AlertCircle, Loader2, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { formatCompactCurrency } from '@/lib/utils';
@@ -62,6 +62,15 @@ interface DashboardData {
   };
 }
 
+const tabs = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'ar', label: 'AR by Job' },
+  { id: 'ap', label: 'AP by Job' },
+  { id: 'wip', label: 'WIP' },
+  { id: 'retainage', label: 'Retainage' },
+  { id: 'sales', label: 'Sales' },
+];
+
 export default function DashboardContent() {
   const [activeTab, setActiveTab] = useState('overview');
   const [data, setData] = useState<DashboardData | null>(null);
@@ -115,48 +124,26 @@ export default function DashboardContent() {
 
   return (
     <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6 bg-gray-800 border border-gray-700">
-          <TabsTrigger
-            value="overview"
-            className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-gray-300 hover:text-white"
+      {/* Tab Navigation */}
+      <div className="grid w-full grid-cols-6 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-1">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === tab.id
+                ? 'bg-indigo-600 text-white'
+                : 'text-gray-300 hover:text-white hover:bg-[#2a2a3d]'
+            }`}
           >
-            Overview
-          </TabsTrigger>
-          <TabsTrigger
-            value="ar"
-            className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-gray-300 hover:text-white"
-          >
-            AR by Job
-          </TabsTrigger>
-          <TabsTrigger
-            value="ap"
-            className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-gray-300 hover:text-white"
-          >
-            AP by Job
-          </TabsTrigger>
-          <TabsTrigger
-            value="wip"
-            className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-gray-300 hover:text-white"
-          >
-            WIP
-          </TabsTrigger>
-          <TabsTrigger
-            value="retainage"
-            className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-gray-300 hover:text-white"
-          >
-            Retainage
-          </TabsTrigger>
-          <TabsTrigger
-            value="sales"
-            className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-gray-300 hover:text-white"
-          >
-            Sales
-          </TabsTrigger>
-        </TabsList>
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
           {!hasData ? (
             <Card className="bg-gray-800 border-gray-700 p-8">
               <div className="flex flex-col items-center justify-center gap-4 text-center">
@@ -269,10 +256,12 @@ export default function DashboardContent() {
               )}
             </>
           )}
-        </TabsContent>
+        </div>
+      )}
 
-        {/* AR by Job Tab */}
-        <TabsContent value="ar" className="space-y-6">
+      {/* AR by Job Tab */}
+      {activeTab === 'ar' && (
+        <div className="space-y-6">
           {!hasData || !snapshotData.accounts_receivable?.invoices || snapshotData.accounts_receivable.invoices.length === 0 ? (
             <Card className="bg-gray-800 border-gray-700 p-8">
               <div className="flex flex-col items-center justify-center gap-4 text-center">
@@ -326,11 +315,7 @@ export default function DashboardContent() {
                           <td className="py-3 px-4 text-gray-300">{dueDate.toLocaleDateString()}</td>
                           <td className="py-3 px-4">
                             <Badge
-                              className={`${
-                                isOverdue
-                                  ? 'bg-red-900/30 text-red-400'
-                                  : 'bg-green-900/30 text-green-400'
-                              }`}
+                              variant={isOverdue ? 'danger' : 'success'}
                             >
                               {isOverdue ? 'Overdue' : 'Current'}
                             </Badge>
@@ -343,10 +328,12 @@ export default function DashboardContent() {
               </div>
             </Card>
           )}
-        </TabsContent>
+        </div>
+      )}
 
-        {/* AP by Job Tab */}
-        <TabsContent value="ap" className="space-y-6">
+      {/* AP by Job Tab */}
+      {activeTab === 'ap' && (
+        <div className="space-y-6">
           {!hasData || !snapshotData.accounts_payable?.bills || snapshotData.accounts_payable.bills.length === 0 ? (
             <Card className="bg-gray-800 border-gray-700 p-8">
               <div className="flex flex-col items-center justify-center gap-4 text-center">
@@ -400,11 +387,7 @@ export default function DashboardContent() {
                           <td className="py-3 px-4 text-gray-300">{dueDate.toLocaleDateString()}</td>
                           <td className="py-3 px-4">
                             <Badge
-                              className={`${
-                                isOverdue
-                                  ? 'bg-red-900/30 text-red-400'
-                                  : 'bg-yellow-900/30 text-yellow-400'
-                              }`}
+                              variant={isOverdue ? 'danger' : 'info'}
                             >
                               {isOverdue ? 'Overdue' : 'Pending'}
                             </Badge>
@@ -417,10 +400,12 @@ export default function DashboardContent() {
               </div>
             </Card>
           )}
-        </TabsContent>
+        </div>
+      )}
 
-        {/* WIP Tracking Tab */}
-        <TabsContent value="wip" className="space-y-6">
+      {/* WIP Tracking Tab */}
+      {activeTab === 'wip' && (
+        <div className="space-y-6">
           <Card className="bg-gray-800 border-gray-700 p-8">
             <div className="flex flex-col items-center justify-center gap-4 text-center">
               <AlertCircle className="w-12 h-12 text-gray-500" />
@@ -440,10 +425,12 @@ export default function DashboardContent() {
               </div>
             </div>
           </Card>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* Retainage Tab */}
-        <TabsContent value="retainage" className="space-y-6">
+      {/* Retainage Tab */}
+      {activeTab === 'retainage' && (
+        <div className="space-y-6">
           <Card className="bg-gray-800 border-gray-700 p-8">
             <div className="flex flex-col items-center justify-center gap-4 text-center">
               <AlertCircle className="w-12 h-12 text-gray-500" />
@@ -463,10 +450,12 @@ export default function DashboardContent() {
               </div>
             </div>
           </Card>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* Sales Tab */}
-        <TabsContent value="sales" className="space-y-6">
+      {/* Sales Tab */}
+      {activeTab === 'sales' && (
+        <div className="space-y-6">
           <Card className="bg-gray-800 border-gray-700 p-8">
             <div className="flex flex-col items-center justify-center gap-4 text-center">
               <AlertCircle className="w-12 h-12 text-gray-500" />
@@ -486,8 +475,8 @@ export default function DashboardContent() {
               </div>
             </div>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 }
