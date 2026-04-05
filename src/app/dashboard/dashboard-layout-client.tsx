@@ -17,8 +17,10 @@ import {
   LogOut,
   Brain,
   MapPin,
+  Bug,
 } from 'lucide-react';
 import LocationSelector from '@/components/location-selector';
+import SupportChat from '@/components/support-chat';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
@@ -39,7 +41,6 @@ const navItems: NavItem[] = [
   { label: 'Cash Flow', href: '/dashboard/cashflow', icon: TrendingUp },
   { label: 'Invoices', href: '/dashboard/invoices', icon: FileText },
   { label: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
-  { label: 'Locations', href: '/dashboard/locations', icon: MapPin },
   { label: 'CFO Advisor', href: '/dashboard/advisor', icon: Brain },
   { label: 'Locations', href: '/dashboard/locations', icon: MapPin },
   { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
@@ -66,6 +67,10 @@ export default function DashboardLayoutClient({
   const [locations, setLocations] = useState<Array<{ id: string; name: string; city: string | null; state: string | null }>>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
+  const [bugModalOpen, setBugModalOpen] = useState(false);
+  const [bugMessage, setBugMessage] = useState('');
+  const [bugSubmitting, setBugSubmitting] = useState(false);
+  const [bugSuccess, setBugSuccess] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -211,6 +216,32 @@ export default function DashboardLayoutClient({
     window.location.href = '/';
   };
 
+  const handleBugSubmit = async () => {
+    if (!bugMessage.trim()) return;
+    setBugSubmitting(true);
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: bugMessage.trim(),
+          userName: userProfile.fullName,
+          companyName: userProfile.companyName,
+        }),
+      });
+      setBugSuccess(true);
+      setBugMessage('');
+      setTimeout(() => {
+        setBugModalOpen(false);
+        setBugSuccess(false);
+      }, 2000);
+    } catch (e) {
+      console.error('Failed to submit bug report:', e);
+    } finally {
+      setBugSubmitting(false);
+    }
+  };
+
   const isActive = (href: string) => {
     if (href === '/dashboard') {
       return pathname === '/dashboard' || pathname === '/dashboard/';
@@ -302,6 +333,13 @@ export default function DashboardLayoutClient({
             )}
           </div>
           <button
+            onClick={() => setBugModalOpen(true)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#f59e0b] hover:bg-[#f59e0b]/10 transition-all duration-200"
+          >
+            <Bug size={20} />
+            {sidebarOpen && <span>Report a Bug</span>}
+          </button>
+          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all duration-200"
           >
@@ -366,6 +404,13 @@ export default function DashboardLayoutClient({
                   <div className="text-xs text-[#8888a0] truncate">{userProfile.companyName}</div>
                 </div>
               </div>
+              <button
+                onClick={() => { setMobileMenuOpen(false); setBugModalOpen(true); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#f59e0b] hover:bg-[#f59e0b]/10 transition-all duration-200"
+              >
+                <Bug size={20} />
+                <span>Report a Bug</span>
+              </button>
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all duration-200"
@@ -533,6 +578,83 @@ export default function DashboardLayoutClient({
           </div>
         </div>
       </div>
+
+      {/* Bug Report Modal */}
+      {bugModalOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm"
+            onClick={() => { setBugModalOpen(false); setBugMessage(''); setBugSuccess(false); }}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto">
+              <div className="flex items-center justify-between p-5 border-b border-[#2a2a3d]">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-[#f59e0b]/10 flex items-center justify-center">
+                    <Bug size={18} className="text-[#f59e0b]" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-[#e8e8f0] text-base">Report a Bug</h2>
+                    <p className="text-xs text-[#8888a0] mt-0.5">We'll look into it and follow up</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setBugModalOpen(false); setBugMessage(''); setBugSuccess(false); }}
+                  className="p-1.5 hover:bg-[#2a2a3d] rounded-lg text-[#8888a0] hover:text-[#e8e8f0] transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="p-5">
+                {bugSuccess ? (
+                  <div className="text-center py-6">
+                    <div className="w-12 h-12 rounded-full bg-[#22c55e]/10 flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-6 h-6 text-[#22c55e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className="font-semibold text-[#e8e8f0]">Report sent!</p>
+                    <p className="text-sm text-[#8888a0] mt-1">Thanks — we'll look into it shortly.</p>
+                  </div>
+                ) : (
+                  <>
+                    <label className="block text-sm font-medium text-[#c8c8e0] mb-2">
+                      Describe the issue
+                    </label>
+                    <textarea
+                      value={bugMessage}
+                      onChange={(e) => setBugMessage(e.target.value)}
+                      placeholder="What were you doing? What did you expect to happen? What actually happened?"
+                      rows={5}
+                      className="w-full bg-[#1a1a26] border border-[#2a2a3d] focus:border-[#6366f1] rounded-xl px-3 py-2.5 text-sm text-[#e8e8f0] placeholder-[#8888a0] outline-none transition-colors resize-none"
+                      autoFocus
+                    />
+                    <div className="flex gap-3 mt-4">
+                      <button
+                        onClick={() => { setBugModalOpen(false); setBugMessage(''); }}
+                        className="flex-1 px-4 py-2.5 border border-[#2a2a3d] rounded-xl text-sm font-medium text-[#8888a0] hover:text-[#e8e8f0] hover:border-[#4a4a5d] transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleBugSubmit}
+                        disabled={!bugMessage.trim() || bugSubmitting}
+                        className="flex-1 px-4 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-sm font-semibold text-white transition-colors"
+                      >
+                        {bugSubmitting ? 'Sending...' : 'Send Report'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* AI Support Chat Bubble */}
+      <SupportChat />
     </div>
   );
 }
