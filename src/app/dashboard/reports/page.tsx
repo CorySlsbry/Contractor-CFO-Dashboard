@@ -436,13 +436,13 @@ function ReportViewer({ report, onClose, onExport }: ReportViewerProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#0a0a0f]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-[#12121a] border-[#2a2a3d]">
+    <div className="fixed inset-0 bg-[#0a0a0f]/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
+      <Card className="w-full sm:max-w-5xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto bg-[#12121a] border-[#2a2a3d] rounded-none sm:rounded-xl">
         {/* Header */}
-        <div className="sticky top-0 bg-[#12121a] border-b border-[#2a2a3d] p-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-[#e8e8f0]">{getReportTitle()}</h2>
-            <p className="text-sm text-[#8888a0] mt-1">
+        <div className="sticky top-0 bg-[#12121a] border-b border-[#2a2a3d] p-4 sm:p-6 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-2xl font-bold text-[#e8e8f0] truncate">{getReportTitle()}</h2>
+            <p className="text-xs sm:text-sm text-[#8888a0] mt-1">
               {formatDate(report.startDate, { format: 'short' })} - {formatDate(report.endDate, { format: 'short' })}
             </p>
           </div>
@@ -491,7 +491,7 @@ function ReportViewer({ report, onClose, onExport }: ReportViewerProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {report.type === 'pl' && <PLReportContent data={report.data} />}
           {report.type === 'balance-sheet' && <BalanceSheetContent data={report.data} />}
           {report.type === 'cash-flow' && <CashFlowContent data={report.data} />}
@@ -516,14 +516,14 @@ function PLReportContent({ data }: { data: any }) {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-4">
           <p className="text-sm text-[#8888a0] mb-1">Total Revenue</p>
-          <p className="text-2xl font-bold text-[#22c55e]">{formatCurrency(totalRevenue)}</p>
+          <p className="text-xl sm:text-2xl font-bold text-[#22c55e]">{formatCurrency(totalRevenue)}</p>
         </div>
         <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-4">
           <p className="text-sm text-[#8888a0] mb-1">Total Expenses</p>
-          <p className="text-2xl font-bold text-[#ef4444]">{formatCurrency(totalExpenses)}</p>
+          <p className="text-xl sm:text-2xl font-bold text-[#ef4444]">{formatCurrency(totalExpenses)}</p>
         </div>
         <div
           className="border rounded-lg p-4"
@@ -545,8 +545,8 @@ function PLReportContent({ data }: { data: any }) {
       {/* Revenues */}
       <div>
         <h3 className="text-lg font-semibold text-[#e8e8f0] mb-3">Revenues</h3>
-        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="border-b border-[#2a2a3d]">
                 <th className="px-4 py-3 text-left text-[#8888a0] font-semibold">Category</th>
@@ -570,8 +570,8 @@ function PLReportContent({ data }: { data: any }) {
       {/* Expenses */}
       <div>
         <h3 className="text-lg font-semibold text-[#e8e8f0] mb-3">Expenses</h3>
-        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="border-b border-[#2a2a3d]">
                 <th className="px-4 py-3 text-left text-[#8888a0] font-semibold">Category</th>
@@ -607,7 +607,7 @@ function BalanceSheetContent({ data }: { data: any }) {
   return (
     <div className="space-y-6">
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-4">
           <p className="text-sm text-[#8888a0] mb-1">Total Assets</p>
           <p className="text-2xl font-bold text-[#22c55e]">{formatCurrency(data.totalAssets)}</p>
@@ -625,8 +625,8 @@ function BalanceSheetContent({ data }: { data: any }) {
       {/* Assets */}
       <div>
         <h3 className="text-lg font-semibold text-[#e8e8f0] mb-3">Assets</h3>
-        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="border-b border-[#2a2a3d]">
                 <th className="px-4 py-3 text-left text-[#8888a0] font-semibold">Asset Category</th>
@@ -650,8 +650,8 @@ function BalanceSheetContent({ data }: { data: any }) {
       {/* Liabilities */}
       <div>
         <h3 className="text-lg font-semibold text-[#e8e8f0] mb-3">Liabilities</h3>
-        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="border-b border-[#2a2a3d]">
                 <th className="px-4 py-3 text-left text-[#8888a0] font-semibold">Liability Category</th>
@@ -675,8 +675,8 @@ function BalanceSheetContent({ data }: { data: any }) {
       {/* Equity */}
       <div>
         <h3 className="text-lg font-semibold text-[#e8e8f0] mb-3">Equity</h3>
-        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="border-b border-[#2a2a3d]">
                 <th className="px-4 py-3 text-left text-[#8888a0] font-semibold">Equity Category</th>
@@ -702,7 +702,7 @@ function CashFlowContent({ data }: { data: any }) {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-4">
           <p className="text-sm text-[#8888a0] mb-1">Total Revenue</p>
           <p className="text-2xl font-bold text-[#22c55e]">{formatCurrency(data.totalRevenue || 0)}</p>
@@ -731,8 +731,8 @@ function CashFlowContent({ data }: { data: any }) {
       {/* Operating Activities */}
       <div>
         <h3 className="text-lg font-semibold text-[#e8e8f0] mb-3">Operating Activities</h3>
-        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="border-b border-[#2a2a3d]">
                 <th className="px-4 py-3 text-left text-[#8888a0] font-semibold">Item</th>
@@ -762,8 +762,8 @@ function CashFlowContent({ data }: { data: any }) {
       {/* Investing Activities */}
       <div>
         <h3 className="text-lg font-semibold text-[#e8e8f0] mb-3">Investing Activities</h3>
-        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="border-b border-[#2a2a3d]">
                 <th className="px-4 py-3 text-left text-[#8888a0] font-semibold">Item</th>
@@ -793,8 +793,8 @@ function CashFlowContent({ data }: { data: any }) {
       {/* Financing Activities */}
       <div>
         <h3 className="text-lg font-semibold text-[#e8e8f0] mb-3">Financing Activities</h3>
-        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="border-b border-[#2a2a3d]">
                 <th className="px-4 py-3 text-left text-[#8888a0] font-semibold">Item</th>
@@ -1146,7 +1146,7 @@ function TaxContent({ data }: { data: any }) {
   return (
     <div className="space-y-6">
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-4">
           <p className="text-sm text-[#8888a0] mb-1">Taxable Income</p>
           <p className="text-xl font-bold text-[#6366f1]">{formatCurrency(data.taxableIncome)}</p>
@@ -1164,8 +1164,8 @@ function TaxContent({ data }: { data: any }) {
       {/* Deductions */}
       <div>
         <h3 className="text-lg font-semibold text-[#e8e8f0] mb-3">Deductions</h3>
-        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="border-b border-[#2a2a3d]">
                 <th className="px-4 py-3 text-left text-[#8888a0] font-semibold">Deduction Item</th>
@@ -1294,7 +1294,7 @@ function BudgetActualContent({ data }: { data: any[] }) {
   return (
     <div className="space-y-6">
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-4">
           <p className="text-sm text-[#8888a0] mb-1">Total Budget</p>
           <p className="text-xl font-bold text-[#6366f1]">{formatCurrency(totalBudget)}</p>

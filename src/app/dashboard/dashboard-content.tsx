@@ -206,30 +206,32 @@ export default function DashboardContent() {
   return (
     <div className="space-y-6">
       {/* Tab Navigation + Sync Button */}
-      <div className="flex items-center gap-4">
-        <div className="grid flex-1 grid-cols-6 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-300 hover:text-white hover:bg-[#2a2a3d]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex-1 overflow-x-auto -mx-1 px-1 scrollbar-none">
+          <div className="inline-flex min-w-full sm:min-w-0 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-1 gap-0.5">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`whitespace-nowrap px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors flex-shrink-0 ${
+                  activeTab === tab.id
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-300 hover:text-white hover:bg-[#2a2a3d]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
         <button
           onClick={triggerSync}
           disabled={syncing}
-          className="flex items-center gap-2 px-4 py-2 bg-[#1a1a26] border border-[#2a2a3d] text-gray-300 hover:text-white hover:bg-[#2a2a3d] rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#1a1a26] border border-[#2a2a3d] text-gray-300 hover:text-white hover:bg-[#2a2a3d] rounded-lg transition-colors disabled:opacity-50 flex-shrink-0"
           title="Sync QuickBooks data"
         >
           <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-          {syncing ? 'Syncing...' : 'Sync'}
+          <span className="hidden sm:inline">{syncing ? 'Syncing...' : 'Sync'}</span>
         </button>
       </div>
 
@@ -270,7 +272,7 @@ export default function DashboardContent() {
           ) : (
             <>
               {/* KPI Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                 <Card className="bg-gray-800 border-gray-700 p-4">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-gray-400 text-sm font-medium">Revenue</p>
