@@ -162,28 +162,29 @@ export async function POST(request: NextRequest) {
     const { startDate, endDate } = getDateRange();
 
     // Fetch QBO data with individual error handling
+    // P&L (totals), Balance Sheet, Invoices, and Monthly P&L (for cash flow)
     let plData: any = {};
     let bsData: any = {};
     let invoiceData: any = {};
-    let cfData: any = {};
+    let monthlyPlData: any = {};
 
     try {
       const results = await Promise.allSettled([
         qboClient.getProfitAndLoss(accessToken, realmId, startDate, endDate),
         qboClient.getBalanceSheet(accessToken, realmId),
         qboClient.getInvoices(accessToken, realmId),
-        qboClient.getCashFlow(accessToken, realmId, startDate, endDate),
+        qboClient.getMonthlyProfitAndLoss(accessToken, realmId, startDate, endDate),
       ]);
 
       plData = results[0].status === "fulfilled" ? results[0].value : {};
       bsData = results[1].status === "fulfilled" ? results[1].value : {};
       invoiceData = results[2].status === "fulfilled" ? results[2].value : {};
-      cfData = results[3].status === "fulfilled" ? results[3].value : {};
+      monthlyPlData = results[3].status === "fulfilled" ? results[3].value : {};
 
       // Log any failures
       results.forEach((r, i) => {
         if (r.status === "rejected") {
-          const labels = ["P&L", "Balance Sheet", "Invoices", "Cash Flow"];
+          const labels = ["P&L", "Balance Sheet", "Invoices", "Monthly P&L"];
           console.error(`[sync] ${labels[i]} fetch failed:`, r.reason?.message || r.reason);
         }
       });
@@ -193,7 +194,8 @@ export async function POST(request: NextRequest) {
 
     console.log("[sync] Fetched data — P&L rows:", plData?.Rows?.Row?.length || 0,
       "BS rows:", bsData?.Rows?.Row?.length || 0,
-      "Invoices:", invoiceData?.QueryResponse?.Invoice?.length || 0);
+      "Invoices:", invoiceData?.QueryResponse?.Invoice?.length || 0,
+      "Monthly P&L cols:", monthlyPlData?.Columns?.Column?.length || 0);
 
     // Transform with error handling
     let dashboardData: DashboardData;
@@ -201,7 +203,7 @@ export async function POST(request: NextRequest) {
       const profitAndLoss = transformProfitAndLoss(plData || {});
       const balanceSheet = transformBalanceSheet(bsData || {});
       const invoices = transformInvoices(invoiceData || {});
-      const cashFlow = transformCashFlow(cfData || {});
+      const cashFlow = transformCashFlow(monthlyPlData || {});
 
       console.log("[sync] Transformed — revenue:", profitAndLoss.revenue,
         "expenses:", profitAndLoss.expenses, "cash:", balanceSheet.cashBalance,

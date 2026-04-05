@@ -58,16 +58,20 @@ interface InvoiceData {
   PrintStatus?: string;
 }
 
-interface JournalEntryData {
-  TxnDate: string;
-  Line: Array<{
-    DetailType: string;
-    Amount: number;
-    AccountRef: {
-      value: string;
-      name: string;
-    };
-  }>;
+/**
+ * Monthly P&L report structure (with summarize_column_by=Month)
+ * Columns array has month titles; each Row's ColData has values per column
+ */
+interface QBOMonthlyReportData {
+  Header?: Record<string, any>;
+  Columns?: {
+    Column?: Array<{
+      ColTitle: string;
+      ColType: string;
+      MetaData?: Array<{ Name: string; Value: string }>;
+    }>;
+  };
+  Rows?: { Row?: QBOReportRow[] };
 }
 
 /**
@@ -299,64 +303,78 @@ export function transformInvoices(qboData: {
 }
 
 /**
- * Transforms QBO Journal Entry data into Cash Flow
+ * Transforms a monthly P&L report into Cash Flow data
+ * Uses the QBO P&L with summarize_column_by=Month to get per-month revenue & expenses
+ * Revenue = inflow, Expenses = outflow, Net = revenue - expenses
  */
 export function transformCashFlow(
-  qboData: {
-    QueryResponse?: {
-      JournalEntry?: JournalEntryData[];
-    };
-  }
+  qboData: QBOMonthlyReportData
 ): CashFlowData[] {
-  const monthlyData: Map<
-    string,
-    { inflow: number; outflow: number; net: number }
-  > = new Map();
+  const cashFlowData: CashFlowData[] = [];
 
-  if (qboData.QueryResponse?.JournalEntry) {
-    for (const entry of qboData.QueryResponse.JournalEntry) {
-      const date = new Date(entry.TxnDate);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  if (!qboData?.Columns?.Column || !qboData?.Rows?.Row) {
+    return cashFlowData;
+  }
 
-      let monthEntry = monthlyData.get(monthKey);
-      if (!monthEntry) {
-        monthEntry = { inflow: 0, outflow: 0, net: 0 };
-        monthlyData.set(monthKey, monthEntry);
+  const columns = qboData.Columns.Column;
+  // Find month columns (skip first "Account" column and last "Total" column)
+  const monthColumns: Array<{ index: number; title: string }> = [];
+  for (let i = 0; i < columns.length; i++) {
+    const col = columns[i];
+    if (col.ColType === "Money" && col.ColTitle.toLowerCase() !== "total") {
+      monthColumns.push({ index: i, title: col.ColTitle });
+    }
+  }
+
+  if (monthColumns.length === 0) return cashFlowData;
+
+  // Initialize monthly buckets
+  const monthlyRevenue: number[] = new Array(monthColumns.length).fill(0);
+  const monthlyExpenses: number[] = new Array(monthColumns.length).fill(0);
+
+  // Walk through sections to find Income and Expense summary rows
+  for (const row of qboData.Rows.Row) {
+    const group = (row.group || "").toLowerCase();
+    const headerLabel = (row.Header?.ColData?.[0]?.value || "").toLowerCase();
+    const label = group || headerLabel;
+
+    // Get the Summary.ColData which has monthly totals for the section
+    const summaryColData = row.Summary?.ColData;
+    if (!summaryColData) continue;
+
+    if (label.includes("income") || label.includes("revenue")) {
+      for (const mc of monthColumns) {
+        if (mc.index < summaryColData.length) {
+          monthlyRevenue[monthColumns.indexOf(mc)] += extractAmount(summaryColData[mc.index]?.value);
+        }
       }
-
-      if (!entry.Line) continue;
-      for (const line of entry.Line) {
-        if (!line.AccountRef?.name) continue;
-        const amount = Math.abs(line.Amount || 0);
-        const acctName = line.AccountRef.name.toLowerCase();
-        if (
-          acctName.includes("bank") ||
-          acctName.includes("cash") ||
-          acctName.includes("checking") ||
-          acctName.includes("savings")
-        ) {
-          if (line.Amount > 0) {
-            monthEntry.inflow += amount;
-          } else {
-            monthEntry.outflow += amount;
-          }
+    } else if (
+      label.includes("expense") ||
+      label.includes("cost of goods") ||
+      label.includes("cogs") ||
+      label.includes("otherexpenses")
+    ) {
+      for (const mc of monthColumns) {
+        if (mc.index < summaryColData.length) {
+          monthlyExpenses[monthColumns.indexOf(mc)] += extractAmount(summaryColData[mc.index]?.value);
         }
       }
     }
   }
 
-  const cashFlowData: CashFlowData[] = [];
-  const sortedMonths = Array.from(monthlyData.keys()).sort();
-
-  for (const month of sortedMonths) {
-    const data = monthlyData.get(month)!;
-    data.net = data.inflow - data.outflow;
-    cashFlowData.push({
-      month: formatMonthForDisplay(month),
-      inflow: Math.max(0, data.inflow),
-      outflow: Math.max(0, data.outflow),
-      net: data.net,
-    });
+  // Build cash flow array — include months that have any activity
+  for (let i = 0; i < monthColumns.length; i++) {
+    const rev = monthlyRevenue[i];
+    const exp = monthlyExpenses[i];
+    // Include all months that have revenue or expenses (even if zero revenue)
+    if (rev !== 0 || exp !== 0) {
+      cashFlowData.push({
+        month: monthColumns[i].title, // Already formatted like "Jul 2025"
+        inflow: Math.max(0, rev),
+        outflow: Math.max(0, exp),
+        net: rev - exp,
+      });
+    }
   }
 
   return cashFlowData;

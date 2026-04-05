@@ -159,17 +159,20 @@ export class QBOClient {
 
   /**
    * Gets Profit & Loss report via QBO Reports API
+   * When monthly=true, returns columnar data with one column per month
    */
   async getProfitAndLoss(
     accessToken: string,
     realmId: string,
     startDate: string,
-    endDate: string
+    endDate: string,
+    monthly: boolean = false
   ): Promise<any> {
+    const params = `start_date=${startDate}&end_date=${endDate}&minorversion=73${monthly ? '&summarize_column_by=Month' : ''}`;
     return this.makeRequest(
       accessToken,
       realmId,
-      `/reports/ProfitAndLoss?start_date=${startDate}&end_date=${endDate}&minorversion=73`
+      `/reports/ProfitAndLoss?${params}`
     );
   }
 
@@ -186,23 +189,16 @@ export class QBOClient {
   }
 
   /**
-   * Gets Cash Flow data
-   * Note: QBO doesn't have a native Cash Flow report, so we'll construct it from Journal entries
+   * Gets Profit & Loss with monthly columns for cash flow analysis
+   * Returns the same P&L report but broken out by month
    */
-  async getCashFlow(
+  async getMonthlyProfitAndLoss(
     accessToken: string,
     realmId: string,
     startDate: string,
     endDate: string
   ): Promise<any> {
-    const query = encodeURIComponent(
-      `select * from JournalEntry where TxnDate >= '${startDate}' and TxnDate <= '${endDate}'`
-    );
-    return this.makeRequest(
-      accessToken,
-      realmId,
-      `/query?query=${query}`
-    );
+    return this.getProfitAndLoss(accessToken, realmId, startDate, endDate, true);
   }
 
   /**
