@@ -30,7 +30,7 @@ export class HubSpotConnector extends BaseConnector {
     super();
     this.clientId = process.env.HUBSPOT_CLIENT_ID || '';
     this.clientSecret = process.env.HUBSPOT_CLIENT_SECRET || '';
-    this.redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/hubspot/callback`;
+    this.redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/callback`;
     this.rateLimitConfig = { maxRequests: 100, windowMs: 10000 }; // HubSpot: 100/10s
   }
 

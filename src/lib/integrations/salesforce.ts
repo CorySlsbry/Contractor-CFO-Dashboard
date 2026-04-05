@@ -33,7 +33,7 @@ export class SalesforceConnector extends BaseConnector {
     super();
     this.clientId = process.env.SALESFORCE_CLIENT_ID || '';
     this.clientSecret = process.env.SALESFORCE_CLIENT_SECRET || '';
-    this.redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/salesforce/callback`;
+    this.redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/callback`;
     this.sandbox = process.env.SALESFORCE_ENVIRONMENT === 'sandbox';
     // SF rate limits: 100,000/day for Enterprise, we'll keep conservative
     this.rateLimitConfig = { maxRequests: 100, windowMs: 60000 };

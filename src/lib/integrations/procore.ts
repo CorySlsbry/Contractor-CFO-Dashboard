@@ -34,7 +34,7 @@ export class ProcoreConnector extends BaseConnector {
     super();
     this.clientId = process.env.PROCORE_CLIENT_ID || '';
     this.clientSecret = process.env.PROCORE_CLIENT_SECRET || '';
-    this.redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/procore/callback`;
+    this.redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/callback`;
     this.sandbox = process.env.PROCORE_ENVIRONMENT === 'sandbox';
     this.rateLimitConfig = { maxRequests: 3600, windowMs: 3600000 }; // Procore: hourly limits
   }
