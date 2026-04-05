@@ -155,6 +155,10 @@ export function transformProfitAndLoss(
       const headerLabel = (headerData[0]?.value || "").toLowerCase();
       const label = group || headerLabel;
 
+      // Skip "net" summary rows (NetOperatingIncome, NetIncome, NetOtherIncome)
+      // These are computed totals, not actual income/expense sections
+      if (label.startsWith("net")) continue;
+
       if (label.includes("income") || label.includes("revenue")) {
         revenue += getSectionTotal(row);
       } else if (
@@ -375,6 +379,9 @@ export function transformCashFlow(
     const group = (row.group || "").toLowerCase();
     const headerLabel = (row.Header?.ColData?.[0]?.value || "").toLowerCase();
     const label = group || headerLabel;
+
+    // Skip "net" summary rows (NetOperatingIncome, NetIncome, NetOtherIncome)
+    if (label.startsWith("net")) continue;
 
     // Get the Summary.ColData which has monthly totals for the section
     const summaryColData = row.Summary?.ColData;
