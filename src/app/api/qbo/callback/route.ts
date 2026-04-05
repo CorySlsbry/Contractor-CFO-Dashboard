@@ -68,8 +68,10 @@ export async function GET(request: NextRequest) {
     // Calculate token expiration
     const expiresAt = new Date(Date.now() + tokenResponse.expires_in * 1000);
 
-    // Store tokens in organization record
-    const { error: updateError } = await (supabase as any)
+    const orgId = (profile as any).organization_id;
+
+    // Store tokens in organization record (backward compat)
+    await (supabase as any)
       .from("organizations")
       .update({
         qbo_realm_id: realmId,
@@ -78,29 +80,38 @@ export async function GET(request: NextRequest) {
         qbo_token_expires_at: expiresAt.toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq("id", (profile as any).organization_id);
+      .eq("id", orgId);
 
-    if (updateError) {
-      console.error("Failed to store QBO tokens:", updateError);
-      return NextResponse.json(
-        { error: "Failed to store authentication tokens" },
-        { status: 500 }
-      );
+    // Get the company name from QBO
+    let companyName = `QBO Company (${realmId})`;
+    try {
+      const companyInfo = await qboClient.getCompanyInfo(tokenResponse.access_token, realmId);
+      companyName = companyInfo?.CompanyInfo?.CompanyName || companyName;
+    } catch {
+      // Use default name if company info fetch fails
     }
 
-    // Also upsert into integration_connections so the dashboard detects QBO
-    await (supabase as any)
-      .from("integration_connections")
-      .upsert({
-        organization_id: (profile as any).organization_id,
-        provider: "quickbooks",
-        status: "connected",
-        access_token: tokenResponse.access_token,
-        refresh_token: tokenResponse.refresh_token,
-        token_expires_at: expiresAt.toISOString(),
-        last_sync_status: "idle",
-        updated_at: new Date().toISOString(),
-      }, { onConflict: "organization_id,provider" });
+    // Upsert into client_companies — if realm already connected, update tokens
+    const { error: clientError } = await (supabase as any)
+      .from("client_companies")
+      .upsert(
+        {
+          organization_id: orgId,
+          name: companyName,
+          qbo_realm_id: realmId,
+          qbo_access_token: tokenResponse.access_token,
+          qbo_refresh_token: tokenResponse.refresh_token,
+          qbo_token_expires_at: expiresAt.toISOString(),
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "qbo_realm_id" }
+      );
+
+    if (clientError) {
+      console.error("Failed to upsert client company:", clientError);
+      // Non-fatal: org-level tokens still saved
+    }
 
     // Create response redirecting to dashboard
     const response = NextResponse.redirect(

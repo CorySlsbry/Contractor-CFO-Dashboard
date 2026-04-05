@@ -56,8 +56,13 @@ export default function DashboardLayoutClient({
   }>({ fullName: '', companyName: '', initials: '?' });
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [clients, setClients] = useState<Array<{ id: string; name: string; qbo_realm_id: string | null }>>([]);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+
+  const selectedClient = clients.find(c => c.id === selectedClientId);
 
   const formatTimeAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -73,18 +78,34 @@ export default function DashboardLayoutClient({
   const handleSync = useCallback(async () => {
     setSyncing(true);
     try {
-      const res = await fetch('/api/qbo/sync', { method: 'POST' });
+      const body = selectedClientId ? JSON.stringify({ clientCompanyId: selectedClientId }) : undefined;
+      const res = await fetch('/api/qbo/sync', {
+        method: 'POST',
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body,
+      });
       if (res.ok) {
         setLastSyncTime(new Date().toISOString());
-        // Reload the page so dashboard-content picks up new data
-        router.refresh();
+        window.location.reload();
       }
     } catch (e) {
       console.error('Sync failed:', e);
     } finally {
       setSyncing(false);
     }
-  }, [router]);
+  }, [selectedClientId]);
+
+  const handleClientSwitch = useCallback((clientId: string) => {
+    setSelectedClientId(clientId);
+    setClientDropdownOpen(false);
+    setLastSyncTime(null);
+    // Store selection so dashboard-content can read it
+    if (typeof window !== 'undefined') {
+      window.localStorage?.setItem?.('selectedClientId', clientId);
+      // Dispatch event so dashboard-content can react
+      window.dispatchEvent(new CustomEvent('clientChanged', { detail: { clientId } }));
+    }
+  }, []);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -111,6 +132,25 @@ export default function DashboardLayoutClient({
       }
     };
     fetchProfile();
+
+    // Load client companies
+    const fetchClients = async () => {
+      try {
+        const res = await fetch('/api/clients');
+        const json = await res.json();
+        if (json.success && json.data?.length > 0) {
+          setClients(json.data);
+          // Restore previous selection or default to first
+          const stored = typeof window !== 'undefined' ? window.localStorage?.getItem?.('selectedClientId') : null;
+          const validStored = stored && json.data.some((c: any) => c.id === stored);
+          const defaultId = validStored ? stored : json.data[0].id;
+          setSelectedClientId(defaultId);
+        }
+      } catch (e) {
+        console.error('Failed to fetch clients:', e);
+      }
+    };
+    fetchClients();
 
     // Load last sync time from latest snapshot
     const fetchLastSync = async () => {
@@ -303,6 +343,51 @@ export default function DashboardLayoutClient({
               <Menu size={22} />
             </button>
             <h1 className="text-lg sm:text-xl font-bold">Dashboard</h1>
+            {/* Client Selector */}
+            {clients.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setClientDropdownOpen(!clientDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg text-sm hover:border-[#6366f1] transition-colors"
+                >
+                  <span className="text-[#e8e8f0] max-w-[160px] truncate">{selectedClient?.name || 'Select Client'}</span>
+                  <svg className={`w-4 h-4 text-[#8888a0] transition-transform ${clientDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {clientDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-1 w-64 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg shadow-xl z-50 py-1 max-h-64 overflow-y-auto">
+                    {clients.map((client) => (
+                      <button
+                        key={client.id}
+                        onClick={() => handleClientSwitch(client.id)}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                          client.id === selectedClientId
+                            ? 'bg-[#6366f1]/20 text-[#6366f1]'
+                            : 'text-[#e8e8f0] hover:bg-[#2a2a3d]'
+                        }`}
+                      >
+                        <div className="font-medium truncate">{client.name}</div>
+                        {client.qbo_realm_id && (
+                          <div className="text-xs text-[#8888a0] mt-0.5">QBO Connected</div>
+                        )}
+                      </button>
+                    ))}
+                    <div className="border-t border-[#2a2a3d] mt-1 pt-1">
+                      <button
+                        onClick={() => {
+                          setClientDropdownOpen(false);
+                          window.location.href = '/api/qbo/connect';
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-sm text-[#6366f1] hover:bg-[#2a2a3d] transition-colors"
+                      >
+                        + Connect New QBO Company
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="hidden sm:flex items-center gap-2 text-sm text-[#8888a0]">
               <span>Last synced:</span>
               <span className="text-[#22c55e]">{lastSyncTime ? formatTimeAgo(lastSyncTime) : 'never'}</span>

@@ -1,7 +1,7 @@
 /**
  * QBO Data Endpoint
- * GET /api/qbo/data
- * Returns the latest dashboard snapshot
+ * GET /api/qbo/data?clientCompanyId=xxx
+ * Returns the latest dashboard snapshot for a specific client company
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -10,9 +10,22 @@ export const dynamic = 'force-dynamic';
 import { createClient } from "@/lib/supabase/server";
 import type { ApiResponse, DashboardData } from "@/types";
 
+const EMPTY_DATA: DashboardData = {
+  revenue: 0,
+  expenses: 0,
+  profit: 0,
+  cash_balance: 0,
+  accounts_receivable: 0,
+  accounts_payable: 0,
+  jobs: [],
+  invoices: [],
+  cash_flow: [],
+  metrics: [],
+  last_updated: new Date().toISOString(),
+};
+
 export async function GET(request: NextRequest) {
   try {
-    // Ensure user is authenticated
     const supabase = await createClient();
     const {
       data: { user },
@@ -26,48 +39,41 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user's organization
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("organization_id")
       .eq("id", user.id)
       .single() as any;
 
-    if (profileError || !(profile as any)?.organization_id) {
+    if (!profile?.organization_id) {
       return NextResponse.json<ApiResponse<null>>(
         { success: false, error: "Organization not found" },
         { status: 400 }
       );
     }
 
-    // Get latest dashboard snapshot
-    const { data: snapshot, error: snapshotError } = await supabase
+    const orgId = profile.organization_id;
+    const clientCompanyId = request.nextUrl.searchParams.get("clientCompanyId");
+
+    // Build query for latest snapshot
+    let query = supabase
       .from("dashboard_snapshots")
       .select("*")
-      .eq("organization_id", (profile as any).organization_id)
+      .eq("organization_id", orgId)
       .order("pulled_at", { ascending: false })
-      .limit(1)
-      .single() as any;
+      .limit(1);
 
-    if (snapshotError) {
-      // No snapshot yet - return empty state
+    if (clientCompanyId) {
+      query = query.eq("client_company_id", clientCompanyId);
+    }
+
+    const { data: snapshot, error: snapshotError } = await (query as any).single();
+
+    if (snapshotError || !snapshot) {
       return NextResponse.json<ApiResponse<DashboardData>>(
         {
           success: true,
-          data: {
-            revenue: 0,
-            expenses: 0,
-            profit: 0,
-            cash_balance: 0,
-            accounts_receivable: 0,
-            accounts_payable: 0,
-            jobs: [],
-            invoices: [],
-            bills: [],
-            cash_flow: [],
-            metrics: [],
-            last_updated: new Date().toISOString(),
-          },
+          data: EMPTY_DATA,
           message: "No data available. Please sync QuickBooks data.",
         },
         { status: 200 }
@@ -77,7 +83,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json<ApiResponse<DashboardData>>(
       {
         success: true,
-        data: (snapshot as any).data as DashboardData,
+        data: snapshot.data as DashboardData,
       },
       { status: 200 }
     );

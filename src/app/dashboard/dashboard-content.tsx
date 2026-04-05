@@ -67,12 +67,23 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  // Get the current selected client ID
+  const getClientId = () => {
+    if (typeof window !== 'undefined') {
+      return window.localStorage?.getItem?.('selectedClientId') || null;
+    }
+    return null;
+  };
+
+  const fetchData = useCallback(async (cid?: string | null) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/qbo/data');
+      const id = cid || getClientId();
+      const url = id ? `/api/qbo/data?clientCompanyId=${id}` : '/api/qbo/data';
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to fetch dashboard data: ${response.statusText}`);
       }
@@ -83,7 +94,7 @@ export default function DashboardContent() {
       const d = json.data;
       const isEmpty = !d || (d.revenue === 0 && d.expenses === 0 && d.invoices?.length === 0);
       if (json.success && isEmpty) {
-        await triggerSync();
+        await triggerSync(id);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
@@ -94,18 +105,24 @@ export default function DashboardContent() {
     }
   }, []);
 
-  const triggerSync = async () => {
+  const triggerSync = async (cid?: string | null) => {
     try {
       setSyncing(true);
-      const syncResponse = await fetch('/api/qbo/sync', { method: 'POST' });
+      const id = cid || getClientId();
+      const body = id ? JSON.stringify({ clientCompanyId: id }) : undefined;
+      const syncResponse = await fetch('/api/qbo/sync', {
+        method: 'POST',
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body,
+      });
       const syncJson = await syncResponse.json();
 
       if (syncJson.success && syncJson.data) {
         setData({ success: true, data: syncJson.data });
       } else {
         console.warn('Sync returned no data:', syncJson.error || syncJson.message);
-        // Re-fetch from /api/qbo/data in case snapshot was stored
-        const refetch = await fetch('/api/qbo/data');
+        const refetchUrl = id ? `/api/qbo/data?clientCompanyId=${id}` : '/api/qbo/data';
+        const refetch = await fetch(refetchUrl);
         const refetchJson = await refetch.json();
         if (refetchJson.success) {
           setData(refetchJson);
@@ -119,7 +136,20 @@ export default function DashboardContent() {
   };
 
   useEffect(() => {
-    fetchData();
+    const initialClient = getClientId();
+    setClientId(initialClient);
+    fetchData(initialClient);
+
+    // Listen for client switches from the layout
+    const handleClientChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.clientId) {
+        setClientId(detail.clientId);
+        fetchData(detail.clientId);
+      }
+    };
+    window.addEventListener('clientChanged', handleClientChange);
+    return () => window.removeEventListener('clientChanged', handleClientChange);
   }, [fetchData]);
 
   if (loading) {
