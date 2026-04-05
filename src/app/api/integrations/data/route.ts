@@ -27,6 +27,18 @@ export async function GET(request: NextRequest) {
     }
 
     const orgId = profile.organization_id;
+    const locationId = request.nextUrl.searchParams.get('locationId');
+
+    // Build per-table queries, optionally scoped to a location
+    const projectsQuery = (supabase as any).from('normalized_projects').select('*').eq('organization_id', orgId).order('name');
+    const contactsQuery = (supabase as any).from('normalized_contacts').select('*').eq('organization_id', orgId).order('last_name');
+    const dealsQuery    = (supabase as any).from('normalized_deals').select('*').eq('organization_id', orgId).order('amount', { ascending: false });
+
+    if (locationId) {
+      projectsQuery.eq('location_id', locationId);
+      contactsQuery.eq('location_id', locationId);
+      dealsQuery.eq('location_id', locationId);
+    }
 
     // Fetch all normalized data in parallel
     const [
@@ -35,9 +47,9 @@ export async function GET(request: NextRequest) {
       { data: deals },
       { data: connections },
     ] = await Promise.all([
-      (supabase as any).from('normalized_projects').select('*').eq('organization_id', orgId).order('name'),
-      (supabase as any).from('normalized_contacts').select('*').eq('organization_id', orgId).order('last_name'),
-      (supabase as any).from('normalized_deals').select('*').eq('organization_id', orgId).order('amount', { ascending: false }),
+      projectsQuery,
+      contactsQuery,
+      dealsQuery,
       (supabase as any).from('integration_connections').select('provider, status, last_sync_at').eq('organization_id', orgId).eq('status', 'connected'),
     ]);
 

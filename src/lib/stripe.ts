@@ -233,5 +233,11 @@ export class StripeService {
   }
 }
 
-// Export singleton instance
-export const stripeService = new StripeService();
+// Lazy singleton — instantiated on first access so env vars aren't required at build time
+let _stripeService: StripeService | null = null;
+export const stripeService: StripeService = new Proxy({} as StripeService, {
+  get(_target, prop) {
+    if (!_stripeService) _stripeService = new StripeService();
+    return (_stripeService as any)[prop];
+  },
+});
