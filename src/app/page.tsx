@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, ShieldCheck, CalendarCheck, Menu, X } from 'lucide-react';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, ShieldCheck, CalendarCheck, Menu, X, MessageSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { LandingTracker } from '@/components/landing-tracker';
 import { BookingCalendar } from '@/components/booking-calendar';
@@ -149,11 +149,18 @@ export default function LandingPage() {
               </h1>
 
               {/* Done-for-you setup — mobile only (desktop version in right column) */}
-              <div className="flex items-start gap-2 mb-4 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5 lg:hidden">
+              <div className="flex items-start gap-2 mb-2 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5 lg:hidden">
                 <ShieldCheck size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-[#e8e8f0]">
                   <span className="font-semibold text-[#22c55e]">We set it up for you.</span>{' '}
                   Connects to QuickBooks, Buildertrend, Procore — whatever you use. If you get stuck, our team does the integration for you. Zero tech headaches.
+                </p>
+              </div>
+              <div className="flex items-start gap-2 mb-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-lg px-3 py-2.5 lg:hidden">
+                <MessageSquare size={18} className="text-[#6366f1] flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-[#e8e8f0]">
+                  <span className="font-semibold text-[#6366f1]">Direct developer access.</span>{' '}
+                  Bug? New feature idea? You reach the developer directly — not a support ticket queue. Most fixes ship within days.
                 </p>
               </div>
 
@@ -179,6 +186,7 @@ export default function LandingPage() {
                 <div className="space-y-1.5 mb-3">
                   <p className="text-sm text-[#8888a0] line-through">Fractional controller: $3,000–$8,000/mo</p>
                   <p className="text-sm text-[#8888a0] line-through">One missed over-billing: $50,000+ at job close</p>
+                  <p className="text-sm text-[#8888a0] line-through">Custom dashboard build: $5,000–$20,000 one-time</p>
                 </div>
                 <p className="text-lg font-bold text-[#6366f1]">
                   BuilderCFO: $199/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
@@ -202,11 +210,18 @@ export default function LandingPage() {
             {/* Right — done-for-you callout + dashboard preview */}
             <div className="hidden lg:block">
               {/* Done-for-you setup promise — desktop only, above the dashboard preview */}
-              <div className="flex items-start gap-2 mb-4 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5">
+              <div className="flex items-start gap-2 mb-2 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5">
                 <ShieldCheck size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-[#e8e8f0]">
                   <span className="font-semibold text-[#22c55e]">We set it up for you.</span>{' '}
                   Connects to QuickBooks, Buildertrend, Procore — whatever you use. If you get stuck, our team does the integration for you. Zero tech headaches.
+                </p>
+              </div>
+              <div className="flex items-start gap-2 mb-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-lg px-3 py-2.5">
+                <MessageSquare size={18} className="text-[#6366f1] flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-[#e8e8f0]">
+                  <span className="font-semibold text-[#6366f1]">Direct developer access.</span>{' '}
+                  Bug? New feature idea? You reach the developer directly — not a support ticket queue. Most fixes ship within days.
                 </p>
               </div>
 
@@ -215,6 +230,7 @@ export default function LandingPage() {
                 <div className="space-y-1.5 mb-3">
                   <p className="text-sm text-[#8888a0] line-through">Fractional controller: $3,000–$8,000/mo</p>
                   <p className="text-sm text-[#8888a0] line-through">One missed over-billing: $50,000+ at job close</p>
+                  <p className="text-sm text-[#8888a0] line-through">Custom dashboard build: $5,000–$20,000 one-time</p>
                 </div>
                 <p className="text-lg font-bold text-[#6366f1]">
                   BuilderCFO: $199/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
@@ -349,6 +365,7 @@ export default function LandingPage() {
                 'Remodelers who bill by phase or draw schedule',
                 'Electrical, plumbing, and HVAC subs with retainage across multiple GCs',
                 'Spec builders managing lender draws and cash flow',
+                'Multi-location companies — see consolidated financials or drill into each location separately',
               ].map((item, idx) => (
                 <div key={idx} className="flex items-start gap-3">
                   <Check size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
