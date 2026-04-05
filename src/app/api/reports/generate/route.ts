@@ -37,7 +37,42 @@ function extractAmount(value: string | number | undefined): number {
 }
 
 /**
- * Transforms P&L data into report format
+ * Extracts rows from a QBO Reports API section.
+ * The Reports API returns nested Rows > Row arrays with ColData.
+ */
+function extractSectionRows(section: any): Array<{ name: string; amount: number }> {
+  const items: Array<{ name: string; amount: number }> = [];
+
+  if (section?.Rows?.Row) {
+    for (const row of section.Rows.Row) {
+      if (row.type === "Data" && row.ColData) {
+        const name = row.ColData[0]?.value || "Unknown";
+        const amount = extractAmount(row.ColData[1]?.value);
+        items.push({ name, amount });
+      } else if (row.type === "Section" && row.Header?.ColData) {
+        // Sub-section — recurse and also grab the summary
+        const subItems = extractSectionRows(row);
+        items.push(...subItems);
+      }
+    }
+  }
+
+  return items;
+}
+
+/**
+ * Gets the total from a section's Summary row
+ */
+function getSectionTotal(section: any): number {
+  if (section?.Summary?.ColData) {
+    return extractAmount(section.Summary.ColData[1]?.value);
+  }
+  return 0;
+}
+
+/**
+ * Transforms P&L data from QBO Reports API into report format
+ * Reports API returns: { Header, Columns, Rows: { Row: [...sections] } }
  */
 function transformPLReport(qboData: any): any {
   const revenues: Array<{ category: string; amount: number }> = [];
@@ -45,23 +80,39 @@ function transformPLReport(qboData: any): any {
   let totalRevenue = 0;
   let totalExpenses = 0;
 
-  if (qboData?.groupOf) {
-    for (const group of qboData.groupOf) {
-      const groupName = group.groupName || "";
-      const amount = extractAmount(group.summary?.totalAmt);
+  const rows = qboData?.Rows?.Row || [];
 
-      if (
-        groupName.toLowerCase().includes("income") ||
-        groupName.toLowerCase().includes("revenue")
-      ) {
-        revenues.push({ category: groupName, amount: Math.max(0, amount) });
-        totalRevenue += Math.max(0, amount);
-      } else if (
-        groupName.toLowerCase().includes("expense") ||
-        groupName.toLowerCase().includes("cost")
-      ) {
-        expenses.push({ category: groupName, amount: Math.max(0, amount) });
-        totalExpenses += Math.max(0, amount);
+  for (const section of rows) {
+    const group = (section.group || section.Header?.ColData?.[0]?.value || "").toLowerCase();
+
+    if (group.includes("income") || group.includes("revenue")) {
+      const items = extractSectionRows(section);
+      for (const item of items) {
+        revenues.push({ category: item.name, amount: Math.abs(item.amount) });
+      }
+      totalRevenue += Math.abs(getSectionTotal(section));
+    } else if (group.includes("expense") || group.includes("cost")) {
+      const items = extractSectionRows(section);
+      for (const item of items) {
+        expenses.push({ category: item.name, amount: Math.abs(item.amount) });
+      }
+      totalExpenses += Math.abs(getSectionTotal(section));
+    } else if (group.includes("net income") || group.includes("net earnings")) {
+      // Skip — we compute net income ourselves
+    }
+  }
+
+  // If no sections matched, try to get totals from the report summary
+  if (revenues.length === 0 && expenses.length === 0) {
+    // Fallback: walk all rows looking for any data
+    for (const section of rows) {
+      if (section.Summary?.ColData) {
+        const name = section.Summary.ColData[0]?.value || "Unknown";
+        const amount = extractAmount(section.Summary.ColData[1]?.value);
+        if (amount > 0) {
+          expenses.push({ category: name, amount });
+          totalExpenses += amount;
+        }
       }
     }
   }
@@ -76,7 +127,7 @@ function transformPLReport(qboData: any): any {
 }
 
 /**
- * Transforms Balance Sheet data into report format
+ * Transforms Balance Sheet data from QBO Reports API into report format
  */
 function transformBalanceSheetReport(qboData: any): any {
   const assets: Array<{ category: string; amount: number; subcategories: any[] }> = [];
@@ -86,21 +137,23 @@ function transformBalanceSheetReport(qboData: any): any {
   let totalLiabilities = 0;
   let totalEquity = 0;
 
-  if (qboData?.groupOf) {
-    for (const group of qboData.groupOf) {
-      const groupName = group.groupName?.toLowerCase() || "";
-      const amount = extractAmount(group.summary?.totalAmt);
+  const rows = qboData?.Rows?.Row || [];
 
-      if (groupName.includes("asset")) {
-        assets.push({ category: group.groupName || "Assets", amount: Math.max(0, amount), subcategories: [] });
-        totalAssets += Math.max(0, amount);
-      } else if (groupName.includes("liability")) {
-        liabilities.push({ category: group.groupName || "Liabilities", amount: Math.max(0, amount), subcategories: [] });
-        totalLiabilities += Math.max(0, amount);
-      } else if (groupName.includes("equity")) {
-        equity.push({ category: group.groupName || "Equity", amount: Math.max(0, amount), subcategories: [] });
-        totalEquity += Math.max(0, amount);
-      }
+  for (const section of rows) {
+    const group = (section.group || section.Header?.ColData?.[0]?.value || "").toLowerCase();
+    const sectionTotal = Math.abs(getSectionTotal(section));
+    const items = extractSectionRows(section);
+    const subcategories = items.map((i) => ({ name: i.name, amount: Math.abs(i.amount) }));
+
+    if (group.includes("asset")) {
+      assets.push({ category: section.Header?.ColData?.[0]?.value || "Assets", amount: sectionTotal, subcategories });
+      totalAssets += sectionTotal;
+    } else if (group.includes("liabilit")) {
+      liabilities.push({ category: section.Header?.ColData?.[0]?.value || "Liabilities", amount: sectionTotal, subcategories });
+      totalLiabilities += sectionTotal;
+    } else if (group.includes("equity")) {
+      equity.push({ category: section.Header?.ColData?.[0]?.value || "Equity", amount: sectionTotal, subcategories });
+      totalEquity += sectionTotal;
     }
   }
 
@@ -437,10 +490,11 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
       }
-    } catch (qboError) {
-      console.error("QBO API error:", qboError);
+    } catch (qboError: any) {
+      const errMsg = qboError?.message || String(qboError);
+      console.error("QBO API error:", errMsg, "| Report:", reportType, "| Realm:", (org as any).qbo_realm_id);
       return NextResponse.json<ApiResponse<null>>(
-        { success: false, error: "Failed to fetch QuickBooks data" },
+        { success: false, error: `Failed to fetch QuickBooks data: ${errMsg}` },
         { status: 500 }
       );
     }

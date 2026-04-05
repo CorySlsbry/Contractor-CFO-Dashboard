@@ -137,9 +137,13 @@ export class QBOClient {
     const response = await fetch(url, options);
 
     if (!response.ok) {
-      const error = await response.json();
+      let errorDetail = response.statusText;
+      try {
+        const errorBody = await response.text();
+        errorDetail = errorBody.substring(0, 500);
+      } catch { /* ignore parse errors */ }
       throw new Error(
-        `QBO API error: ${error.message || error.error || response.statusText}`
+        `QBO API ${response.status} on ${endpoint}: ${errorDetail}`
       );
     }
 
@@ -154,7 +158,7 @@ export class QBOClient {
   }
 
   /**
-   * Gets Profit & Loss report
+   * Gets Profit & Loss report via QBO Reports API
    */
   async getProfitAndLoss(
     accessToken: string,
@@ -162,25 +166,22 @@ export class QBOClient {
     startDate: string,
     endDate: string
   ): Promise<any> {
-    const query = encodeURIComponent(
-      `select * from ProfitAndLoss startDate='${startDate}' endDate='${endDate}'`
-    );
     return this.makeRequest(
       accessToken,
       realmId,
-      `/query?query=${query}`
+      `/reports/ProfitAndLoss?start_date=${startDate}&end_date=${endDate}&minorversion=73`
     );
   }
 
   /**
-   * Gets Balance Sheet report
+   * Gets Balance Sheet report via QBO Reports API
    */
-  async getBalanceSheet(accessToken: string, realmId: string): Promise<any> {
-    const query = encodeURIComponent("select * from BalanceSheet");
+  async getBalanceSheet(accessToken: string, realmId: string, asOfDate?: string): Promise<any> {
+    const dateParam = asOfDate ? `?date=${asOfDate}&minorversion=73` : `?minorversion=73`;
     return this.makeRequest(
       accessToken,
       realmId,
-      `/query?query=${query}`
+      `/reports/BalanceSheet${dateParam}`
     );
   }
 
@@ -205,84 +206,10 @@ export class QBOClient {
   }
 
   /**
-   * Gets invoices with pagination (fetches ALL invoices, not capped at 1000)
+   * Gets all invoices
    */
   async getInvoices(accessToken: string, realmId: string): Promise<any> {
-    const allInvoices: any[] = [];
-    let startPosition = 1;
-    const pageSize = 1000;
-    let hasMore = true;
-
-    while (hasMore) {
-      const query = encodeURIComponent(
-        `select * from Invoice startposition ${startPosition} maxresults ${pageSize}`
-      );
-      const response = await this.makeRequest(
-        accessToken,
-        realmId,
-        `/query?query=${query}`
-      );
-
-      const invoices = response?.QueryResponse?.Invoice || [];
-      allInvoices.push(...invoices);
-
-      if (invoices.length < pageSize) {
-        hasMore = false;
-      } else {
-        startPosition += pageSize;
-      }
-    }
-
-    return {
-      QueryResponse: {
-        Invoice: allInvoices,
-        totalCount: allInvoices.length,
-      },
-    };
-  }
-
-  /**
-   * Gets all bills with pagination (for AP tracking)
-   */
-  async getBills(accessToken: string, realmId: string): Promise<any> {
-    const allBills: any[] = [];
-    let startPosition = 1;
-    const pageSize = 1000;
-    let hasMore = true;
-
-    while (hasMore) {
-      const query = encodeURIComponent(
-        `select * from Bill startposition ${startPosition} maxresults ${pageSize}`
-      );
-      const response = await this.makeRequest(
-        accessToken,
-        realmId,
-        `/query?query=${query}`
-      );
-
-      const bills = response?.QueryResponse?.Bill || [];
-      allBills.push(...bills);
-
-      if (bills.length < pageSize) {
-        hasMore = false;
-      } else {
-        startPosition += pageSize;
-      }
-    }
-
-    return {
-      QueryResponse: {
-        Bill: allBills,
-        totalCount: allBills.length,
-      },
-    };
-  }
-
-  /**
-   * Gets all accounts (chart of accounts)
-   */
-  async getAccounts(accessToken: string, realmId: string): Promise<any> {
-    const query = encodeURIComponent("select * from Account");
+    const query = encodeURIComponent("select * from Invoice maxresults 1000");
     return this.makeRequest(
       accessToken,
       realmId,
@@ -291,33 +218,26 @@ export class QBOClient {
   }
 
   /**
-   * Gets Profit & Loss report with monthly columns for trend data
+   * Gets all bills
    */
-  async getProfitAndLossDetail(
-    accessToken: string,
-    realmId: string,
-    startDate: string,
-    endDate: string
-  ): Promise<any> {
+  async getBills(accessToken: string, realmId: string): Promise<any> {
+    const query = encodeURIComponent("select * from Bill maxresults 1000");
     return this.makeRequest(
       accessToken,
       realmId,
-      `/reports/ProfitAndLoss?start_date=${startDate}&end_date=${endDate}&summarize_column_by=Month`
+      `/query?query=${query}`
     );
   }
 
   /**
-   * Gets Balance Sheet report via the reports endpoint (structured)
+   * Gets all accounts
    */
-  async getBalanceSheetReport(
-    accessToken: string,
-    realmId: string
-  ): Promise<any> {
-    const today = new Date().toISOString().split("T")[0];
+  async getAccounts(accessToken: string, realmId: string): Promise<any> {
+    const query = encodeURIComponent("select * from Account");
     return this.makeRequest(
       accessToken,
       realmId,
-      `/reports/BalanceSheet?date=${today}`
+      `/query?query=${query}`
     );
   }
 }
