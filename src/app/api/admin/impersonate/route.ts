@@ -128,8 +128,15 @@ export async function GET(request: NextRequest) {
       // Don't fail the request if audit logging fails, just log the error
     }
 
+    // Strip sensitive fields from organization before returning
+    const {
+      qbo_access_token,
+      qbo_refresh_token,
+      ...safeOrganization
+    } = organization;
+
     return NextResponse.json({
-      organization,
+      organization: safeOrganization,
       integrations: integrations || [],
       normalized_projects: projects || [],
       normalized_contacts: contacts || [],

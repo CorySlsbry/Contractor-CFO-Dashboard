@@ -1,73 +1,26 @@
 'use client';
 
-import {
-  ComposedChart,
-  Bar,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
+interface CashFlowChartProps {
+  data?: Array<{ month: string; inflows: number; outflows: number; net: number; isForecast: boolean }>;
+}
 
-const baseData: any[] = [];
-
-const maxValue = baseData.length > 0 ? Math.max(...baseData.map((d) => Math.max(d.inflows, d.outflows))) : 0;
-
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    const month = payload[0]?.payload?.month;
-    const dataPoint = baseData.find((d) => d.month === month);
-
-    if (!dataPoint) return null;
-
+export const CashFlowChart = ({ data }: CashFlowChartProps) => {
+  // Show empty state if no data provided
+  if (!data || data.length === 0) {
     return (
-      <div
-        style={{
-          backgroundColor: '#1a1a26',
-          border: '1px solid #2a2a3d',
-          borderRadius: '0.5rem',
-          padding: '0.75rem',
-          fontSize: '0.875rem',
-        }}
-      >
-        <p style={{ color: '#e8e8f0', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-          {dataPoint.month} {dataPoint.isForecast && '(Forecast)'}
-        </p>
-        <p style={{ color: '#4ade80', marginBottom: '0.25rem' }}>
-          Money In: ${(dataPoint.inflows / 1000).toFixed(0)}k
-        </p>
-        <p style={{ color: '#f87171', marginBottom: '0.25rem' }}>
-          Money Out: ${(dataPoint.outflows / 1000).toFixed(0)}k
-        </p>
-        <p style={{ color: '#6366f1', marginTop: '0.5rem' }}>
-          Net Cash: ${(dataPoint.net / 1000).toFixed(0)}k
-        </p>
+      <div className="flex items-center justify-center h-[340px] text-[#8888a0]">
+        <p>No cash flow data available. Connect QuickBooks to see your cash flow chart.</p>
       </div>
     );
   }
-  return null;
-};
 
-export const CashFlowChart = () => {
-  if (baseData.length === 0) {
-    return (
-      <div className="w-full h-full">
-        <div className="text-[#8888a0] text-sm text-center py-10">
-          No cash flow data available
-        </div>
-      </div>
-    );
-  }
+  const maxValue = Math.max(...data.map((d) => Math.max(d.inflows, d.outflows)));
 
   return (
     <div className="w-full h-full">
-      {/* Overlapping bar chart — same style as landing page */}
+      {/* Overlapping bar chart — same style as original */}
       <div className="flex items-end gap-2 sm:gap-3" style={{ height: 340, padding: '20px 16px 0' }}>
-        {baseData.map((d) => {
+        {data.map((d) => {
           const inflowPct = (d.inflows / maxValue) * 100;
           const outflowPct = (d.outflows / maxValue) * 100;
           const isPositive = d.inflows >= d.outflows;
@@ -78,7 +31,7 @@ export const CashFlowChart = () => {
               <div className="w-full relative flex items-end justify-center" style={{ height: 280 }}>
                 {/* Taller bar (behind) */}
                 <div
-                  className="absolute bottom-0 left-2 right-2 rounded-t-md transition-all"
+                  className="absolute bottom-0 left-0.5 right-0.5 rounded-t-md transition-all"
                   style={{
                     height: `${Math.max(inflowPct, outflowPct)}%`,
                     backgroundColor: isPositive ? '#14532d' : '#7f1d1d',
@@ -89,7 +42,7 @@ export const CashFlowChart = () => {
                 />
                 {/* Shorter bar (in front, overlapping) */}
                 <div
-                  className="absolute bottom-0 left-2 right-2 rounded-t-sm transition-all"
+                  className="absolute bottom-0 left-0.5 right-0.5 rounded-t-sm transition-all"
                   style={{
                     height: `${Math.min(inflowPct, outflowPct)}%`,
                     backgroundColor: isPositive ? '#7f1d1d' : '#14532d',

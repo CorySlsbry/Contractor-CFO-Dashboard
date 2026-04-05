@@ -1,11 +1,22 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, Loader2 } from 'lucide-react';
 import { formatCompactCurrency } from '@/lib/utils';
+import Link from 'next/link';
+
+interface QBOInvoice {
+  DocNumber: string;
+  CustomerRef: { name: string };
+  TotalAmt: number;
+  Balance: number;
+  DueDate: string;
+  TxnDate: string;
+  status?: string;
+}
 
 interface Invoice {
   id: string;
@@ -18,8 +29,6 @@ interface Invoice {
   daysOverdue: number;
 }
 
-const invoicesData: Invoice[] = [];
-
 type SortField = 'number' | 'customer' | 'amount' | 'dueDate' | 'status';
 type SortOrder = 'asc' | 'desc';
 
@@ -30,20 +39,73 @@ const statusPriority: Record<string, number> = {
 };
 
 export default function InvoicesPage() {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<'All' | 'Paid' | 'Open' | 'Overdue'>(
     'All'
   );
   const [sortField, setSortField] = useState<SortField>('status');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/qbo/data');
+        if (!res.ok) throw new Error('Failed to fetch invoices');
+
+        const data = await res.json();
+        const qboInvoices = data.snapshot_data?.accounts_receivable?.invoices || [];
+
+        // Transform QBO invoices to our format
+        const today = new Date();
+        const transformedInvoices = qboInvoices.map((inv: QBOInvoice, index: number) => {
+          const dueDate = new Date(inv.DueDate);
+          let status: 'Paid' | 'Open' | 'Overdue' = 'Open';
+          let daysOverdue = 0;
+
+          if (inv.Balance === 0) {
+            status = 'Paid';
+          } else if (dueDate < today && inv.Balance > 0) {
+            status = 'Overdue';
+            daysOverdue = Math.floor(
+              (today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
+            );
+          }
+
+          return {
+            id: `${inv.DocNumber}-${index}`,
+            number: inv.DocNumber,
+            customer: inv.CustomerRef?.name || 'Unknown',
+            amount: inv.TotalAmt,
+            issueDate: inv.TxnDate,
+            dueDate: inv.DueDate,
+            status,
+            daysOverdue,
+          };
+        });
+
+        setInvoices(transformedInvoices);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch invoices');
+        setInvoices([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInvoices();
+  }, []);
+
   const filteredAndSorted = useMemo(() => {
-    let filtered = [...invoicesData];
+    let filtered = [...invoices];
 
     if (filterStatus !== 'All') {
       filtered = filtered.filter((inv) => inv.status === filterStatus);
     }
 
-    // Default sort: status priority (Overdue > Open > Paid), then days overdue descending
     if (sortField === 'status') {
       return filtered.sort((a, b) => {
         const aPriority = statusPriority[a.status] ?? 3;
@@ -70,7 +132,7 @@ export default function InvoicesPage() {
       if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [filterStatus, sortField, sortOrder]);
+  }, [invoices, filterStatus, sortField, sortOrder]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -82,13 +144,13 @@ export default function InvoicesPage() {
   };
 
   const stats = {
-    outstanding: invoicesData
+    outstanding: invoices
       .filter((inv) => inv.status !== 'Paid')
       .reduce((sum, inv) => sum + inv.amount, 0),
-    overdue: invoicesData
+    overdue: invoices
       .filter((inv) => inv.status === 'Overdue')
       .reduce((sum, inv) => sum + inv.amount, 0),
-    paidThisMonth: invoicesData
+    paidThisMonth: invoices
       .filter(
         (inv) =>
           inv.status === 'Paid' &&
@@ -98,46 +160,63 @@ export default function InvoicesPage() {
     avgDaysToPay: 34,
   };
 
-  if (invoicesData.length === 0) {
+  if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Invoices Yet</h3>
-        <p className="text-sm text-[#8888a0] max-w-md">Connect QuickBooks to see your invoices, payment status, and aging details.</p>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <Loader2 size={32} className="animate-spin mx-auto mb-4 text-[#6366f1]" />
+          <p className="text-[#8888a0]">Loading invoices...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-1">Invoices</h1>
+          <p className="text-[#8888a0]">Account receivables</p>
+        </div>
+        <Card className="p-6 border-red-900/30">
+          <p className="text-red-400 mb-4">{error}</p>
+          <Link href="/dashboard/integrations">
+            <Button variant="primary">Connect QuickBooks</Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
+  if (invoices.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-1">Invoices</h1>
+          <p className="text-[#8888a0]">Account receivables</p>
+        </div>
+        <Card className="p-12 text-center">
+          <p className="text-[#8888a0] mb-4">No invoices found. Connect QuickBooks to see your invoices.</p>
+          <Link href="/dashboard/integrations">
+            <Button variant="primary">Connect QuickBooks</Button>
+          </Link>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-1">Invoices</h1>
         <p className="text-[#8888a0]">
-          {invoicesData.length} invoices | Total Outstanding:{' '}
+          {invoices.length} invoices | Total Outstanding:{' '}
           <span className="text-[#ef4444] font-semibold">
             {formatCompactCurrency(stats.outstanding)}
           </span>
         </p>
       </div>
 
-      {/* AI Executive Summary */}
-      <div className="mb-4 p-4 rounded-lg bg-[#1a1a26] border border-[#2a2a3d]">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">AI Executive Summary</span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="flex items-start gap-2">
-            <span className="text-green-400 text-sm mt-0.5">▲</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-green-400">Win:</span> 87% of invoices collected within 30 days — strong payment velocity</p>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="text-amber-400 text-sm mt-0.5">▼</span>
-            <p className="text-sm text-[#c8c8d8]"><span className="font-medium text-amber-400">Watch:</span> $499k in invoices over 60 days past due — follow up on 3 aging accounts</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4">
           <p className="text-xs text-[#8888a0] mb-1">Total Outstanding</p>
@@ -159,7 +238,7 @@ export default function InvoicesPage() {
             {formatCompactCurrency(stats.overdue)}
           </p>
           <p className="text-xs text-[#ef4444]">
-            {invoicesData.filter((inv) => inv.status === 'Overdue').length} invoices
+            {invoices.filter((inv) => inv.status === 'Overdue').length} invoices
           </p>
         </Card>
         <Card className="p-4">
@@ -176,7 +255,6 @@ export default function InvoicesPage() {
         </Card>
       </div>
 
-      {/* Filter Buttons */}
       <div className="flex gap-2 flex-wrap">
         {(['All', 'Paid', 'Open', 'Overdue'] as const).map((status) => (
           <Button
@@ -190,7 +268,6 @@ export default function InvoicesPage() {
         ))}
       </div>
 
-      {/* Invoice Table */}
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

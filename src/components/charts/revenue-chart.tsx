@@ -11,15 +11,16 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const data: any[] = [];
+interface RevenueChartProps {
+  data?: Array<{ month: string; revenue: number; expenses: number }>;
+}
 
-export const RevenueChart = () => {
-  if (data.length === 0) {
+export const RevenueChart = ({ data }: RevenueChartProps) => {
+  // Show empty state if no data provided
+  if (!data || data.length === 0) {
     return (
-      <div className="w-full h-full">
-        <div className="text-[#8888a0] text-sm text-center py-10">
-          No revenue data available
-        </div>
+      <div className="flex items-center justify-center h-[300px] text-[#8888a0]">
+        <p>No revenue data available. Connect QuickBooks to see revenue trends.</p>
       </div>
     );
   }
