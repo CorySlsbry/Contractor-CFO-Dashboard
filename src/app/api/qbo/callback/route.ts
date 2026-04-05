@@ -70,18 +70,6 @@ export async function GET(request: NextRequest) {
 
     const orgId = (profile as any).organization_id;
 
-    // Store tokens in organization record (backward compat)
-    await (supabase as any)
-      .from("organizations")
-      .update({
-        qbo_realm_id: realmId,
-        qbo_access_token: tokenResponse.access_token,
-        qbo_refresh_token: tokenResponse.refresh_token,
-        qbo_token_expires_at: expiresAt.toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", orgId);
-
     // Get the company name from QBO
     let companyName = `QBO Company (${realmId})`;
     try {
@@ -91,11 +79,31 @@ export async function GET(request: NextRequest) {
       // Use default name if company info fetch fails
     }
 
-    // Upsert into client_companies — if realm already connected, update tokens
-    const { error: clientError } = await (supabase as any)
+    // Check if this realm already exists as a client company
+    const { data: existingClient } = await supabase
       .from("client_companies")
-      .upsert(
-        {
+      .select("id")
+      .eq("qbo_realm_id", realmId)
+      .single() as any;
+
+    if (existingClient) {
+      // Update existing client company tokens
+      await (supabase as any)
+        .from("client_companies")
+        .update({
+          qbo_access_token: tokenResponse.access_token,
+          qbo_refresh_token: tokenResponse.refresh_token,
+          qbo_token_expires_at: expiresAt.toISOString(),
+          name: companyName,
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingClient.id);
+    } else {
+      // Insert new client company
+      const { error: insertError } = await (supabase as any)
+        .from("client_companies")
+        .insert({
           organization_id: orgId,
           name: companyName,
           qbo_realm_id: realmId,
@@ -103,14 +111,30 @@ export async function GET(request: NextRequest) {
           qbo_refresh_token: tokenResponse.refresh_token,
           qbo_token_expires_at: expiresAt.toISOString(),
           is_active: true,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "qbo_realm_id" }
-      );
+        });
 
-    if (clientError) {
-      console.error("Failed to upsert client company:", clientError);
-      // Non-fatal: org-level tokens still saved
+      if (insertError) {
+        console.error("Failed to insert client company:", insertError);
+      }
+    }
+
+    // Only update org-level tokens if this is the FIRST connected QBO (no other clients)
+    const { count } = await supabase
+      .from("client_companies")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", orgId) as any;
+
+    if ((count || 0) <= 1) {
+      await (supabase as any)
+        .from("organizations")
+        .update({
+          qbo_realm_id: realmId,
+          qbo_access_token: tokenResponse.access_token,
+          qbo_refresh_token: tokenResponse.refresh_token,
+          qbo_token_expires_at: expiresAt.toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", orgId);
     }
 
     // Create response redirecting to dashboard
