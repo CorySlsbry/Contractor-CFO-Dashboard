@@ -16,6 +16,7 @@ import {
   Plug,
   LogOut,
   Brain,
+  MapPin,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -37,6 +38,7 @@ const navItems: NavItem[] = [
   { label: 'Cash Flow', href: '/dashboard/cashflow', icon: TrendingUp },
   { label: 'Invoices', href: '/dashboard/invoices', icon: FileText },
   { label: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+  { label: 'Locations', href: '/dashboard/locations', icon: MapPin },
   { label: 'CFO Advisor', href: '/dashboard/advisor', icon: Brain },
   { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
@@ -59,10 +61,14 @@ export default function DashboardLayoutClient({
   const [clients, setClients] = useState<Array<{ id: string; name: string; qbo_realm_id: string | null }>>([]);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
+  const [locations, setLocations] = useState<Array<{ id: string; name: string; city: string | null; state: string | null }>>([]);
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   const selectedClient = clients.find(c => c.id === selectedClientId);
+  const selectedLocation = locations.find(l => l.id === selectedLocationId);
 
   const formatTimeAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -104,6 +110,15 @@ export default function DashboardLayoutClient({
       window.localStorage?.setItem?.('selectedClientId', clientId);
       // Dispatch event so dashboard-content can react
       window.dispatchEvent(new CustomEvent('clientChanged', { detail: { clientId } }));
+    }
+  }, []);
+
+  const handleLocationSwitch = useCallback((locationId: string) => {
+    setSelectedLocationId(locationId);
+    setLocationDropdownOpen(false);
+    if (typeof window !== 'undefined') {
+      window.localStorage?.setItem?.('selectedLocationId', locationId);
+      window.dispatchEvent(new CustomEvent('locationChanged', { detail: { locationId } }));
     }
   }, []);
 
@@ -151,6 +166,23 @@ export default function DashboardLayoutClient({
       }
     };
     fetchClients();
+
+    // Load locations
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch('/api/locations');
+        const json = await res.json();
+        if (json.success && json.data?.length > 0) {
+          setLocations(json.data);
+          const stored = typeof window !== 'undefined' ? window.localStorage?.getItem?.('selectedLocationId') : null;
+          const valid = stored && json.data.some((l: any) => l.id === stored);
+          if (valid) setSelectedLocationId(stored);
+        }
+      } catch (e) {
+        console.error('Failed to fetch locations:', e);
+      }
+    };
+    fetchLocations();
 
     // Load last sync time from latest snapshot
     const fetchLastSync = async () => {
@@ -383,6 +415,71 @@ export default function DashboardLayoutClient({
                       >
                         + Connect New QBO Company
                       </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Location Selector */}
+            {locations.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setLocationDropdownOpen(!locationDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg text-sm hover:border-[#6366f1] transition-colors"
+                >
+                  <MapPin size={14} className="text-[#6366f1] flex-shrink-0" />
+                  <span className="text-[#e8e8f0] max-w-[140px] truncate">
+                    {selectedLocation?.name ?? 'All Locations'}
+                  </span>
+                  <svg className={`w-4 h-4 text-[#8888a0] transition-transform ${locationDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {locationDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-1 w-56 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg shadow-xl z-50 py-1 max-h-64 overflow-y-auto">
+                    <button
+                      onClick={() => {
+                        setSelectedLocationId(null);
+                        setLocationDropdownOpen(false);
+                        if (typeof window !== 'undefined') {
+                          window.localStorage?.removeItem?.('selectedLocationId');
+                          window.dispatchEvent(new CustomEvent('locationChanged', { detail: { locationId: null } }));
+                        }
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                        selectedLocationId === null
+                          ? 'bg-[#6366f1]/20 text-[#6366f1]'
+                          : 'text-[#e8e8f0] hover:bg-[#2a2a3d]'
+                      }`}
+                    >
+                      All Locations
+                    </button>
+                    {locations.map((loc) => (
+                      <button
+                        key={loc.id}
+                        onClick={() => handleLocationSwitch(loc.id)}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                          loc.id === selectedLocationId
+                            ? 'bg-[#6366f1]/20 text-[#6366f1]'
+                            : 'text-[#e8e8f0] hover:bg-[#2a2a3d]'
+                        }`}
+                      >
+                        <div className="font-medium truncate">{loc.name}</div>
+                        {(loc.city || loc.state) && (
+                          <div className="text-xs text-[#8888a0] mt-0.5">
+                            {[loc.city, loc.state].filter(Boolean).join(', ')}
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                    <div className="border-t border-[#2a2a3d] mt-1 pt-1">
+                      <a
+                        href="/dashboard/locations"
+                        onClick={() => setLocationDropdownOpen(false)}
+                        className="block px-4 py-2.5 text-sm text-[#6366f1] hover:bg-[#2a2a3d] transition-colors"
+                      >
+                        Manage Locations
+                      </a>
                     </div>
                   </div>
                 )}
