@@ -15,11 +15,17 @@ export default function CashFlowPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [hasData, setHasData] = useState(false);
 
-  const fetchData = useCallback(async (clientId?: string | null) => {
+  const getLocationId = () =>
+    typeof window !== 'undefined' ? window.localStorage?.getItem?.('selectedLocationId') || null : null;
+
+  const fetchData = useCallback(async (clientId?: string | null, locationId?: string | null) => {
     try {
       setLoading(true);
-      const params = clientId ? `?clientCompanyId=${clientId}` : '';
-      const response = await fetch(`/api/qbo/data${params}`);
+      const p = new URLSearchParams();
+      if (clientId) p.set('clientCompanyId', clientId);
+      if (locationId) p.set('locationId', locationId);
+      const qs = p.size > 0 ? '?' + p.toString() : '';
+      const response = await fetch(`/api/qbo/data${qs}`);
       const result = await response.json();
 
       if (result.success && result.data) {
@@ -42,19 +48,28 @@ export default function CashFlowPage() {
   }, []);
 
   useEffect(() => {
-    // Read selected client from localStorage
-    const stored = typeof window !== 'undefined'
-      ? window.localStorage?.getItem?.('selectedClientId')
-      : null;
-    fetchData(stored);
+    const storedClient = typeof window !== 'undefined'
+      ? window.localStorage?.getItem?.('selectedClientId') || null : null;
+    const storedLocation = getLocationId();
+    fetchData(storedClient, storedLocation);
 
-    // Listen for client switches
     const handleClientChanged = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      fetchData(detail?.clientId);
+      fetchData(detail?.clientId ?? null, getLocationId());
     };
+    const handleLocationChanged = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const cid = typeof window !== 'undefined'
+        ? window.localStorage?.getItem?.('selectedClientId') || null : null;
+      fetchData(cid, detail?.locationId ?? null);
+    };
+
     window.addEventListener('clientChanged', handleClientChanged);
-    return () => window.removeEventListener('clientChanged', handleClientChanged);
+    window.addEventListener('locationChanged', handleLocationChanged);
+    return () => {
+      window.removeEventListener('clientChanged', handleClientChanged);
+      window.removeEventListener('locationChanged', handleLocationChanged);
+    };
   }, [fetchData]);
 
   if (loading) {

@@ -167,12 +167,16 @@ export async function POST(request: NextRequest) {
           },
         });
 
+      // location_id comes from the connection — null means org-wide (unscoped)
+      const connLocationId: string | null = conn.location_id ?? null;
+
       // Upsert normalized projects
       for (const project of result.projects) {
         await (supabase as any)
           .from('normalized_projects')
           .upsert({
             organization_id: profile.organization_id,
+            location_id: connLocationId,
             source: project.source,
             external_id: project.external_id,
             name: project.name,
@@ -208,6 +212,7 @@ export async function POST(request: NextRequest) {
           .from('normalized_contacts')
           .upsert({
             organization_id: profile.organization_id,
+            location_id: connLocationId,
             source: contact.source,
             external_id: contact.external_id,
             first_name: contact.first_name,
@@ -230,6 +235,7 @@ export async function POST(request: NextRequest) {
           .from('normalized_deals')
           .upsert({
             organization_id: profile.organization_id,
+            location_id: connLocationId,
             source: deal.source,
             external_id: deal.external_id,
             name: deal.name,

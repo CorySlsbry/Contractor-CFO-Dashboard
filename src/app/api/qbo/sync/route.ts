@@ -66,6 +66,16 @@ export async function POST(request: NextRequest) {
 
     const orgId = profile.organization_id;
 
+    // Look up the default location for this org (used to tag new snapshots)
+    const { data: defaultLocation } = await (supabase as any)
+      .from('locations')
+      .select('id')
+      .eq('organization_id', orgId)
+      .eq('is_default', true)
+      .eq('is_active', true)
+      .limit(1)
+      .single();
+
     // Parse optional clientCompanyId from request body
     let clientCompanyId: string | null = null;
     try {
@@ -225,6 +235,7 @@ export async function POST(request: NextRequest) {
         .insert({
           organization_id: orgId,
           client_company_id: clientCompany.id,
+          location_id: defaultLocation?.id ?? null,
           data: dashboardData,
           pulled_at: new Date().toISOString(),
         });

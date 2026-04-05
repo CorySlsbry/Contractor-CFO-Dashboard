@@ -69,20 +69,23 @@ export default function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string | null>(null);
 
-  // Get the current selected client ID
-  const getClientId = () => {
-    if (typeof window !== 'undefined') {
-      return window.localStorage?.getItem?.('selectedClientId') || null;
-    }
-    return null;
-  };
+  const getClientId = () =>
+    typeof window !== 'undefined' ? window.localStorage?.getItem?.('selectedClientId') || null : null;
 
-  const fetchData = useCallback(async (cid?: string | null) => {
+  const getLocationId = () =>
+    typeof window !== 'undefined' ? window.localStorage?.getItem?.('selectedLocationId') || null : null;
+
+  const fetchData = useCallback(async (cid?: string | null, lid?: string | null) => {
     try {
       setLoading(true);
       setError(null);
-      const id = cid || getClientId();
-      const url = id ? `/api/qbo/data?clientCompanyId=${id}` : '/api/qbo/data';
+      const id = cid !== undefined ? cid : getClientId();
+      const locationId = lid !== undefined ? lid : getLocationId();
+      const params = new URLSearchParams();
+      if (id) params.set('clientCompanyId', id);
+      if (locationId) params.set('locationId', locationId);
+      const qs = params.size > 0 ? '?' + params.toString() : '';
+      const url = `/api/qbo/data${qs}`;
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to fetch dashboard data: ${response.statusText}`);
@@ -94,7 +97,7 @@ export default function DashboardContent() {
       const d = json.data;
       const isEmpty = !d || (d.revenue === 0 && d.expenses === 0 && d.invoices?.length === 0);
       if (json.success && isEmpty) {
-        await triggerSync(id);
+        await triggerSync(id, locationId);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
@@ -105,10 +108,11 @@ export default function DashboardContent() {
     }
   }, []);
 
-  const triggerSync = async (cid?: string | null) => {
+  const triggerSync = async (cid?: string | null, lid?: string | null) => {
     try {
       setSyncing(true);
-      const id = cid || getClientId();
+      const id = cid !== undefined ? cid : getClientId();
+      const locationId = lid !== undefined ? lid : getLocationId();
       const body = id ? JSON.stringify({ clientCompanyId: id }) : undefined;
       const syncResponse = await fetch('/api/qbo/sync', {
         method: 'POST',
@@ -121,8 +125,11 @@ export default function DashboardContent() {
         setData({ success: true, data: syncJson.data });
       } else {
         console.warn('Sync returned no data:', syncJson.error || syncJson.message);
-        const refetchUrl = id ? `/api/qbo/data?clientCompanyId=${id}` : '/api/qbo/data';
-        const refetch = await fetch(refetchUrl);
+        const params = new URLSearchParams();
+        if (id) params.set('clientCompanyId', id);
+        if (locationId) params.set('locationId', locationId);
+        const qs = params.size > 0 ? '?' + params.toString() : '';
+        const refetch = await fetch(`/api/qbo/data${qs}`);
         const refetchJson = await refetch.json();
         if (refetchJson.success) {
           setData(refetchJson);
@@ -137,19 +144,30 @@ export default function DashboardContent() {
 
   useEffect(() => {
     const initialClient = getClientId();
+    const initialLocation = getLocationId();
     setClientId(initialClient);
-    fetchData(initialClient);
+    fetchData(initialClient, initialLocation);
 
     // Listen for client switches from the layout
     const handleClientChange = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (detail?.clientId) {
-        setClientId(detail.clientId);
-        fetchData(detail.clientId);
-      }
+      const newClientId = detail?.clientId ?? null;
+      setClientId(newClientId);
+      fetchData(newClientId, getLocationId());
     };
+
+    // Listen for location switches from the sidebar
+    const handleLocationChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      fetchData(getClientId(), detail?.locationId ?? null);
+    };
+
     window.addEventListener('clientChanged', handleClientChange);
-    return () => window.removeEventListener('clientChanged', handleClientChange);
+    window.addEventListener('locationChanged', handleLocationChange);
+    return () => {
+      window.removeEventListener('clientChanged', handleClientChange);
+      window.removeEventListener('locationChanged', handleLocationChange);
+    };
   }, [fetchData]);
 
   if (loading) {
