@@ -1,71 +1,61 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { DollarSign, TrendingUp, AlertCircle, Loader2, Link as LinkIcon } from 'lucide-react';
+import { DollarSign, TrendingUp, AlertCircle, Loader2, Link as LinkIcon, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { formatCompactCurrency } from '@/lib/utils';
 
-interface SnapshotData {
-  revenue?: {
-    total: number;
-    by_month?: Array<{ month: string; amount: number }>;
-  };
-  expenses?: {
-    total: number;
-    by_category?: Array<{ category: string; amount: number }>;
-  };
-  accounts_receivable?: {
-    total: number;
-    invoices?: Array<{
-      id: string;
-      customer_id?: string;
-      customer_name: string;
-      amount: number;
-      due_date: string;
-      job_name?: string;
-    }>;
-  };
-  accounts_payable?: {
-    total: number;
-    bills?: Array<{
-      id: string;
-      vendor_id?: string;
-      vendor_name: string;
-      amount: number;
-      due_date: string;
-      job_name?: string;
-    }>;
-  };
-  cash_flow?: {
-    operating: number;
-    investing: number;
-    financing: number;
-  };
-  profit_loss?: {
-    gross_profit: number;
-    net_income: number;
-  };
-  balance_sheet?: {
-    total_assets: number;
-    total_liabilities: number;
-    equity: number;
-  };
+/**
+ * Matches the DashboardData type from @/types
+ * This is what /api/qbo/data returns at response.data
+ */
+interface DashboardData {
+  revenue: number;
+  expenses: number;
+  profit: number;
+  cash_balance: number;
+  accounts_receivable: number;
+  accounts_payable: number;
+  jobs: Array<any>;
+  invoices: Array<{
+    id: string;
+    invoice_number: string;
+    customer_name: string;
+    amount: number;
+    due_date: string;
+    status: string;
+    days_overdue: number;
+  }>;
+  cash_flow: Array<{
+    month: string;
+    inflow: number;
+    outflow: number;
+    net: number;
+  }>;
+  metrics: Array<{
+    label: string;
+    value: number;
+    change: number;
+    changeType: string;
+    format: string;
+  }>;
+  last_updated: string;
 }
 
-interface DashboardData {
+interface ApiResponse {
   success: boolean;
-  data?: {
-    snapshot_data: SnapshotData;
-  };
+  data?: DashboardData;
+  message?: string;
+  error?: string;
 }
 
 const tabs = [
   { id: 'overview', label: 'Overview' },
-  { id: 'ar', label: 'AR by Job' },
-  { id: 'ap', label: 'AP by Job' },
+  { id: 'invoices', label: 'Invoices' },
+  { id: 'cashflow', label: 'Cash Flow' },
   { id: 'wip', label: 'WIP' },
   { id: 'retainage', label: 'Retainage' },
   { id: 'sales', label: 'Sales' },
@@ -73,32 +63,64 @@ const tabs = [
 
 export default function DashboardContent() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch('/api/qbo/data');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch dashboard data: ${response.statusText}`);
-        }
-        const json = await response.json();
-        setData(json);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
-        setError(errorMessage);
-        console.error('Dashboard data fetch error:', err);
-      } finally {
-        setLoading(false);
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch('/api/qbo/data');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch dashboard data: ${response.statusText}`);
       }
-    };
+      const json: ApiResponse = await response.json();
+      setData(json);
 
-    fetchData();
+      // If no meaningful data yet, auto-trigger a sync
+      const d = json.data;
+      const isEmpty = !d || (d.revenue === 0 && d.expenses === 0 && d.invoices?.length === 0);
+      if (json.success && isEmpty) {
+        await triggerSync();
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
+      setError(errorMessage);
+      console.error('Dashboard data fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  const triggerSync = async () => {
+    try {
+      setSyncing(true);
+      const syncResponse = await fetch('/api/qbo/sync', { method: 'POST' });
+      const syncJson = await syncResponse.json();
+
+      if (syncJson.success && syncJson.data) {
+        setData({ success: true, data: syncJson.data });
+      } else {
+        console.warn('Sync returned no data:', syncJson.error || syncJson.message);
+        // Re-fetch from /api/qbo/data in case snapshot was stored
+        const refetch = await fetch('/api/qbo/data');
+        const refetchJson = await refetch.json();
+        if (refetchJson.success) {
+          setData(refetchJson);
+        }
+      }
+    } catch (err) {
+      console.error('Sync error:', err);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (
@@ -111,35 +133,64 @@ export default function DashboardContent() {
     );
   }
 
-  const snapshotData = data?.data?.snapshot_data || {};
-  const hasData = data?.success && snapshotData && Object.keys(snapshotData).length > 0;
+  const dashData = data?.data;
+  const hasData = data?.success && dashData && (
+    dashData.revenue > 0 ||
+    dashData.expenses > 0 ||
+    (dashData.invoices && dashData.invoices.length > 0) ||
+    dashData.cash_balance > 0
+  );
 
-  // KPI calculation helpers
-  const revenue = snapshotData.revenue?.total || 0;
-  const arTotal = snapshotData.accounts_receivable?.total || 0;
-  const apTotal = snapshotData.accounts_payable?.total || 0;
-  const netIncome = snapshotData.profit_loss?.net_income || 0;
-  const operatingCashFlow = snapshotData.cash_flow?.operating || 0;
-  const netCash = operatingCashFlow;
+  const revenue = dashData?.revenue || 0;
+  const expenses = dashData?.expenses || 0;
+  const profit = dashData?.profit || 0;
+  const cashBalance = dashData?.cash_balance || 0;
+  const arTotal = dashData?.accounts_receivable || 0;
+  const apTotal = dashData?.accounts_payable || 0;
+  const invoices = dashData?.invoices || [];
+  const cashFlowData = dashData?.cash_flow || [];
+
+  // Calculate AR from invoices if the aggregate is 0
+  const computedAR = arTotal > 0 ? arTotal : invoices
+    .filter(inv => inv.status !== 'paid')
+    .reduce((sum, inv) => sum + inv.amount, 0);
 
   return (
     <div className="space-y-6">
-      {/* Tab Navigation */}
-      <div className="grid w-full grid-cols-6 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-              activeTab === tab.id
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-300 hover:text-white hover:bg-[#2a2a3d]'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Tab Navigation + Sync Button */}
+      <div className="flex items-center gap-4">
+        <div className="grid flex-1 grid-cols-6 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-gray-300 hover:text-white hover:bg-[#2a2a3d]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={triggerSync}
+          disabled={syncing}
+          className="flex items-center gap-2 px-4 py-2 bg-[#1a1a26] border border-[#2a2a3d] text-gray-300 hover:text-white hover:bg-[#2a2a3d] rounded-lg transition-colors disabled:opacity-50"
+          title="Sync QuickBooks data"
+        >
+          <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+          {syncing ? 'Syncing...' : 'Sync'}
+        </button>
       </div>
+
+      {syncing && (
+        <div className="flex items-center gap-3 p-3 bg-indigo-900/20 border border-indigo-800/30 rounded-lg">
+          <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+          <p className="text-indigo-300 text-sm">Syncing data from QuickBooks...</p>
+        </div>
+      )}
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
@@ -150,17 +201,21 @@ export default function DashboardContent() {
                 <AlertCircle className="w-12 h-12 text-gray-500" />
                 <div>
                   <h3 className="text-lg font-semibold text-gray-200 mb-2">
-                    Connect QuickBooks to see your financial overview
+                    {data?.success ? 'No financial data yet' : 'Connect QuickBooks to see your financial overview'}
                   </h3>
                   <p className="text-gray-400 mb-4">
-                    Start tracking your revenue, expenses, and cash flow in real-time.
+                    {data?.success
+                      ? 'Click "Sync" above to pull your latest QuickBooks data, or add transactions in QBO first.'
+                      : 'Start tracking your revenue, expenses, and cash flow in real-time.'}
                   </p>
-                  <Link href="/dashboard/integrations">
-                    <button className="flex items-center gap-2 mx-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
-                      <LinkIcon className="w-4 h-4" />
-                      Go to Integrations
-                    </button>
-                  </Link>
+                  {!data?.success && (
+                    <Link href="/dashboard/integrations">
+                      <button className="flex items-center gap-2 mx-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
+                        <LinkIcon className="w-4 h-4" />
+                        Go to Integrations
+                      </button>
+                    </Link>
+                  )}
                 </div>
               </div>
             </Card>
@@ -178,45 +233,93 @@ export default function DashboardContent() {
 
                 <Card className="bg-gray-800 border-gray-700 p-4">
                   <div className="flex items-center justify-between mb-2">
+                    <p className="text-gray-400 text-sm font-medium">Expenses</p>
+                    <TrendingUp className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <p className="text-2xl font-bold text-white">{formatCompactCurrency(expenses)}</p>
+                </Card>
+
+                <Card className="bg-gray-800 border-gray-700 p-4">
+                  <div className="flex items-center justify-between mb-2">
                     <p className="text-gray-400 text-sm font-medium">Accounts Receivable</p>
                     <TrendingUp className="w-4 h-4 text-green-500" />
                   </div>
-                  <p className="text-2xl font-bold text-white">{formatCompactCurrency(arTotal)}</p>
+                  <p className="text-2xl font-bold text-white">{formatCompactCurrency(computedAR)}</p>
                 </Card>
 
                 <Card className="bg-gray-800 border-gray-700 p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-gray-400 text-sm font-medium">Accounts Payable</p>
-                    <TrendingUp className="w-4 h-4 text-orange-500" />
-                  </div>
-                  <p className="text-2xl font-bold text-white">{formatCompactCurrency(apTotal)}</p>
-                </Card>
-
-                <Card className="bg-gray-800 border-gray-700 p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-gray-400 text-sm font-medium">Net Cash</p>
+                    <p className="text-gray-400 text-sm font-medium">Cash Balance</p>
                     <DollarSign className="w-4 h-4 text-blue-500" />
                   </div>
-                  <p className="text-2xl font-bold text-white">{formatCompactCurrency(netCash)}</p>
+                  <p className="text-2xl font-bold text-white">{formatCompactCurrency(cashBalance)}</p>
                 </Card>
 
                 <Card className="bg-gray-800 border-gray-700 p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-gray-400 text-sm font-medium">Net Income</p>
+                    <p className="text-gray-400 text-sm font-medium">Net Profit</p>
                     <TrendingUp className="w-4 h-4 text-indigo-500" />
                   </div>
-                  <p className={`text-2xl font-bold ${netIncome >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {formatCompactCurrency(netIncome)}
+                  <p className={`text-2xl font-bold ${profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {formatCompactCurrency(profit)}
                   </p>
                 </Card>
               </div>
 
-              {/* Revenue Chart */}
-              {snapshotData.revenue?.by_month && snapshotData.revenue.by_month.length > 0 && (
+              {/* Invoices Summary */}
+              {invoices.length > 0 && (
                 <Card className="bg-gray-800 border-gray-700 p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Revenue Trend</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">Outstanding Invoices</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-700">
+                          <th className="text-left py-3 px-4 text-gray-400 font-semibold">Invoice #</th>
+                          <th className="text-left py-3 px-4 text-gray-400 font-semibold">Customer</th>
+                          <th className="text-right py-3 px-4 text-gray-400 font-semibold">Amount</th>
+                          <th className="text-left py-3 px-4 text-gray-400 font-semibold">Due Date</th>
+                          <th className="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {invoices.slice(0, 10).map((invoice) => (
+                          <tr key={invoice.id} className="border-b border-gray-700 hover:bg-gray-700/50">
+                            <td className="py-3 px-4 text-white">{invoice.invoice_number}</td>
+                            <td className="py-3 px-4 text-gray-300">{invoice.customer_name}</td>
+                            <td className="py-3 px-4 text-right text-white font-medium">
+                              {formatCompactCurrency(invoice.amount)}
+                            </td>
+                            <td className="py-3 px-4 text-gray-300">
+                              {new Date(invoice.due_date).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 px-4">
+                              <Badge
+                                variant={
+                                  invoice.status === 'overdue' ? 'danger' :
+                                  invoice.status === 'paid' ? 'success' :
+                                  'info'
+                                }
+                              >
+                                {invoice.status === 'overdue'
+                                  ? `Overdue ${invoice.days_overdue}d`
+                                  : invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)
+                                }
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              )}
+
+              {/* Cash Flow Chart */}
+              {cashFlowData.length > 0 && (
+                <Card className="bg-gray-800 border-gray-700 p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Cash Flow</h3>
                   <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={snapshotData.revenue.by_month}>
+                    <BarChart data={cashFlowData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#404050" />
                       <XAxis dataKey="month" stroke="#888" />
                       <YAxis stroke="#888" />
@@ -224,32 +327,8 @@ export default function DashboardContent() {
                         contentStyle={{ backgroundColor: '#2a2a3d', border: '1px solid #404050' }}
                         formatter={(value) => formatCompactCurrency(Number(value))}
                       />
-                      <Line
-                        type="monotone"
-                        dataKey="amount"
-                        stroke="#6366f1"
-                        dot={{ fill: '#6366f1' }}
-                        strokeWidth={2}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </Card>
-              )}
-
-              {/* Expenses by Category */}
-              {snapshotData.expenses?.by_category && snapshotData.expenses.by_category.length > 0 && (
-                <Card className="bg-gray-800 border-gray-700 p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Expenses by Category</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={snapshotData.expenses.by_category}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#404050" />
-                      <XAxis dataKey="category" stroke="#888" />
-                      <YAxis stroke="#888" />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: '#2a2a3d', border: '1px solid #404050' }}
-                        formatter={(value) => formatCompactCurrency(Number(value))}
-                      />
-                      <Bar dataKey="amount" fill="#6366f1" />
+                      <Bar dataKey="inflow" fill="#22c55e" name="Inflow" />
+                      <Bar dataKey="outflow" fill="#ef4444" name="Outflow" />
                     </BarChart>
                   </ResponsiveContainer>
                 </Card>
@@ -259,70 +338,84 @@ export default function DashboardContent() {
         </div>
       )}
 
-      {/* AR by Job Tab */}
-      {activeTab === 'ar' && (
+      {/* Invoices Tab */}
+      {activeTab === 'invoices' && (
         <div className="space-y-6">
-          {!hasData || !snapshotData.accounts_receivable?.invoices || snapshotData.accounts_receivable.invoices.length === 0 ? (
+          {invoices.length === 0 ? (
             <Card className="bg-gray-800 border-gray-700 p-8">
               <div className="flex flex-col items-center justify-center gap-4 text-center">
                 <AlertCircle className="w-12 h-12 text-gray-500" />
                 <div>
                   <h3 className="text-lg font-semibold text-gray-200 mb-2">
-                    {!hasData ? 'Connect QuickBooks to track AR' : 'No outstanding receivables'}
+                    {hasData ? 'No invoices found' : 'Connect QuickBooks to view invoices'}
                   </h3>
-                  {!hasData && (
-                    <>
-                      <p className="text-gray-400 mb-4">
-                        View and manage your accounts receivable by job.
-                      </p>
-                      <Link href="/dashboard/integrations">
-                        <button className="flex items-center gap-2 mx-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
-                          <LinkIcon className="w-4 h-4" />
-                          Go to Integrations
-                        </button>
-                      </Link>
-                    </>
-                  )}
+                  <p className="text-gray-400 mb-4">
+                    {hasData
+                      ? 'Create invoices in QuickBooks and click Sync to see them here.'
+                      : 'View and manage all your invoices in one place.'}
+                  </p>
                 </div>
               </div>
             </Card>
           ) : (
             <Card className="bg-gray-800 border-gray-700 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">All Invoices</h3>
+                <div className="flex gap-4 text-sm">
+                  <span className="text-gray-400">
+                    Total: <span className="text-white font-medium">{formatCompactCurrency(invoices.reduce((s, i) => s + i.amount, 0))}</span>
+                  </span>
+                  <span className="text-gray-400">
+                    Overdue: <span className="text-red-400 font-medium">
+                      {invoices.filter(i => i.status === 'overdue').length}
+                    </span>
+                  </span>
+                </div>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-700">
-                      <th className="text-left py-3 px-4 text-gray-400 font-semibold">Job Name</th>
+                      <th className="text-left py-3 px-4 text-gray-400 font-semibold">Invoice #</th>
                       <th className="text-left py-3 px-4 text-gray-400 font-semibold">Customer</th>
                       <th className="text-right py-3 px-4 text-gray-400 font-semibold">Amount</th>
                       <th className="text-left py-3 px-4 text-gray-400 font-semibold">Due Date</th>
                       <th className="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
+                      <th className="text-right py-3 px-4 text-gray-400 font-semibold">Days Overdue</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {snapshotData.accounts_receivable.invoices.map((invoice) => {
-                      const dueDate = new Date(invoice.due_date);
-                      const today = new Date();
-                      const isOverdue = dueDate < today;
-
-                      return (
-                        <tr key={invoice.id} className="border-b border-gray-700 hover:bg-gray-700/50">
-                          <td className="py-3 px-4 text-white">{invoice.job_name || 'N/A'}</td>
-                          <td className="py-3 px-4 text-gray-300">{invoice.customer_name}</td>
-                          <td className="py-3 px-4 text-right text-white font-medium">
-                            {formatCompactCurrency(invoice.amount)}
-                          </td>
-                          <td className="py-3 px-4 text-gray-300">{dueDate.toLocaleDateString()}</td>
-                          <td className="py-3 px-4">
-                            <Badge
-                              variant={isOverdue ? 'danger' : 'success'}
-                            >
-                              {isOverdue ? 'Overdue' : 'Current'}
-                            </Badge>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {invoices.map((invoice) => (
+                      <tr key={invoice.id} className="border-b border-gray-700 hover:bg-gray-700/50">
+                        <td className="py-3 px-4 text-white">{invoice.invoice_number}</td>
+                        <td className="py-3 px-4 text-gray-300">{invoice.customer_name}</td>
+                        <td className="py-3 px-4 text-right text-white font-medium">
+                          {formatCompactCurrency(invoice.amount)}
+                        </td>
+                        <td className="py-3 px-4 text-gray-300">
+                          {new Date(invoice.due_date).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge
+                            variant={
+                              invoice.status === 'overdue' ? 'danger' :
+                              invoice.status === 'paid' ? 'success' :
+                              invoice.status === 'sent' ? 'info' :
+                              'default'
+                            }
+                          >
+                            {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          {invoice.days_overdue > 0 ? (
+                            <span className="text-red-400">{invoice.days_overdue} days</span>
+                          ) : (
+                            <span className="text-gray-500">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -331,73 +424,40 @@ export default function DashboardContent() {
         </div>
       )}
 
-      {/* AP by Job Tab */}
-      {activeTab === 'ap' && (
+      {/* Cash Flow Tab */}
+      {activeTab === 'cashflow' && (
         <div className="space-y-6">
-          {!hasData || !snapshotData.accounts_payable?.bills || snapshotData.accounts_payable.bills.length === 0 ? (
+          {cashFlowData.length === 0 ? (
             <Card className="bg-gray-800 border-gray-700 p-8">
               <div className="flex flex-col items-center justify-center gap-4 text-center">
                 <AlertCircle className="w-12 h-12 text-gray-500" />
                 <div>
                   <h3 className="text-lg font-semibold text-gray-200 mb-2">
-                    {!hasData ? 'Connect QuickBooks to track AP' : 'No outstanding payables'}
+                    No cash flow data available
                   </h3>
-                  {!hasData && (
-                    <>
-                      <p className="text-gray-400 mb-4">
-                        View and manage your accounts payable by job.
-                      </p>
-                      <Link href="/dashboard/integrations">
-                        <button className="flex items-center gap-2 mx-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
-                          <LinkIcon className="w-4 h-4" />
-                          Go to Integrations
-                        </button>
-                      </Link>
-                    </>
-                  )}
+                  <p className="text-gray-400 mb-4">
+                    Cash flow data will populate as transactions are recorded in QuickBooks.
+                  </p>
                 </div>
               </div>
             </Card>
           ) : (
             <Card className="bg-gray-800 border-gray-700 p-6">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-700">
-                      <th className="text-left py-3 px-4 text-gray-400 font-semibold">Job Name</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-semibold">Vendor</th>
-                      <th className="text-right py-3 px-4 text-gray-400 font-semibold">Amount</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-semibold">Due Date</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {snapshotData.accounts_payable.bills.map((bill) => {
-                      const dueDate = new Date(bill.due_date);
-                      const today = new Date();
-                      const isOverdue = dueDate < today;
-
-                      return (
-                        <tr key={bill.id} className="border-b border-gray-700 hover:bg-gray-700/50">
-                          <td className="py-3 px-4 text-white">{bill.job_name || 'N/A'}</td>
-                          <td className="py-3 px-4 text-gray-300">{bill.vendor_name}</td>
-                          <td className="py-3 px-4 text-right text-white font-medium">
-                            {formatCompactCurrency(bill.amount)}
-                          </td>
-                          <td className="py-3 px-4 text-gray-300">{dueDate.toLocaleDateString()}</td>
-                          <td className="py-3 px-4">
-                            <Badge
-                              variant={isOverdue ? 'danger' : 'info'}
-                            >
-                              {isOverdue ? 'Overdue' : 'Pending'}
-                            </Badge>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <h3 className="text-lg font-semibold text-white mb-4">Monthly Cash Flow</h3>
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={cashFlowData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#404050" />
+                  <XAxis dataKey="month" stroke="#888" />
+                  <YAxis stroke="#888" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#2a2a3d', border: '1px solid #404050' }}
+                    formatter={(value) => formatCompactCurrency(Number(value))}
+                  />
+                  <Bar dataKey="inflow" fill="#22c55e" name="Inflow" />
+                  <Bar dataKey="outflow" fill="#ef4444" name="Outflow" />
+                  <Bar dataKey="net" fill="#6366f1" name="Net" />
+                </BarChart>
+              </ResponsiveContainer>
             </Card>
           )}
         </div>
