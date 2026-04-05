@@ -50,8 +50,11 @@ export const CashFlowChart = ({ data }: CashFlowChartProps) => {
                     opacity: forecastOpacity,
                   }}
                 />
-                {/* Net indicator — hidden on mobile, visible on md+ */}
-                <div className="absolute -top-5 left-0 right-0 text-center hidden md:block">
+                {/* Net indicator — positioned just above the taller bar */}
+                <div
+                  className="absolute left-0 right-0 text-center hidden md:block"
+                  style={{ bottom: `calc(${Math.max(inflowPct, outflowPct)}% + 6px)` }}
+                >
                   <span
                     className="text-[10px] font-bold"
                     style={{
