@@ -75,28 +75,46 @@ export async function POST(request: NextRequest) {
       // No body or invalid JSON — that's fine, we'll use default
     }
 
-    // Get client company (specific or first active)
-    let clientQuery = supabase
-      .from("client_companies")
-      .select("*")
-      .eq("organization_id", orgId)
-      .eq("is_active", true);
+    console.log("[sync] orgId:", orgId, "clientCompanyId:", clientCompanyId);
+
+    // Get client company — two separate queries to avoid chain issues
+    let clientCompany: any = null;
+    let clientError: any = null;
 
     if (clientCompanyId) {
-      clientQuery = clientQuery.eq("id", clientCompanyId);
+      // Fetch specific client
+      const result = await (supabase as any)
+        .from("client_companies")
+        .select("*")
+        .eq("organization_id", orgId)
+        .eq("id", clientCompanyId)
+        .eq("is_active", true)
+        .single();
+      clientCompany = result.data;
+      clientError = result.error;
+    } else {
+      // Fetch first active client
+      const result = await (supabase as any)
+        .from("client_companies")
+        .select("*")
+        .eq("organization_id", orgId)
+        .eq("is_active", true)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .single();
+      clientCompany = result.data;
+      clientError = result.error;
     }
 
-    const { data: clientCompany, error: clientError } = await (clientQuery as any)
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .single();
-
     if (clientError || !clientCompany) {
+      console.error("[sync] Client query error:", clientError?.message || "no client found");
       return NextResponse.json<ApiResponse<null>>(
         { success: false, error: "No client company found. Connect a QBO company first." },
         { status: 400 }
       );
     }
+
+    console.log("[sync] Found client:", clientCompany.name, "realm:", clientCompany.qbo_realm_id);
 
     if (!clientCompany.qbo_realm_id || !clientCompany.qbo_access_token) {
       return NextResponse.json<ApiResponse<null>>(
@@ -118,6 +136,7 @@ export async function POST(request: NextRequest) {
       }
 
       try {
+        console.log("[sync] Refreshing token for", clientCompany.name);
         const tokenResponse = await qboClient.refreshToken(clientCompany.qbo_refresh_token);
         accessToken = tokenResponse.access_token;
 
@@ -131,19 +150,8 @@ export async function POST(request: NextRequest) {
             updated_at: new Date().toISOString(),
           })
           .eq("id", clientCompany.id);
-
-        // Also update the org-level token for backward compat
-        await (supabase as any)
-          .from("organizations")
-          .update({
-            qbo_access_token: tokenResponse.access_token,
-            qbo_refresh_token: tokenResponse.refresh_token,
-            qbo_token_expires_at: expiresAt.toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", orgId);
-      } catch (refreshError) {
-        console.error("Token refresh failed:", refreshError);
+      } catch (refreshError: any) {
+        console.error("[sync] Token refresh failed:", refreshError?.message);
         return NextResponse.json<ApiResponse<null>>(
           { success: false, error: "Failed to refresh QuickBooks token" },
           { status: 400 }
@@ -153,44 +161,88 @@ export async function POST(request: NextRequest) {
 
     const { startDate, endDate } = getDateRange();
 
-    // Fetch QBO data
-    let plData = {}, bsData = {}, invoiceData = {}, cfData = {};
+    // Fetch QBO data with individual error handling
+    let plData: any = {};
+    let bsData: any = {};
+    let invoiceData: any = {};
+    let cfData: any = {};
+
     try {
-      [plData, bsData, invoiceData, cfData] = await Promise.all([
-        qboClient.getProfitAndLoss(accessToken, realmId, startDate, endDate).catch(e => { console.error("P&L fetch failed:", e.message); return {}; }),
-        qboClient.getBalanceSheet(accessToken, realmId).catch(e => { console.error("BS fetch failed:", e.message); return {}; }),
-        qboClient.getInvoices(accessToken, realmId).catch(e => { console.error("Invoice fetch failed:", e.message); return {}; }),
-        qboClient.getCashFlow(accessToken, realmId, startDate, endDate).catch(e => { console.error("CF fetch failed:", e.message); return {}; }),
+      const results = await Promise.allSettled([
+        qboClient.getProfitAndLoss(accessToken, realmId, startDate, endDate),
+        qboClient.getBalanceSheet(accessToken, realmId),
+        qboClient.getInvoices(accessToken, realmId),
+        qboClient.getCashFlow(accessToken, realmId, startDate, endDate),
       ]);
-    } catch (fetchError) {
-      console.error("QBO data fetch error:", fetchError);
+
+      plData = results[0].status === "fulfilled" ? results[0].value : {};
+      bsData = results[1].status === "fulfilled" ? results[1].value : {};
+      invoiceData = results[2].status === "fulfilled" ? results[2].value : {};
+      cfData = results[3].status === "fulfilled" ? results[3].value : {};
+
+      // Log any failures
+      results.forEach((r, i) => {
+        if (r.status === "rejected") {
+          const labels = ["P&L", "Balance Sheet", "Invoices", "Cash Flow"];
+          console.error(`[sync] ${labels[i]} fetch failed:`, r.reason?.message || r.reason);
+        }
+      });
+    } catch (fetchError: any) {
+      console.error("[sync] QBO data fetch error:", fetchError?.message);
     }
 
-    // Transform
-    const profitAndLoss = transformProfitAndLoss(plData as any);
-    const balanceSheet = transformBalanceSheet(bsData as any);
-    const invoices = transformInvoices(invoiceData as any);
-    const cashFlow = transformCashFlow(cfData as any);
+    console.log("[sync] Fetched data — P&L rows:", plData?.Rows?.Row?.length || 0,
+      "BS rows:", bsData?.Rows?.Row?.length || 0,
+      "Invoices:", invoiceData?.QueryResponse?.Invoice?.length || 0);
 
-    const dashboardData = buildDashboardData(profitAndLoss, balanceSheet, invoices, cashFlow);
+    // Transform with error handling
+    let dashboardData: DashboardData;
+    try {
+      const profitAndLoss = transformProfitAndLoss(plData || {});
+      const balanceSheet = transformBalanceSheet(bsData || {});
+      const invoices = transformInvoices(invoiceData || {});
+      const cashFlow = transformCashFlow(cfData || {});
+
+      console.log("[sync] Transformed — revenue:", profitAndLoss.revenue,
+        "expenses:", profitAndLoss.expenses, "cash:", balanceSheet.cashBalance,
+        "invoices:", invoices.length);
+
+      dashboardData = buildDashboardData(profitAndLoss, balanceSheet, invoices, cashFlow);
+    } catch (transformError: any) {
+      console.error("[sync] Transform error:", transformError?.message, transformError?.stack);
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: "Failed to transform QBO data: " + (transformError?.message || "unknown") },
+        { status: 500 }
+      );
+    }
 
     // Store snapshot linked to client company
-    const { error: snapshotError } = await (supabase as any)
-      .from("dashboard_snapshots")
-      .insert({
-        organization_id: orgId,
-        client_company_id: clientCompany.id,
-        data: dashboardData,
-        pulled_at: new Date().toISOString(),
-      });
+    try {
+      const { error: snapshotError } = await (supabase as any)
+        .from("dashboard_snapshots")
+        .insert({
+          organization_id: orgId,
+          client_company_id: clientCompany.id,
+          data: dashboardData,
+          pulled_at: new Date().toISOString(),
+        });
 
-    if (snapshotError) {
-      console.error("Failed to store snapshot:", snapshotError);
+      if (snapshotError) {
+        console.error("[sync] Snapshot insert error:", snapshotError.message, snapshotError.details);
+        return NextResponse.json<ApiResponse<null>>(
+          { success: false, error: "Failed to store dashboard data: " + snapshotError.message },
+          { status: 500 }
+        );
+      }
+    } catch (insertError: any) {
+      console.error("[sync] Snapshot insert exception:", insertError?.message, insertError?.stack);
       return NextResponse.json<ApiResponse<null>>(
         { success: false, error: "Failed to store dashboard data" },
         { status: 500 }
       );
     }
+
+    console.log("[sync] Success for", clientCompany.name);
 
     return NextResponse.json<ApiResponse<DashboardData>>(
       {
@@ -200,10 +252,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error) {
-    console.error("QBO Sync Error:", error);
+  } catch (error: any) {
+    console.error("[sync] Unhandled error:", error?.message, error?.stack);
     return NextResponse.json<ApiResponse<null>>(
-      { success: false, error: "Failed to sync QuickBooks data" },
+      { success: false, error: "Failed to sync QuickBooks data: " + (error?.message || "unknown error") },
       { status: 500 }
     );
   }
