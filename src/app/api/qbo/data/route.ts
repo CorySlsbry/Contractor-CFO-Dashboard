@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
 
     const orgId = profile.organization_id;
     const clientCompanyId = request.nextUrl.searchParams.get("clientCompanyId");
+    const locationId = request.nextUrl.searchParams.get("locationId");
 
     // Build query for latest snapshot
     let query = supabase
@@ -65,6 +66,10 @@ export async function GET(request: NextRequest) {
 
     if (clientCompanyId) {
       query = query.eq("client_company_id", clientCompanyId);
+    }
+
+    if (locationId) {
+      query = (query as any).eq("location_id", locationId);
     }
 
     const { data: snapshot, error: snapshotError } = await (query as any).single();

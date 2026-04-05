@@ -16,7 +16,9 @@ import {
   Plug,
   LogOut,
   Brain,
+  MapPin,
 } from 'lucide-react';
+import LocationSelector from '@/components/location-selector';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
@@ -38,6 +40,7 @@ const navItems: NavItem[] = [
   { label: 'Invoices', href: '/dashboard/invoices', icon: FileText },
   { label: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
   { label: 'CFO Advisor', href: '/dashboard/advisor', icon: Brain },
+  { label: 'Locations', href: '/dashboard/locations', icon: MapPin },
   { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -231,6 +234,22 @@ export default function DashboardLayoutClient({
             );
           })}
         </nav>
+
+        {/* Location Selector */}
+        <div className="border-t border-[#2a2a3d] pt-3">
+          {sidebarOpen ? (
+            <>
+              <div className="px-3 pb-1">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#8888a0]">
+                  Location Filter
+                </span>
+              </div>
+              <LocationSelector collapsed={false} />
+            </>
+          ) : (
+            <LocationSelector collapsed={true} />
+          )}
+        </div>
 
         {/* User Profile & Logout */}
         <div className="border-t border-[#2a2a3d] p-3 space-y-2">

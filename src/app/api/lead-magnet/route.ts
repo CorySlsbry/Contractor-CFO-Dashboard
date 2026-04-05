@@ -8,6 +8,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   const downloadUrl = 'https://assets.cdn.filesafe.space/d6snrvwPYgsUbjfj6Dox/media/69cabaf3db6d4f5d3e7554df.pdf';
 
