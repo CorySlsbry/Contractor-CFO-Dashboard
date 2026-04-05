@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import {
   X,
   ChevronDown,
   CalendarDays,
+  Loader2,
 } from 'lucide-react';
 import { formatCurrency, formatPercent, formatDate } from '@/lib/utils';
 
@@ -115,246 +116,6 @@ const reportDefinitions = [
   },
 ];
 
-// Mock data generators
-const generatePLData = () => ({
-  revenues: [
-    { category: 'Construction Services', amount: 320000 },
-    { category: 'Change Orders', amount: 45000 },
-    { category: 'Equipment Rental', amount: 12000 },
-  ],
-  expenses: [
-    { category: 'Labor', amount: 180000 },
-    { category: 'Materials', amount: 95000 },
-    { category: 'Subcontractors', amount: 65000 },
-    { category: 'Equipment & Vehicles', amount: 28000 },
-    { category: 'Insurance', amount: 18000 },
-    { category: 'Utilities & Fuel', amount: 12000 },
-    { category: 'Office & Administrative', amount: 22000 },
-  ],
-  totalRevenue: 377000,
-  totalExpenses: 420000,
-  netIncome: -43000,
-});
-
-const generateBalanceSheetData = () => ({
-  assets: [
-    { category: 'Cash & Equivalents', amount: 245000, subcategories: [] },
-    {
-      category: 'Accounts Receivable',
-      amount: 428000,
-      subcategories: [
-        { name: 'Current (< 30 days)', amount: 245000 },
-        { name: 'Overdue (30-60 days)', amount: 105000 },
-        { name: 'Past Due (> 60 days)', amount: 78000 },
-      ],
-    },
-    { category: 'Inventory', amount: 82000, subcategories: [] },
-    { category: 'Equipment & Vehicles', amount: 385000, subcategories: [] },
-    { category: 'Accumulated Depreciation', amount: -125000, subcategories: [] },
-  ],
-  liabilities: [
-    { category: 'Accounts Payable', amount: 178000, subcategories: [] },
-    { category: 'Short-term Loans', amount: 150000, subcategories: [] },
-    { category: 'Current Portion Long-term Debt', amount: 50000, subcategories: [] },
-    { category: 'Accrued Liabilities', amount: 95000, subcategories: [] },
-  ],
-  equity: [{ category: 'Owner Equity', amount: 742000, subcategories: [] }],
-  totalAssets: 1015000,
-  totalLiabilities: 473000,
-  totalEquity: 542000,
-});
-
-const generateCashFlowData = () => ({
-  operating: [
-    { item: 'Net Income', amount: -43000 },
-    { item: 'Depreciation', amount: 12000 },
-    { item: 'Change in AR', amount: -85000 },
-    { item: 'Change in AP', amount: 32000 },
-    { item: 'Change in Inventory', amount: 8000 },
-  ],
-  investing: [
-    { item: 'Equipment Purchases', amount: -45000 },
-    { item: 'Sale of Assets', amount: 8000 },
-  ],
-  financing: [
-    { item: 'Loan Proceeds', amount: 100000 },
-    { item: 'Loan Repayments', amount: -35000 },
-    { item: 'Owner Distributions', amount: -25000 },
-  ],
-  operatingTotal: -76000,
-  investingTotal: -37000,
-  financingTotal: 40000,
-  netCashFlow: -73000,
-});
-
-const generateARAgingData = () => [
-  {
-    customer: 'ABC Construction Corp',
-    invoice: 'INV-2024-1245',
-    amount: 125000,
-    days: 15,
-    status: 'Current',
-  },
-  {
-    customer: 'XYZ Property Developers',
-    invoice: 'INV-2024-1198',
-    amount: 85000,
-    days: 42,
-    status: 'Overdue',
-  },
-  { customer: 'Metro Builders Inc', invoice: 'INV-2024-1156', amount: 65000, days: 68, status: 'Overdue' },
-  {
-    customer: 'Summit Development',
-    invoice: 'INV-2024-1124',
-    amount: 95000,
-    days: 88,
-    status: 'Past Due',
-  },
-  { customer: 'Westside Contractors', invoice: 'INV-2024-1087', amount: 58000, days: 25, status: 'Current' },
-];
-
-const generateAPAgingData = () => [
-  {
-    vendor: 'Steel Supply Co',
-    invoiceNum: 'AP-18456',
-    amount: 45000,
-    days: 8,
-    status: 'Current',
-  },
-  { vendor: 'Premium Materials LLC', invoiceNum: 'AP-18401', amount: 32000, days: 18, status: 'Current' },
-  { vendor: 'Labor Staffing Solutions', invoiceNum: 'AP-18367', amount: 28000, days: 35, status: 'Overdue' },
-  { vendor: 'Equipment Rental Co', invoiceNum: 'AP-18324', amount: 22000, days: 52, status: 'Overdue' },
-  { vendor: 'Insurance Provider', invoiceNum: 'AP-18289', amount: 51000, days: 78, status: 'Past Due' },
-];
-
-const generateJobCostingData = () => [
-  {
-    jobNumber: 'JOB-2024-001',
-    jobName: 'Downtown Office Complex - Phase 1',
-    laborCost: 145000,
-    materialCost: 187000,
-    overheadCost: 35000,
-    totalCost: 367000,
-    contractAmount: 425000,
-    margin: 58000,
-    percentComplete: 85,
-  },
-  {
-    jobNumber: 'JOB-2024-002',
-    jobName: 'Retail Center Renovation',
-    laborCost: 78000,
-    materialCost: 92000,
-    overheadCost: 18000,
-    totalCost: 188000,
-    contractAmount: 245000,
-    margin: 57000,
-    percentComplete: 62,
-  },
-  {
-    jobNumber: 'JOB-2024-003',
-    jobName: 'Highway Bridge Repair',
-    laborCost: 125000,
-    materialCost: 145000,
-    overheadCost: 32000,
-    totalCost: 302000,
-    contractAmount: 385000,
-    margin: 83000,
-    percentComplete: 48,
-  },
-];
-
-const generateWIPData = () => [
-  {
-    jobNumber: 'JOB-2024-001',
-    jobName: 'Downtown Office Complex - Phase 1',
-    wipInventory: 125000,
-    invoiced: 325000,
-    totalRevenue: 425000,
-    remaining: 100000,
-    billingStatus: 'On Track',
-  },
-  {
-    jobNumber: 'JOB-2024-002',
-    jobName: 'Retail Center Renovation',
-    wipInventory: 82000,
-    invoiced: 145000,
-    totalRevenue: 245000,
-    remaining: 100000,
-    billingStatus: 'Behind',
-  },
-  {
-    jobNumber: 'JOB-2024-003',
-    jobName: 'Highway Bridge Repair',
-    wipInventory: 95000,
-    invoiced: 210000,
-    totalRevenue: 385000,
-    remaining: 175000,
-    billingStatus: 'On Track',
-  },
-];
-
-const generateTaxSummaryData = () => ({
-  taxableIncome: 185000,
-  deductions: [
-    { item: 'Depreciation', amount: 45000 },
-    { item: 'Office Expenses', amount: 18000 },
-    { item: 'Vehicle Expenses', amount: 12000 },
-    { item: 'Meals & Entertainment', amount: 5000 },
-    { item: 'Professional Fees', amount: 8000 },
-  ],
-  totalDeductions: 88000,
-  adjustedIncome: 97000,
-  estimatedFederalTax: 22000,
-  estimatedStateTax: 8500,
-  estimatedSelfEmploymentTax: 13700,
-  totalEstimatedTax: 44200,
-  quarterlyPayments: [
-    { quarter: 'Q1', amount: 11050 },
-    { quarter: 'Q2', amount: 11050 },
-    { quarter: 'Q3', amount: 11050 },
-    { quarter: 'Q4', amount: 11050 },
-  ],
-});
-
-const generateRetainageData = () => [
-  {
-    jobNumber: 'JOB-2024-001',
-    jobName: 'Downtown Office Complex - Phase 1',
-    contractAmount: 425000,
-    retainagePercent: 5,
-    retainageAmount: 21250,
-    dueDate: '2024-06-15',
-    status: 'Pending Completion',
-  },
-  {
-    jobNumber: 'JOB-2024-002',
-    jobName: 'Retail Center Renovation',
-    contractAmount: 245000,
-    retainagePercent: 10,
-    retainageAmount: 24500,
-    dueDate: '2024-08-30',
-    status: 'Pending Completion',
-  },
-  {
-    jobNumber: 'JOB-2023-045',
-    jobName: 'Industrial Warehouse Extension',
-    contractAmount: 185000,
-    retainagePercent: 5,
-    retainageAmount: 9250,
-    dueDate: '2024-03-31',
-    status: 'Final Walkthrough',
-  },
-];
-
-const generateBudgetActualData = () => [
-  { category: 'Labor', budget: 200000, actual: 180000, variance: 20000, variancePercent: 10 },
-  { category: 'Materials', budget: 150000, actual: 145000, variance: 5000, variancePercent: 3.3 },
-  { category: 'Subcontractors', budget: 80000, actual: 95000, variance: -15000, variancePercent: -18.75 },
-  { category: 'Equipment Rental', budget: 35000, actual: 32000, variance: 3000, variancePercent: 8.6 },
-  { category: 'Insurance', budget: 25000, actual: 28000, variance: -3000, variancePercent: -12 },
-  { category: 'Utilities & Fuel', budget: 15000, actual: 14200, variance: 800, variancePercent: 5.3 },
-  { category: 'Office & Admin', budget: 30000, actual: 35000, variance: -5000, variancePercent: -16.7 },
-];
 
 export default function ReportsPage() {
   const [dateRange, setDateRange] = useState<DateRange>('this-month');
@@ -362,6 +123,8 @@ export default function ReportsPage() {
   const [customEndDate, setCustomEndDate] = useState('');
   const [generatedReport, setGeneratedReport] = useState<GeneratedReport | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const getDateRangeLabel = () => {
     const today = new Date();
@@ -402,7 +165,7 @@ export default function ReportsPage() {
     }
   };
 
-  const generateReport = (reportType: ReportType) => {
+  const generateReport = async (reportType: ReportType) => {
     let startDate = '';
     let endDate = '';
 
@@ -441,50 +204,47 @@ export default function ReportsPage() {
         break;
     }
 
-    let reportData: any;
+    setLoading(true);
+    setError(null);
 
-    switch (reportType) {
-      case 'pl':
-        reportData = generatePLData();
-        break;
-      case 'balance-sheet':
-        reportData = generateBalanceSheetData();
-        break;
-      case 'cash-flow':
-        reportData = generateCashFlowData();
-        break;
-      case 'ar-aging':
-        reportData = generateARAgingData();
-        break;
-      case 'ap-aging':
-        reportData = generateAPAgingData();
-        break;
-      case 'job-costing':
-        reportData = generateJobCostingData();
-        break;
-      case 'wip':
-        reportData = generateWIPData();
-        break;
-      case 'tax':
-        reportData = generateTaxSummaryData();
-        break;
-      case 'retainage':
-        reportData = generateRetainageData();
-        break;
-      case 'budget-actual':
-        reportData = generateBudgetActualData();
-        break;
-      default:
-        reportData = {};
+    try {
+      const response = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reportType,
+          startDate,
+          endDate,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate report');
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate report');
+      }
+
+      setGeneratedReport({
+        type: reportType,
+        dateRange,
+        startDate,
+        endDate,
+        data: result.data,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      setError(errorMessage);
+      console.error('Report generation error:', err);
+    } finally {
+      setLoading(false);
     }
-
-    setGeneratedReport({
-      type: reportType,
-      dateRange,
-      startDate,
-      endDate,
-      data: reportData,
-    });
   };
 
   const handleExport = (format: 'pdf' | 'csv') => {
@@ -502,6 +262,25 @@ export default function ReportsPage() {
         <h1 className="text-3xl font-bold mb-1 text-[#e8e8f0]">Reports</h1>
         <p className="text-[#8888a0]">Generate and view financial reports for your construction business</p>
       </div>
+
+      {/* Error State */}
+      {error && (
+        <Card className="p-4 bg-[#7f1d1d]/20 border-[#dc2626]">
+          <div className="flex items-center gap-3">
+            <AlertCircle size={20} className="text-[#dc2626]" />
+            <div>
+              <p className="text-sm font-semibold text-[#fca5a5]">Error generating report</p>
+              <p className="text-sm text-[#fecaca]">{error}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="ml-auto text-[#fca5a5] hover:text-[#fecaca]"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </Card>
+      )}
 
       {/* Date Range Selector */}
       <Card className="p-6 bg-[#12121a] border-[#2a2a3d]">
@@ -606,11 +385,19 @@ export default function ReportsPage() {
 
               <Button
                 onClick={() => generateReport(report.type)}
+                disabled={loading}
                 variant="primary"
                 size="sm"
-                className="w-full"
+                className="w-full flex items-center justify-center gap-2"
               >
-                Generate Report
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Generating...</span>
+                  </>
+                ) : (
+                  'Generate Report'
+                )}
               </Button>
             </Card>
           );
@@ -1035,6 +822,16 @@ function sortByAgingPriority(items: any[]) {
 }
 
 function ARAgingContent({ data }: { data: any[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-8 text-center">
+        <Clock size={48} className="mx-auto mb-4 text-[#22c55e]" />
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Outstanding Invoices</h3>
+        <p className="text-[#8888a0]">All invoices are paid. Great job on collections!</p>
+      </div>
+    );
+  }
+
   const sorted = sortByAgingPriority(data);
   const totalAR = data.reduce((sum, item) => sum + item.amount, 0);
   const currentAR = data.filter((item) => item.status === 'Current').reduce((sum, item) => sum + item.amount, 0);
@@ -1102,6 +899,16 @@ function ARAgingContent({ data }: { data: any[] }) {
 }
 
 function APAgingContent({ data }: { data: any[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-8 text-center">
+        <AlertCircle size={48} className="mx-auto mb-4 text-[#22c55e]" />
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Outstanding Bills</h3>
+        <p className="text-[#8888a0]">All bills are paid. You're current with all vendors.</p>
+      </div>
+    );
+  }
+
   const sorted = sortByAgingPriority(data);
   const totalAP = data.reduce((sum, item) => sum + item.amount, 0);
   const currentAP = data.filter((item) => item.status === 'Current').reduce((sum, item) => sum + item.amount, 0);
@@ -1169,6 +976,16 @@ function APAgingContent({ data }: { data: any[] }) {
 }
 
 function JobCostingContent({ data }: { data: any[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-8 text-center">
+        <Briefcase size={48} className="mx-auto mb-4 text-[#8888a0]" />
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Job Costing Data</h3>
+        <p className="text-[#8888a0]">Connect a project management integration (Procore, Buildertrend) to see job costing data.</p>
+      </div>
+    );
+  }
+
   const totalContractAmount = data.reduce((sum, item) => sum + item.contractAmount, 0);
   const totalCost = data.reduce((sum, item) => sum + item.totalCost, 0);
   const totalMargin = data.reduce((sum, item) => sum + item.margin, 0);
@@ -1236,6 +1053,16 @@ function JobCostingContent({ data }: { data: any[] }) {
 }
 
 function WIPContent({ data }: { data: any[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-8 text-center">
+        <Target size={48} className="mx-auto mb-4 text-[#8888a0]" />
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No WIP Data</h3>
+        <p className="text-[#8888a0]">Connect a project management integration (Procore, Buildertrend) to see work-in-progress data.</p>
+      </div>
+    );
+  }
+
   const totalWIP = data.reduce((sum, item) => sum + item.wipInventory, 0);
   const totalInvoiced = data.reduce((sum, item) => sum + item.invoiced, 0);
   const totalRevenue = data.reduce((sum, item) => sum + item.totalRevenue, 0);
@@ -1388,6 +1215,16 @@ function TaxContent({ data }: { data: any }) {
 }
 
 function RetainageContent({ data }: { data: any[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-8 text-center">
+        <PieChart size={48} className="mx-auto mb-4 text-[#8888a0]" />
+        <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">No Retainage Data</h3>
+        <p className="text-[#8888a0]">Connect a project management integration (Procore, Buildertrend) to see retainage data.</p>
+      </div>
+    );
+  }
+
   const totalRetainage = data.reduce((sum, item) => sum + item.retainageAmount, 0);
 
   return (
