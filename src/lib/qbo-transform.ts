@@ -279,14 +279,16 @@ export function transformInvoices(qboData: {
 
   if (qboData.QueryResponse?.Invoice) {
     for (const qboInvoice of qboData.QueryResponse.Invoice) {
-      const daysOverdue = calculateDaysOverdue(qboInvoice.DueDate);
+      if (!qboInvoice?.Id) continue;
+      const dueDate = qboInvoice.DueDate || qboInvoice.TxnDate || new Date().toISOString().split("T")[0];
+      const daysOverdue = calculateDaysOverdue(dueDate);
 
       invoices.push({
         id: qboInvoice.Id,
-        invoice_number: qboInvoice.DocNumber,
+        invoice_number: qboInvoice.DocNumber || "",
         customer_name: qboInvoice.CustomerRef?.name || "Unknown",
         amount: qboInvoice.TotalAmt || 0,
-        due_date: qboInvoice.DueDate,
+        due_date: dueDate,
         status: getInvoiceStatus(qboInvoice),
         days_overdue: daysOverdue,
       });
@@ -322,11 +324,16 @@ export function transformCashFlow(
         monthlyData.set(monthKey, monthEntry);
       }
 
+      if (!entry.Line) continue;
       for (const line of entry.Line) {
-        const amount = Math.abs(line.Amount);
+        if (!line.AccountRef?.name) continue;
+        const amount = Math.abs(line.Amount || 0);
+        const acctName = line.AccountRef.name.toLowerCase();
         if (
-          line.AccountRef.name.toLowerCase().includes("bank") ||
-          line.AccountRef.name.toLowerCase().includes("cash")
+          acctName.includes("bank") ||
+          acctName.includes("cash") ||
+          acctName.includes("checking") ||
+          acctName.includes("savings")
         ) {
           if (line.Amount > 0) {
             monthEntry.inflow += amount;
