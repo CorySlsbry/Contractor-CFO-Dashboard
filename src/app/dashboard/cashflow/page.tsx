@@ -1,108 +1,61 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CashFlowChart } from '@/components/charts/cashflow-chart';
-import { AlertCircle, TrendingUp } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { formatCompactCurrency } from '@/lib/utils';
 import Link from 'next/link';
-
-interface Bill {
-  id: string;
-  vendor_name: string;
-  amount: number;
-  due_date: string;
-}
-
-interface Invoice {
-  id: string;
-  customer_name: string;
-  amount: number;
-  due_date: string;
-}
-
-interface CashFlowData {
-  success: boolean;
-  data: {
-    snapshot_data: {
-      accounts_receivable: { total: number; invoices: Invoice[] };
-      accounts_payable: { total: number; bills: Bill[] };
-      cash_flow: { operating: number; investing: number; financing: number };
-    };
-  };
-}
-
-interface Payment {
-  id: string;
-  vendor: string;
-  amount: number;
-  dueDate: string;
-  status: 'Due Soon' | 'Overdue' | 'Scheduled';
-}
-
-interface Receivable {
-  id: string;
-  customer: string;
-  amount: number;
-  expectedDate: string;
-  status: 'Expected' | 'At Risk';
-}
+import type { DashboardData, CashFlowData, Invoice } from '@/types';
 
 export default function CashFlowPage() {
   const [loading, setLoading] = useState(true);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [receivables, setReceivables] = useState<Receivable[]>([]);
+  const [cashFlow, setCashFlow] = useState<CashFlowData[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [hasData, setHasData] = useState(false);
 
-  useEffect(() => {
-    const fetchCashFlowData = async () => {
-      try {
-        const response = await fetch('/api/qbo/data');
-        const data: CashFlowData = await response.json();
+  const fetchData = useCallback(async (clientId?: string | null) => {
+    try {
+      setLoading(true);
+      const params = clientId ? `?clientCompanyId=${clientId}` : '';
+      const response = await fetch(`/api/qbo/data${params}`);
+      const result = await response.json();
 
-        if (data.success && data.data?.snapshot_data) {
-          const { accounts_payable, accounts_receivable } = data.data.snapshot_data;
-
-          // Transform bills to payments
-          if (accounts_payable.bills && accounts_payable.bills.length > 0) {
-            const transformedPayments: Payment[] = accounts_payable.bills.map((bill) => ({
-              id: bill.id,
-              vendor: bill.vendor_name || 'Unknown Vendor',
-              amount: bill.amount || 0,
-              dueDate: bill.due_date || '',
-              status: 'Scheduled' as const,
-            }));
-            setPayments(transformedPayments);
-          }
-
-          // Transform invoices to receivables
-          if (accounts_receivable.invoices && accounts_receivable.invoices.length > 0) {
-            const transformedReceivables: Receivable[] = accounts_receivable.invoices.map((invoice) => ({
-              id: invoice.id,
-              customer: invoice.customer_name || 'Unknown Customer',
-              amount: invoice.amount || 0,
-              expectedDate: invoice.due_date || '',
-              status: 'Expected' as const,
-            }));
-            setReceivables(transformedReceivables);
-          }
-
-          setHasData(
-            (accounts_payable.bills && accounts_payable.bills.length > 0) ||
-            (accounts_receivable.invoices && accounts_receivable.invoices.length > 0)
-          );
-        }
-      } catch (error) {
-        console.error('Error fetching cash flow data:', error);
+      if (result.success && result.data) {
+        const data: DashboardData = result.data;
+        setCashFlow(data.cash_flow || []);
+        setInvoices(data.invoices || []);
+        setHasData(
+          (data.cash_flow && data.cash_flow.length > 0) ||
+          (data.invoices && data.invoices.length > 0)
+        );
+      } else {
         setHasData(false);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    fetchCashFlowData();
+    } catch (error) {
+      console.error('Error fetching cash flow data:', error);
+      setHasData(false);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    // Read selected client from localStorage
+    const stored = typeof window !== 'undefined'
+      ? window.localStorage?.getItem?.('selectedClientId')
+      : null;
+    fetchData(stored);
+
+    // Listen for client switches
+    const handleClientChanged = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      fetchData(detail?.clientId);
+    };
+    window.addEventListener('clientChanged', handleClientChanged);
+    return () => window.removeEventListener('clientChanged', handleClientChanged);
+  }, [fetchData]);
 
   if (loading) {
     return (
@@ -122,7 +75,7 @@ export default function CashFlowPage() {
               No Cash Flow Data
             </h2>
             <p className="text-[#8888a0] mb-6">
-              Connect QuickBooks to see your cash flow data
+              Connect QuickBooks and sync to see your cash flow data
             </p>
             <Link
               href="/dashboard/integrations"
@@ -136,160 +89,110 @@ export default function CashFlowPage() {
     );
   }
 
-  const totalUpcomingPayments = payments.reduce((sum, p) => sum + p.amount, 0);
-  const totalUpcomingReceivables = receivables.reduce((sum, r) => sum + r.amount, 0);
+  // Map cash_flow data to chart format (chart expects inflows/outflows plural + isForecast)
+  const chartData = cashFlow.map((cf) => ({
+    month: cf.month,
+    inflows: cf.inflow,
+    outflows: cf.outflow,
+    net: cf.net,
+    isForecast: false,
+  }));
+
+  // Calculate totals
+  const totalInflows = cashFlow.reduce((sum, cf) => sum + cf.inflow, 0);
+  const totalOutflows = cashFlow.reduce((sum, cf) => sum + cf.outflow, 0);
+  const netCashFlow = totalInflows - totalOutflows;
+
+  // Outstanding invoices (unpaid)
+  const outstandingInvoices = invoices.filter(
+    (inv) => inv.status !== 'paid'
+  );
+  const totalReceivable = outstandingInvoices.reduce(
+    (sum, inv) => sum + inv.amount,
+    0
+  );
 
   return (
     <div className="space-y-6">
-      {/* Hero Card - Current Cash Position */}
-      <Card className="p-8 bg-gradient-to-br from-[#6366f1]/10 to-[#1a1a26] border-[#6366f1]/20">
-        <p className="text-[#8888a0] text-sm mb-2">Upcoming Receivables vs Payments</p>
-        <div className="grid grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-[#8888a0] text-sm mb-2">Expected Inflows</h3>
-            <p className="text-4xl font-bold text-[#22c55e]">
-              {formatCompactCurrency(totalUpcomingReceivables)}
-            </p>
-          </div>
-          <div>
-            <h3 className="text-[#8888a0] text-sm mb-2">Upcoming Outflows</h3>
-            <p className="text-4xl font-bold text-[#ef4444]">
-              {formatCompactCurrency(totalUpcomingPayments)}
-            </p>
-          </div>
-        </div>
-      </Card>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="p-6 bg-gradient-to-br from-[#22c55e]/10 to-[#1a1a26] border-[#22c55e]/20">
+          <p className="text-[#8888a0] text-sm mb-1">Total Revenue (12 mo)</p>
+          <p className="text-3xl font-bold text-[#22c55e]">
+            {formatCompactCurrency(totalInflows)}
+          </p>
+        </Card>
+        <Card className="p-6 bg-gradient-to-br from-[#ef4444]/10 to-[#1a1a26] border-[#ef4444]/20">
+          <p className="text-[#8888a0] text-sm mb-1">Total Expenses (12 mo)</p>
+          <p className="text-3xl font-bold text-[#ef4444]">
+            {formatCompactCurrency(totalOutflows)}
+          </p>
+        </Card>
+        <Card className="p-6 bg-gradient-to-br from-[#6366f1]/10 to-[#1a1a26] border-[#6366f1]/20">
+          <p className="text-[#8888a0] text-sm mb-1">Net Cash Flow</p>
+          <p className={`text-3xl font-bold ${netCashFlow >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
+            {formatCompactCurrency(netCashFlow)}
+          </p>
+        </Card>
+      </div>
 
       {/* Cash Flow Chart */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Cash Flow</h2>
-        <CashFlowChart data={undefined} />
+        <h2 className="text-lg font-semibold mb-4">Monthly Cash Flow</h2>
+        <CashFlowChart data={chartData} />
       </Card>
 
-      {/* Upcoming Payments & Receivables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Upcoming Payments */}
+      {/* Outstanding Receivables */}
+      {outstandingInvoices.length > 0 && (
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Upcoming Payments</h2>
-            <span className="text-sm font-bold text-[#ef4444]">
-              {formatCompactCurrency(totalUpcomingPayments)} total
-            </span>
-          </div>
-
-          {payments.length === 0 ? (
-            <p className="text-[#8888a0] text-center py-8">No upcoming payments</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[#2a2a3d]">
-                    <th className="text-left py-2 px-2 text-[#8888a0] font-medium">
-                      Vendor
-                    </th>
-                    <th className="text-right py-2 px-2 text-[#8888a0] font-medium">
-                      Amount
-                    </th>
-                    <th className="text-right py-2 px-2 text-[#8888a0] font-medium">
-                      Due
-                    </th>
-                    <th className="text-right py-2 px-2 text-[#8888a0] font-medium">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payments.map((payment) => (
-                    <tr
-                      key={payment.id}
-                      className="border-b border-[#2a2a3d] hover:bg-[#1a1a26] transition-colors"
-                    >
-                      <td className="py-3 px-2 text-[#e8e8f0] truncate">
-                        {payment.vendor}
-                      </td>
-                      <td className="py-3 px-2 text-right text-[#e8e8f0] font-semibold">
-                        {formatCompactCurrency(payment.amount)}
-                      </td>
-                      <td className="py-3 px-2 text-right text-[#8888a0]">
-                        {payment.dueDate
-                          ? new Date(payment.dueDate).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          : '—'}
-                      </td>
-                      <td className="py-3 px-2 text-right">
-                        <Badge variant="info">{payment.status}</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>
-
-        {/* Upcoming Receivables */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Upcoming Receivables</h2>
+            <h2 className="text-lg font-semibold">Outstanding Receivables</h2>
             <span className="text-sm font-bold text-[#22c55e]">
-              {formatCompactCurrency(totalUpcomingReceivables)} total
+              {formatCompactCurrency(totalReceivable)} total
             </span>
           </div>
-
-          {receivables.length === 0 ? (
-            <p className="text-[#8888a0] text-center py-8">No upcoming receivables</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[#2a2a3d]">
-                    <th className="text-left py-2 px-2 text-[#8888a0] font-medium">
-                      Customer
-                    </th>
-                    <th className="text-right py-2 px-2 text-[#8888a0] font-medium">
-                      Amount
-                    </th>
-                    <th className="text-right py-2 px-2 text-[#8888a0] font-medium">
-                      Expected
-                    </th>
-                    <th className="text-right py-2 px-2 text-[#8888a0] font-medium">
-                      Status
-                    </th>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[#2a2a3d]">
+                  <th className="text-left py-2 px-2 text-[#8888a0] font-medium">Customer</th>
+                  <th className="text-right py-2 px-2 text-[#8888a0] font-medium">Amount</th>
+                  <th className="text-right py-2 px-2 text-[#8888a0] font-medium">Due</th>
+                  <th className="text-right py-2 px-2 text-[#8888a0] font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {outstandingInvoices.map((inv) => (
+                  <tr
+                    key={inv.id}
+                    className="border-b border-[#2a2a3d] hover:bg-[#1a1a26] transition-colors"
+                  >
+                    <td className="py-3 px-2 text-[#e8e8f0] truncate">
+                      {inv.customer_name}
+                    </td>
+                    <td className="py-3 px-2 text-right text-[#e8e8f0] font-semibold">
+                      {formatCompactCurrency(inv.amount)}
+                    </td>
+                    <td className="py-3 px-2 text-right text-[#8888a0]">
+                      {inv.due_date
+                        ? new Date(inv.due_date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          })
+                        : '—'}
+                    </td>
+                    <td className="py-3 px-2 text-right">
+                      <Badge variant={inv.status === 'overdue' ? 'destructive' : 'info'}>
+                        {inv.status}
+                      </Badge>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {receivables.map((receivable) => (
-                    <tr
-                      key={receivable.id}
-                      className="border-b border-[#2a2a3d] hover:bg-[#1a1a26] transition-colors"
-                    >
-                      <td className="py-3 px-2 text-[#e8e8f0] truncate">
-                        {receivable.customer}
-                      </td>
-                      <td className="py-3 px-2 text-right text-[#e8e8f0] font-semibold">
-                        {formatCompactCurrency(receivable.amount)}
-                      </td>
-                      <td className="py-3 px-2 text-right text-[#8888a0]">
-                        {receivable.expectedDate
-                          ? new Date(receivable.expectedDate).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          : '—'}
-                      </td>
-                      <td className="py-3 px-2 text-right">
-                        <Badge variant="success">{receivable.status}</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
-      </div>
+      )}
     </div>
   );
 }
