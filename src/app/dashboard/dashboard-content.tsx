@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { CashFlowChart } from '@/components/charts/cashflow-chart';
 import { DollarSign, TrendingUp, AlertCircle, Loader2, Link as LinkIcon, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { formatCompactCurrency } from '@/lib/utils';
@@ -348,19 +348,15 @@ export default function DashboardContent() {
               {cashFlowData.length > 0 && (
                 <Card className="bg-gray-800 border-gray-700 p-6">
                   <h3 className="text-lg font-semibold text-white mb-4">Cash Flow</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={cashFlowData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#404050" />
-                      <XAxis dataKey="month" stroke="#888" />
-                      <YAxis stroke="#888" />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: '#2a2a3d', border: '1px solid #404050' }}
-                        formatter={(value) => formatCompactCurrency(Number(value))}
-                      />
-                      <Bar dataKey="inflow" fill="#22c55e" name="Inflow" />
-                      <Bar dataKey="outflow" fill="#ef4444" name="Outflow" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <CashFlowChart
+                    data={cashFlowData.map((cf) => ({
+                      month: cf.month,
+                      inflows: cf.inflow,
+                      outflows: cf.outflow,
+                      net: cf.net,
+                      isForecast: false,
+                    }))}
+                  />
                 </Card>
               )}
             </>
@@ -474,20 +470,15 @@ export default function DashboardContent() {
           ) : (
             <Card className="bg-gray-800 border-gray-700 p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Monthly Cash Flow</h3>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={cashFlowData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#404050" />
-                  <XAxis dataKey="month" stroke="#888" />
-                  <YAxis stroke="#888" />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#2a2a3d', border: '1px solid #404050' }}
-                    formatter={(value) => formatCompactCurrency(Number(value))}
-                  />
-                  <Bar dataKey="inflow" fill="#22c55e" name="Inflow" />
-                  <Bar dataKey="outflow" fill="#ef4444" name="Outflow" />
-                  <Bar dataKey="net" fill="#6366f1" name="Net" />
-                </BarChart>
-              </ResponsiveContainer>
+              <CashFlowChart
+                data={cashFlowData.map((cf) => ({
+                  month: cf.month,
+                  inflows: cf.inflow,
+                  outflows: cf.outflow,
+                  net: cf.net,
+                  isForecast: false,
+                }))}
+              />
             </Card>
           )}
         </div>

@@ -84,11 +84,45 @@ function extractAmount(value: string | number | undefined): number {
 }
 
 /**
+ * Normalizes QBO Rows structure — the API sometimes returns Rows as an array
+ * directly or as { Row: [...] }
+ */
+function getRows(data: any): QBOReportRow[] {
+  if (!data?.Rows) return [];
+  // Standard format: { Rows: { Row: [...] } }
+  if (data.Rows.Row && Array.isArray(data.Rows.Row)) return data.Rows.Row;
+  // Flattened format: { Rows: [...] }
+  if (Array.isArray(data.Rows)) return data.Rows;
+  return [];
+}
+
+/**
+ * Gets ColData array from Summary — handles both { ColData: [...] } and direct array
+ */
+function getSummaryColData(row: QBOReportRow): Array<{ value: string }> {
+  if (!row.Summary) return [];
+  if ((row.Summary as any).ColData) return (row.Summary as any).ColData;
+  if (Array.isArray(row.Summary)) return row.Summary as any;
+  return [];
+}
+
+/**
+ * Gets ColData array from Header — handles both { ColData: [...] } and direct array
+ */
+function getHeaderColData(row: QBOReportRow): Array<{ value: string }> {
+  if (!row.Header) return [];
+  if ((row.Header as any).ColData) return (row.Header as any).ColData;
+  if (Array.isArray(row.Header)) return row.Header as any;
+  return [];
+}
+
+/**
  * Extracts the summary total from a QBO Report section row
  */
 function getSectionTotal(row: QBOReportRow): number {
-  if (row.Summary?.ColData && row.Summary.ColData.length >= 2) {
-    return extractAmount(row.Summary.ColData[row.Summary.ColData.length - 1].value);
+  const summaryData = getSummaryColData(row);
+  if (summaryData.length >= 2) {
+    return extractAmount(summaryData[summaryData.length - 1].value);
   }
   // Fallback: single-row sections may have ColData directly
   if (row.ColData && row.ColData.length >= 2) {
@@ -112,11 +146,13 @@ export function transformProfitAndLoss(
   let revenue = 0;
   let expenses = 0;
 
-  // New format: Rows > Row[] with type="Section" and group names
-  if (qboData.Rows?.Row) {
-    for (const row of qboData.Rows.Row) {
+  // Parse Rows (handles both { Row: [...] } and direct array formats)
+  const rows = getRows(qboData);
+  if (rows.length > 0) {
+    for (const row of rows) {
       const group = (row.group || "").toLowerCase();
-      const headerLabel = (row.Header?.ColData?.[0]?.value || "").toLowerCase();
+      const headerData = getHeaderColData(row);
+      const headerLabel = (headerData[0]?.value || "").toLowerCase();
       const label = group || headerLabel;
 
       if (label.includes("income") || label.includes("revenue")) {
@@ -174,30 +210,32 @@ export function transformBalanceSheet(
   let totalLiabilities = 0;
   let equity = 0;
 
-  // New format: Rows > Row[] with type="Section"
-  if (qboData.Rows?.Row) {
-    for (const row of qboData.Rows.Row) {
+  // Parse Rows (handles both formats)
+  const bsRows = getRows(qboData);
+  if (bsRows.length > 0) {
+    for (const row of bsRows) {
       const group = (row.group || "").toLowerCase();
-      const headerLabel = (row.Header?.ColData?.[0]?.value || "").toLowerCase();
+      const headerData = getHeaderColData(row);
+      const headerLabel = (headerData[0]?.value || "").toLowerCase();
       const label = group || headerLabel;
       const amount = getSectionTotal(row);
 
       if (label.includes("asset")) {
         totalAssets += amount;
         // Look inside sub-rows for bank/cash accounts
-        if (row.Rows?.Row) {
-          for (const subRow of row.Rows.Row) {
-            const subGroup = (subRow.group || "").toLowerCase();
-            const subHeader = (subRow.Header?.ColData?.[0]?.value || "").toLowerCase();
-            const subLabel = subGroup || subHeader;
-            if (
-              subLabel.includes("bank") ||
-              subLabel.includes("cash") ||
-              subLabel.includes("checking") ||
-              subLabel.includes("savings")
-            ) {
-              cashBalance += getSectionTotal(subRow);
-            }
+        const subRows = row.Rows?.Row || (Array.isArray(row.Rows) ? row.Rows : []);
+        for (const subRow of subRows) {
+          const subGroup = ((subRow as QBOReportRow).group || "").toLowerCase();
+          const subHeaderData = getHeaderColData(subRow as QBOReportRow);
+          const subHeader = (subHeaderData[0]?.value || "").toLowerCase();
+          const subLabel = subGroup || subHeader;
+          if (
+            subLabel.includes("bank") ||
+            subLabel.includes("cash") ||
+            subLabel.includes("checking") ||
+            subLabel.includes("savings")
+          ) {
+            cashBalance += getSectionTotal(subRow as QBOReportRow);
           }
         }
         // If no sub-rows matched cash, check if the whole asset section is cash-like

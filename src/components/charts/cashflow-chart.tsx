@@ -18,21 +18,23 @@ export const CashFlowChart = ({ data }: CashFlowChartProps) => {
 
   return (
     <div className="w-full h-full">
-      {/* Overlapping bar chart — same style as original */}
-      <div className="flex items-end gap-2 sm:gap-3" style={{ height: 340, padding: '20px 16px 0' }}>
+      {/* Overlapping bar chart */}
+      <div className="flex items-end gap-3 sm:gap-4" style={{ height: 340, padding: '20px 16px 0' }}>
         {data.map((d) => {
-          const inflowPct = (d.inflows / maxValue) * 100;
-          const outflowPct = (d.outflows / maxValue) * 100;
+          const inflowPct = maxValue > 0 ? (d.inflows / maxValue) * 100 : 0;
+          const outflowPct = maxValue > 0 ? (d.outflows / maxValue) * 100 : 0;
           const isPositive = d.inflows >= d.outflows;
           const forecastOpacity = d.isForecast ? 0.55 : 1;
 
           return (
             <div key={d.month} className="flex-1 flex flex-col items-center gap-1.5 group relative">
               <div className="w-full relative flex items-end justify-center" style={{ height: 280 }}>
-                {/* Taller bar (behind) */}
+                {/* Taller bar (behind) — 50% width via inset */}
                 <div
-                  className="absolute bottom-0 left-0.5 right-0.5 rounded-t-md transition-all"
+                  className="absolute bottom-0 rounded-t-md transition-all"
                   style={{
+                    left: '25%',
+                    right: '25%',
                     height: `${Math.max(inflowPct, outflowPct)}%`,
                     backgroundColor: isPositive ? '#14532d' : '#7f1d1d',
                     border: `1.5px solid ${isPositive ? '#4ade80' : '#f87171'}`,
@@ -40,10 +42,12 @@ export const CashFlowChart = ({ data }: CashFlowChartProps) => {
                     opacity: forecastOpacity,
                   }}
                 />
-                {/* Shorter bar (in front, overlapping) */}
+                {/* Shorter bar (in front, overlapping) — 50% width via inset */}
                 <div
-                  className="absolute bottom-0 left-0.5 right-0.5 rounded-t-sm transition-all"
+                  className="absolute bottom-0 rounded-t-sm transition-all"
                   style={{
+                    left: '25%',
+                    right: '25%',
                     height: `${Math.min(inflowPct, outflowPct)}%`,
                     backgroundColor: isPositive ? '#7f1d1d' : '#14532d',
                     border: `1.5px solid ${isPositive ? '#f87171' : '#4ade80'}`,
@@ -100,9 +104,6 @@ export const CashFlowChart = ({ data }: CashFlowChartProps) => {
             <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#7f1d1d', border: '1.5px solid #f87171' }} />
             <span className="text-xs" style={{ color: '#b0b0c8' }}>Cash Out</span>
           </div>
-          <span className="text-xs" style={{ color: '#8888a0', opacity: 0.7 }}>
-            Months with * = 3-month forecast
-          </span>
         </div>
       </div>
     </div>
