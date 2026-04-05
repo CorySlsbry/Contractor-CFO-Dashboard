@@ -53,12 +53,11 @@ export default function LocationSelector({ collapsed = false }: Props) {
             ? window.localStorage?.getItem?.(LOCATION_STORAGE_KEY)
             : null;
           const valid = stored && json.data.some((l: Location) => l.id === stored);
-          // Default: restore stored selection, else pick the default location
+          // Restore stored selection; null means "All Locations" (no filter)
           if (valid) {
             setSelectedId(stored);
           } else {
-            const defaultLoc = (json.data as Location[]).find((l) => l.is_default);
-            setSelectedId(defaultLoc?.id ?? json.data[0].id);
+            setSelectedId(null);
           }
         }
       } catch (e) {
@@ -150,6 +149,18 @@ function LocationDropdown({
       className={`absolute z-50 w-56 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg shadow-xl py-1 max-h-72 overflow-y-auto ${className}`}
       onClick={(e) => e.stopPropagation()}
     >
+      {/* "All Locations" clears the filter */}
+      <button
+        onClick={() => onSelect(null)}
+        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+          selectedId === null
+            ? 'bg-[#6366f1]/20 text-[#6366f1]'
+            : 'text-[#e8e8f0] hover:bg-[#2a2a3d]'
+        }`}
+      >
+        <div className="font-medium">All Locations</div>
+      </button>
+      <div className="border-t border-[#2a2a3d] my-1" />
       {roots.map((loc) => (
         <div key={loc.id}>
           <LocationOption
