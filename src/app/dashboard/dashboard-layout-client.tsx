@@ -1,7 +1,7 @@
 'use client';
 
 import { Inter } from 'next/font/google';
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, useCallback, ReactNode } from 'react';
 import {
   LayoutDashboard,
   Hammer,
@@ -16,19 +16,12 @@ import {
   Plug,
   LogOut,
   Brain,
-  Sparkles,
-  BookOpen,
-  MessageSquare,
-  Send,
-  X as XIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/button';
 import { getInitials } from '@/lib/utils';
-import { ChartThemeProvider, useChartTheme } from '@/components/chart-theme-provider';
-import ChartThemePicker from '@/components/chart-theme-picker';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -45,8 +38,6 @@ const navItems: NavItem[] = [
   { label: 'Invoices', href: '/dashboard/invoices', icon: FileText },
   { label: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
   { label: 'CFO Advisor', href: '/dashboard/advisor', icon: Brain },
-  { label: 'AI Toolkit', href: '/dashboard/toolkit', icon: Sparkles },
-  { label: 'NAHB Accounts', href: '/dashboard/nahb-accounts', icon: BookOpen },
   { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -58,17 +49,42 @@ export default function DashboardLayoutClient({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [feedbackText, setFeedbackText] = useState('');
-  const [feedbackSending, setFeedbackSending] = useState(false);
-  const [feedbackSent, setFeedbackSent] = useState(false);
   const [userProfile, setUserProfile] = useState<{
     fullName: string;
     companyName: string;
     initials: string;
   }>({ fullName: '', companyName: '', initials: '?' });
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+
+  const formatTimeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days} day${days === 1 ? '' : 's'} ago`;
+  };
+
+  const handleSync = useCallback(async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch('/api/qbo/sync', { method: 'POST' });
+      if (res.ok) {
+        setLastSyncTime(new Date().toISOString());
+        // Reload the page so dashboard-content picks up new data
+        router.refresh();
+      }
+    } catch (e) {
+      console.error('Sync failed:', e);
+    } finally {
+      setSyncing(false);
+    }
+  }, [router]);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -95,6 +111,20 @@ export default function DashboardLayoutClient({
       }
     };
     fetchProfile();
+
+    // Load last sync time from latest snapshot
+    const fetchLastSync = async () => {
+      const { data } = await supabase
+        .from('dashboard_snapshots')
+        .select('pulled_at')
+        .order('pulled_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (data?.pulled_at) {
+        setLastSyncTime(data.pulled_at);
+      }
+    };
+    fetchLastSync();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close mobile menu on route change
@@ -107,37 +137,6 @@ export default function DashboardLayoutClient({
     window.location.href = '/';
   };
 
-  const handleFeedbackSubmit = async () => {
-    if (!feedbackText.trim()) return;
-    setFeedbackSending(true);
-    try {
-      await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: feedbackText,
-          userName: userProfile.fullName,
-          companyName: userProfile.companyName,
-        }),
-      });
-      setFeedbackSent(true);
-      setFeedbackText('');
-      setTimeout(() => {
-        setFeedbackOpen(false);
-        setFeedbackSent(false);
-      }, 2000);
-    } catch {
-      // Still close gracefully
-      setFeedbackSent(true);
-      setTimeout(() => {
-        setFeedbackOpen(false);
-        setFeedbackSent(false);
-      }, 2000);
-    } finally {
-      setFeedbackSending(false);
-    }
-  };
-
   const isActive = (href: string) => {
     if (href === '/dashboard') {
       return pathname === '/dashboard' || pathname === '/dashboard/';
@@ -148,55 +147,24 @@ export default function DashboardLayoutClient({
   const sidebarOpen = !sidebarCollapsed;
 
   return (
-    <ChartThemeProvider>
-    <DashboardThemedShell inter={inter} sidebarOpen={sidebarOpen} setSidebarCollapsed={setSidebarCollapsed} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} feedbackOpen={feedbackOpen} setFeedbackOpen={setFeedbackOpen} feedbackText={feedbackText} setFeedbackText={setFeedbackText} feedbackSending={feedbackSending} feedbackSent={feedbackSent} handleFeedbackSubmit={handleFeedbackSubmit} handleLogout={handleLogout} isActive={isActive} userProfile={userProfile}>
-      {children}
-    </DashboardThemedShell>
-    </ChartThemeProvider>
-  );
-}
-
-// Inner component that can use useChartTheme since it's inside ChartThemeProvider
-function DashboardThemedShell({
-  children, inter, sidebarOpen, setSidebarCollapsed, mobileMenuOpen, setMobileMenuOpen,
-  feedbackOpen, setFeedbackOpen, feedbackText, setFeedbackText, feedbackSending, feedbackSent,
-  handleFeedbackSubmit, handleLogout, isActive, userProfile,
-}: {
-  children: ReactNode; inter: any; sidebarOpen: boolean; setSidebarCollapsed: (v: boolean) => void;
-  mobileMenuOpen: boolean; setMobileMenuOpen: (v: boolean) => void;
-  feedbackOpen: boolean; setFeedbackOpen: (v: boolean) => void;
-  feedbackText: string; setFeedbackText: (v: string) => void;
-  feedbackSending: boolean; feedbackSent: boolean;
-  handleFeedbackSubmit: () => void; handleLogout: () => void;
-  isActive: (href: string) => boolean | undefined;
-  userProfile: { fullName: string; companyName: string; initials: string };
-}) {
-  const { theme } = useChartTheme();
-  const ds = theme.dashboard;
-  const tc = theme.colors;
-
-  return (
-    <>
-    <div style={{ ...inter.style, backgroundColor: ds.pageBg, color: ds.textPrimary }} className="min-h-screen flex">
+    <div style={inter.style} className="bg-[#0a0a0f] text-[#e8e8f0] min-h-screen flex">
       {/* Desktop Sidebar — hidden on mobile */}
       <div
         className={`hidden lg:flex fixed inset-y-0 left-0 z-40 transition-all duration-300 flex-col ${
           sidebarOpen ? 'w-64' : 'w-20'
-        }`}
-        style={{ backgroundColor: ds.cardBg, borderRight: `1px solid ${ds.cardBorder}` }}
+        } bg-[#12121a] border-r border-[#2a2a3d]`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-center px-4 cursor-pointer"
-          style={{ borderBottom: `1px solid ${ds.divider}` }}
-          onClick={() => setSidebarCollapsed(!sidebarOpen)}
+        <div className="h-16 border-b border-[#2a2a3d] flex items-center justify-center px-4 cursor-pointer"
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
         >
           {sidebarOpen ? (
             <div className="font-bold text-lg tracking-tight">
-              <span style={{ color: tc.primary }}>Builder</span><span style={{ color: ds.textPrimary }}>CFO</span>
-              <div className="text-[10px] font-normal" style={{ color: ds.textMuted }}>by Salisbury Bookkeeping</div>
+              <span className="text-[#6366f1]">Builder</span><span className="text-[#e8e8f0]">CFO</span>
+              <div className="text-[10px] text-[#8888a0] font-normal">by Salisbury Bookkeeping</div>
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm" style={{ backgroundColor: tc.primary, color: '#fff' }}>
+            <div className="w-10 h-10 rounded-lg bg-[#6366f1] flex items-center justify-center font-bold text-sm">
               BC
             </div>
           )}
@@ -210,14 +178,11 @@ function DashboardThemedShell({
             return (
               <Link key={item.href} href={item.href}>
                 <button
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
-                  style={active ? {
-                    backgroundColor: ds.tabActiveBg,
-                    color: ds.tabActiveText,
-                    boxShadow: `0 4px 12px ${ds.tabActiveBg}30`,
-                  } : {
-                    color: ds.tabInactiveText,
-                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    active
+                      ? 'bg-[#6366f1] text-white shadow-lg shadow-[#6366f1]/20'
+                      : 'text-[#8888a0] hover:text-[#e8e8f0] hover:bg-[#2a2a3d]'
+                  }`}
                 >
                   <Icon size={20} />
                   {sidebarOpen && <span>{item.label}</span>}
@@ -227,36 +192,28 @@ function DashboardThemedShell({
           })}
         </nav>
 
-        {/* User Profile, Feedback & Logout */}
-        <div className="p-3 space-y-2" style={{ borderTop: `1px solid ${ds.divider}` }}>
+        {/* User Profile & Logout */}
+        <div className="border-t border-[#2a2a3d] p-3 space-y-2">
           <div
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200"
-            style={sidebarOpen ? { backgroundColor: ds.inputBg } : {}}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+              sidebarOpen ? 'bg-[#1a1a26]' : ''
+            }`}
           >
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0" style={{ backgroundColor: tc.primary, color: '#fff' }}>
+            <div className="w-10 h-10 rounded-full bg-[#6366f1] flex items-center justify-center font-semibold text-sm flex-shrink-0">
               {userProfile.initials}
             </div>
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold truncate">{userProfile.fullName || 'Loading...'}</div>
-                <div className="text-xs truncate" style={{ color: ds.textMuted }}>
+                <div className="text-xs text-[#8888a0] truncate">
                   {userProfile.companyName}
                 </div>
               </div>
             )}
           </div>
           <button
-            onClick={() => setFeedbackOpen(true)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
-            style={{ color: ds.textMuted }}
-          >
-            <MessageSquare size={20} />
-            {sidebarOpen && <span>Send Feedback</span>}
-          </button>
-          <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
-            style={{ color: ds.textMuted }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all duration-200"
           >
             <LogOut size={20} />
             {sidebarOpen && <span>Sign Out</span>}
@@ -271,17 +228,15 @@ function DashboardThemedShell({
             className="fixed inset-0 bg-black/60 z-40 lg:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 z-50 flex flex-col lg:hidden animate-in slide-in-from-left duration-200"
-            style={{ backgroundColor: ds.cardBg, borderRight: `1px solid ${ds.cardBorder}` }}>
+          <div className="fixed inset-y-0 left-0 w-72 z-50 bg-[#12121a] border-r border-[#2a2a3d] flex flex-col lg:hidden animate-in slide-in-from-left duration-200">
             {/* Mobile Header */}
-            <div className="h-16 flex items-center justify-between px-4" style={{ borderBottom: `1px solid ${ds.divider}` }}>
+            <div className="h-16 border-b border-[#2a2a3d] flex items-center justify-between px-4">
               <div className="font-bold text-lg tracking-tight">
-                <span style={{ color: tc.primary }}>Builder</span><span style={{ color: ds.textPrimary }}>CFO</span>
+                <span className="text-[#6366f1]">Builder</span><span className="text-[#e8e8f0]">CFO</span>
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2 rounded-lg"
-                style={{ color: ds.textMuted }}
+                className="p-2 hover:bg-[#2a2a3d] rounded-lg text-[#8888a0]"
               >
                 <X size={20} />
               </button>
@@ -296,12 +251,11 @@ function DashboardThemedShell({
                   <Link key={item.href} href={item.href}>
                     <button
                       onClick={() => setMobileMenuOpen(false)}
-                      className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200"
-                      style={active ? {
-                        backgroundColor: ds.tabActiveBg,
-                        color: ds.tabActiveText,
-                        boxShadow: `0 4px 12px ${ds.tabActiveBg}30`,
-                      } : { color: ds.tabInactiveText }}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        active
+                          ? 'bg-[#6366f1] text-white shadow-lg shadow-[#6366f1]/20'
+                          : 'text-[#8888a0] hover:text-[#e8e8f0] hover:bg-[#2a2a3d]'
+                      }`}
                     >
                       <Icon size={20} />
                       <span>{item.label}</span>
@@ -311,29 +265,20 @@ function DashboardThemedShell({
               })}
             </nav>
 
-            {/* Mobile User Profile, Feedback & Logout */}
-            <div className="p-3 space-y-2" style={{ borderTop: `1px solid ${ds.divider}` }}>
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg" style={{ backgroundColor: ds.inputBg }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0" style={{ backgroundColor: tc.primary, color: '#fff' }}>
+            {/* Mobile User Profile & Logout */}
+            <div className="border-t border-[#2a2a3d] p-3 space-y-2">
+              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#1a1a26]">
+                <div className="w-10 h-10 rounded-full bg-[#6366f1] flex items-center justify-center font-semibold text-sm flex-shrink-0">
                   {userProfile.initials}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold truncate">{userProfile.fullName || 'Loading...'}</div>
-                  <div className="text-xs truncate" style={{ color: ds.textMuted }}>{userProfile.companyName}</div>
+                  <div className="text-xs text-[#8888a0] truncate">{userProfile.companyName}</div>
                 </div>
               </div>
               <button
-                onClick={() => { setFeedbackOpen(true); setMobileMenuOpen(false); }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
-                style={{ color: ds.textMuted }}
-              >
-                <MessageSquare size={20} />
-                <span>Send Feedback</span>
-              </button>
-              <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
-                style={{ color: ds.textMuted }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#8888a0] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all duration-200"
               >
                 <LogOut size={20} />
                 <span>Sign Out</span>
@@ -348,103 +293,46 @@ function DashboardThemedShell({
         sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'
       }`}>
         {/* Top Bar */}
-        <div className="h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30"
-          style={{ backgroundColor: ds.cardBg, borderBottom: `1px solid ${ds.cardBorder}` }}>
+        <div className="h-14 sm:h-16 border-b border-[#2a2a3d] bg-[#12121a] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
           <div className="flex items-center gap-3 sm:gap-4 flex-1">
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-1.5 rounded-lg transition"
-              style={{ color: ds.textMuted }}
+              className="lg:hidden p-1.5 hover:bg-[#2a2a3d] rounded-lg text-[#8888a0] hover:text-[#e8e8f0] transition"
             >
               <Menu size={22} />
             </button>
-            <h1 className="text-lg sm:text-xl font-bold" style={{ color: ds.textPrimary }}>Dashboard</h1>
-            <div className="hidden sm:flex items-center gap-2 text-sm" style={{ color: ds.textMuted }}>
+            <h1 className="text-lg sm:text-xl font-bold">Dashboard</h1>
+            <div className="hidden sm:flex items-center gap-2 text-sm text-[#8888a0]">
               <span>Last synced:</span>
-              <span style={{ color: tc.positive }}>2 minutes ago</span>
+              <span className="text-[#22c55e]">{lastSyncTime ? formatTimeAgo(lastSyncTime) : 'never'}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <ChartThemePicker />
             <Button
               variant="secondary"
               size="sm"
               className="gap-2"
+              onClick={handleSync}
+              disabled={syncing}
             >
-              <RefreshCw size={16} />
-              <span className="hidden sm:inline">Sync with QBO</span>
+              <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
+              <span className="hidden sm:inline">{syncing ? 'Syncing...' : 'Sync with QBO'}</span>
             </Button>
-            <button className="p-2 rounded-lg transition-colors" style={{ color: ds.textMuted }}>
+            <button className="p-2 hover:bg-[#2a2a3d] rounded-lg transition-colors text-[#8888a0] hover:text-[#e8e8f0]">
               <Bell size={20} />
             </button>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-auto" style={{ backgroundColor: ds.pageBg }}>
+        <div className="flex-1 overflow-auto bg-[#0a0a0f]">
           <div className="p-3 sm:p-4 md:p-6">
             {children}
           </div>
         </div>
       </div>
     </div>
-
-    {/* Feedback Modal */}
-    {feedbackOpen && (
-      <>
-        <div className="fixed inset-0 bg-black/60 z-50" onClick={() => setFeedbackOpen(false)} />
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-          <div className="w-full max-w-md shadow-2xl" style={{ backgroundColor: ds.cardBg, border: `1px solid ${ds.cardBorder}`, borderRadius: ds.borderRadius, backdropFilter: ds.cardBlur }}>
-            <div className="flex items-center justify-between p-4" style={{ borderBottom: `1px solid ${ds.divider}` }}>
-              <h3 className="text-lg font-semibold" style={{ color: ds.textPrimary }}>Send Feedback</h3>
-              <button onClick={() => setFeedbackOpen(false)} className="p-1 rounded-lg transition" style={{ color: ds.textMuted }}>
-                <XIcon size={18} />
-              </button>
-            </div>
-            <div className="p-4 space-y-4">
-              {feedbackSent ? (
-                <div className="text-center py-8">
-                  <div className="text-3xl mb-3">&#10003;</div>
-                  <p className="text-lg font-semibold" style={{ color: tc.positive }}>Thank you!</p>
-                  <p className="text-sm mt-1" style={{ color: ds.textMuted }}>Your feedback has been sent to the Salisbury team.</p>
-                </div>
-              ) : (
-                <>
-                  <p className="text-sm" style={{ color: ds.textMuted }}>
-                    Tell us what you love, what&apos;s broken, or what you wish the dashboard could do. We read every message.
-                  </p>
-                  <textarea
-                    value={feedbackText}
-                    onChange={(e) => setFeedbackText(e.target.value)}
-                    placeholder="What's on your mind?"
-                    rows={5}
-                    className="w-full rounded-lg p-3 text-sm focus:outline-none resize-none"
-                    style={{ backgroundColor: ds.pageBg, border: `1px solid ${ds.inputBorder}`, color: ds.textPrimary }}
-                    autoFocus
-                  />
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px]" style={{ color: ds.textMuted }}>
-                      Sent to info@salisburybookkeeping.com
-                    </p>
-                    <button
-                      onClick={handleFeedbackSubmit}
-                      disabled={feedbackSending || !feedbackText.trim()}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-                      style={{ backgroundColor: tc.primary }}
-                    >
-                      <Send size={14} />
-                      {feedbackSending ? 'Sending...' : 'Send Feedback'}
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </>
-    )}
-    </>
   );
 }
