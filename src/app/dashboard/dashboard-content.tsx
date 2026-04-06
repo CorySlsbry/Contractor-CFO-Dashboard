@@ -69,20 +69,23 @@ export default function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string | null>(null);
 
-  // Get the current selected client ID
-  const getClientId = () => {
-    if (typeof window !== 'undefined') {
-      return window.localStorage?.getItem?.('selectedClientId') || null;
-    }
-    return null;
-  };
+  const getClientId = () =>
+    typeof window !== 'undefined' ? window.localStorage?.getItem?.('selectedClientId') || null : null;
 
-  const fetchData = useCallback(async (cid?: string | null) => {
+  const getLocationId = () =>
+    typeof window !== 'undefined' ? window.localStorage?.getItem?.('selectedLocationId') || null : null;
+
+  const fetchData = useCallback(async (cid?: string | null, lid?: string | null) => {
     try {
       setLoading(true);
       setError(null);
-      const id = cid || getClientId();
-      const url = id ? `/api/qbo/data?clientCompanyId=${id}` : '/api/qbo/data';
+      const id = cid !== undefined ? cid : getClientId();
+      const locationId = lid !== undefined ? lid : getLocationId();
+      const params = new URLSearchParams();
+      if (id) params.set('clientCompanyId', id);
+      if (locationId) params.set('locationId', locationId);
+      const qs = params.size > 0 ? '?' + params.toString() : '';
+      const url = `/api/qbo/data${qs}`;
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to fetch dashboard data: ${response.statusText}`);
@@ -94,7 +97,7 @@ export default function DashboardContent() {
       const d = json.data;
       const isEmpty = !d || (d.revenue === 0 && d.expenses === 0 && d.invoices?.length === 0);
       if (json.success && isEmpty) {
-        await triggerSync(id);
+        await triggerSync(id, locationId);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
@@ -105,10 +108,11 @@ export default function DashboardContent() {
     }
   }, []);
 
-  const triggerSync = async (cid?: string | null) => {
+  const triggerSync = async (cid?: string | null, lid?: string | null) => {
     try {
       setSyncing(true);
-      const id = cid || getClientId();
+      const id = cid !== undefined ? cid : getClientId();
+      const locationId = lid !== undefined ? lid : getLocationId();
       const body = id ? JSON.stringify({ clientCompanyId: id }) : undefined;
       const syncResponse = await fetch('/api/qbo/sync', {
         method: 'POST',
@@ -121,8 +125,11 @@ export default function DashboardContent() {
         setData({ success: true, data: syncJson.data });
       } else {
         console.warn('Sync returned no data:', syncJson.error || syncJson.message);
-        const refetchUrl = id ? `/api/qbo/data?clientCompanyId=${id}` : '/api/qbo/data';
-        const refetch = await fetch(refetchUrl);
+        const params = new URLSearchParams();
+        if (id) params.set('clientCompanyId', id);
+        if (locationId) params.set('locationId', locationId);
+        const qs = params.size > 0 ? '?' + params.toString() : '';
+        const refetch = await fetch(`/api/qbo/data${qs}`);
         const refetchJson = await refetch.json();
         if (refetchJson.success) {
           setData(refetchJson);
@@ -137,19 +144,30 @@ export default function DashboardContent() {
 
   useEffect(() => {
     const initialClient = getClientId();
+    const initialLocation = getLocationId();
     setClientId(initialClient);
-    fetchData(initialClient);
+    fetchData(initialClient, initialLocation);
 
     // Listen for client switches from the layout
     const handleClientChange = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (detail?.clientId) {
-        setClientId(detail.clientId);
-        fetchData(detail.clientId);
-      }
+      const newClientId = detail?.clientId ?? null;
+      setClientId(newClientId);
+      fetchData(newClientId, getLocationId());
     };
+
+    // Listen for location switches from the sidebar
+    const handleLocationChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      fetchData(getClientId(), detail?.locationId ?? null);
+    };
+
     window.addEventListener('clientChanged', handleClientChange);
-    return () => window.removeEventListener('clientChanged', handleClientChange);
+    window.addEventListener('locationChanged', handleLocationChange);
+    return () => {
+      window.removeEventListener('clientChanged', handleClientChange);
+      window.removeEventListener('locationChanged', handleLocationChange);
+    };
   }, [fetchData]);
 
   if (loading) {
@@ -188,30 +206,32 @@ export default function DashboardContent() {
   return (
     <div className="space-y-6">
       {/* Tab Navigation + Sync Button */}
-      <div className="flex items-center gap-4">
-        <div className="grid flex-1 grid-cols-6 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-300 hover:text-white hover:bg-[#2a2a3d]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex-1 overflow-x-auto -mx-1 px-1 scrollbar-none">
+          <div className="inline-flex min-w-full sm:min-w-0 bg-[#1a1a26] border border-[#2a2a3d] rounded-lg p-1 gap-0.5">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`whitespace-nowrap px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors flex-shrink-0 ${
+                  activeTab === tab.id
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-300 hover:text-white hover:bg-[#2a2a3d]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
         <button
           onClick={triggerSync}
           disabled={syncing}
-          className="flex items-center gap-2 px-4 py-2 bg-[#1a1a26] border border-[#2a2a3d] text-gray-300 hover:text-white hover:bg-[#2a2a3d] rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#1a1a26] border border-[#2a2a3d] text-gray-300 hover:text-white hover:bg-[#2a2a3d] rounded-lg transition-colors disabled:opacity-50 flex-shrink-0"
           title="Sync QuickBooks data"
         >
           <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-          {syncing ? 'Syncing...' : 'Sync'}
+          <span className="hidden sm:inline">{syncing ? 'Syncing...' : 'Sync'}</span>
         </button>
       </div>
 
@@ -252,7 +272,7 @@ export default function DashboardContent() {
           ) : (
             <>
               {/* KPI Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                 <Card className="bg-gray-800 border-gray-700 p-4">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-gray-400 text-sm font-medium">Revenue</p>

@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 1000;
+
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 /**
  * Fetches ALL rows from a Supabase table matching the query,
@@ -17,6 +21,7 @@ async function fetchAllRows(
   columns: string,
   sinceISO: string
 ): Promise<any[]> {
+  const supabase = getSupabase();
   const allRows: any[] = [];
   let offset = 0;
   let hasMore = true;
@@ -62,7 +67,7 @@ export async function GET(request: NextRequest) {
     const rawSignups = await fetchAllRows('profiles', 'created_at', sinceISO);
 
     // 3. Current subscription counts
-    const { data: orgs } = await supabase
+    const { data: orgs } = await getSupabase()
       .from('organizations')
       .select('plan, subscription_status, created_at');
 

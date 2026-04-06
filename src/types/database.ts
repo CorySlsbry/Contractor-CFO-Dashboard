@@ -397,6 +397,68 @@ export type Database = {
           [key: string]: any;
         };
       };
+      locations: {
+        Row: {
+          id: string;
+          organization_id: string;
+          parent_id: string | null;
+          name: string;
+          address: string | null;
+          city: string | null;
+          state: string | null;
+          zip: string | null;
+          is_default: boolean;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          parent_id?: string | null;
+          name: string;
+          address?: string | null;
+          city?: string | null;
+          state?: string | null;
+          zip?: string | null;
+          is_default?: boolean;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          parent_id?: string | null;
+          name?: string;
+          address?: string | null;
+          city?: string | null;
+          state?: string | null;
+          zip?: string | null;
+          is_default?: boolean;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+      };
+      location_members: {
+        Row: {
+          id: string;
+          location_id: string;
+          profile_id: string;
+          role: 'owner' | 'admin' | 'viewer';
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          location_id: string;
+          profile_id: string;
+          role?: 'owner' | 'admin' | 'viewer';
+          created_at?: string;
+        };
+        Update: {
+          role?: 'owner' | 'admin' | 'viewer';
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

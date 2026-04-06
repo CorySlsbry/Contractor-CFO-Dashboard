@@ -214,3 +214,33 @@ export interface DashboardSnapshot {
   data: DashboardData;
   pulled_at: string;
 }
+
+/**
+ * Location — a physical or logical location within an organization.
+ * Supports self-referential hierarchy: Company → Region → Job Site.
+ */
+export interface Location {
+  id: string;
+  organization_id: string;
+  parent_id: string | null;
+  name: string;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  is_default: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Location member — links a user profile to a location with a role.
+ */
+export interface LocationMember {
+  id: string;
+  location_id: string;
+  profile_id: string;
+  role: 'owner' | 'admin' | 'viewer';
+  created_at: string;
+}

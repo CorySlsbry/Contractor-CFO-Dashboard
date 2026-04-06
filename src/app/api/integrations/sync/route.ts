@@ -12,6 +12,11 @@ import { createClient } from '@/lib/supabase/server';
 import { syncIntegration, syncAllIntegrations, refreshToken, getConnector } from '@/lib/integrations';
 import { logError, logSuccess } from '@/lib/error-logger';
 import type { IntegrationProvider, IntegrationConnection } from '@/types/integrations';
+import {
+  syncDiscoveredLocations,
+  extractCityStateLocations,
+  type LocationSource,
+} from '@/lib/location-sync';
 
 export async function POST(request: NextRequest) {
   try {
@@ -167,12 +172,16 @@ export async function POST(request: NextRequest) {
           },
         });
 
+      // location_id comes from the connection — null means org-wide (unscoped)
+      const connLocationId: string | null = conn.location_id ?? null;
+
       // Upsert normalized projects
       for (const project of result.projects) {
         await (supabase as any)
           .from('normalized_projects')
           .upsert({
             organization_id: profile.organization_id,
+            location_id: connLocationId,
             source: project.source,
             external_id: project.external_id,
             name: project.name,
@@ -208,6 +217,7 @@ export async function POST(request: NextRequest) {
           .from('normalized_contacts')
           .upsert({
             organization_id: profile.organization_id,
+            location_id: connLocationId,
             source: contact.source,
             external_id: contact.external_id,
             first_name: contact.first_name,
@@ -230,6 +240,7 @@ export async function POST(request: NextRequest) {
           .from('normalized_deals')
           .upsert({
             organization_id: profile.organization_id,
+            location_id: connLocationId,
             source: deal.source,
             external_id: deal.external_id,
             name: deal.name,
@@ -282,6 +293,82 @@ export async function POST(request: NextRequest) {
           metadata: { duration: result.duration },
         });
       }
+    }
+
+    // ── Auto-discover locations from synced data ──
+    try {
+      for (const result of results) {
+        if (!result.success) continue;
+
+        const source = result.provider as LocationSource;
+
+        // Extract locations from project addresses (Procore, Buildertrend)
+        if (result.projects.length > 0 && (source === 'procore' || source === 'buildertrend')) {
+          const projectRecords = result.projects.map((p: any) => {
+            // Parse composite address "123 Main, Denver, CO, 80202" into parts
+            const parts = (p.address || '').split(',').map((s: string) => s.trim());
+            return {
+              address: parts.length >= 1 ? parts[0] : undefined,
+              city: parts.length >= 2 ? parts[parts.length - 3] || parts[1] : undefined,
+              state: parts.length >= 3 ? parts[parts.length - 2] || parts[2] : undefined,
+              zip: parts.length >= 4 ? parts[parts.length - 1] : undefined,
+            };
+          });
+          const locations = extractCityStateLocations(source, projectRecords);
+          if (locations.length > 0) {
+            const locationMap = await syncDiscoveredLocations(supabase as any, profile.organization_id, locations);
+            console.log(`[integration-sync] Discovered ${locations.length} locations from ${source} projects`);
+
+            // Auto-tag projects with their discovered location_id
+            for (const project of result.projects) {
+              const parts = (project.address || '').split(',').map((s: string) => s.trim());
+              const city = (parts.length >= 2 ? parts[parts.length - 3] || parts[1] : '') || '';
+              const state = (parts.length >= 3 ? parts[parts.length - 2] || parts[2] : '') || '';
+              const key = `${source}:${city.toLowerCase()}:${state.toLowerCase()}`;
+              const locId = locationMap.get(key);
+              if (locId) {
+                await (supabase as any)
+                  .from('normalized_projects')
+                  .update({ location_id: locId })
+                  .eq('organization_id', profile.organization_id)
+                  .eq('source', project.source)
+                  .eq('external_id', project.external_id);
+              }
+            }
+          }
+        }
+
+        // Extract locations from contacts (Salesforce — has Account.BillingCity/State)
+        if (result.contacts.length > 0 && source === 'salesforce') {
+          // Contacts carry _sfAccount data from the SOQL join
+          const contactRecords = result.contacts.map((c: any) => ({
+            city: c._billingCity,
+            state: c._billingState,
+            address: c._billingStreet,
+          }));
+          const locations = extractCityStateLocations('salesforce', contactRecords);
+          if (locations.length > 0) {
+            await syncDiscoveredLocations(supabase as any, profile.organization_id, locations);
+            console.log(`[integration-sync] Discovered ${locations.length} locations from Salesforce accounts`);
+          }
+        }
+
+        // Extract locations from contacts (HubSpot — has city/state properties)
+        if (result.contacts.length > 0 && source === 'hubspot') {
+          const contactRecords = result.contacts.map((c: any) => ({
+            city: c._city,
+            state: c._state,
+          }));
+          const locations = extractCityStateLocations('hubspot', contactRecords);
+          if (locations.length > 0) {
+            await syncDiscoveredLocations(supabase as any, profile.organization_id, locations);
+            console.log(`[integration-sync] Discovered ${locations.length} locations from HubSpot contacts`);
+          }
+        }
+      }
+    } catch (locErr: any) {
+      // Non-fatal — don't block the sync response
+      console.error('[integration-sync] Location discovery failed (non-fatal):', locErr?.message);
     }
 
     return NextResponse.json({

@@ -18,6 +18,7 @@ import {
   buildDashboardData,
 } from "@/lib/qbo-transform";
 import type { ApiResponse, DashboardData } from "@/types";
+import { syncDiscoveredLocations, type DiscoveredLocation } from "@/lib/location-sync";
 
 function isTokenExpired(expiresAt: string): boolean {
   const expiration = new Date(expiresAt);
@@ -65,6 +66,16 @@ export async function POST(request: NextRequest) {
     }
 
     const orgId = profile.organization_id;
+
+    // Look up the default location for this org (used to tag new snapshots)
+    const { data: defaultLocation } = await (supabase as any)
+      .from('locations')
+      .select('id')
+      .eq('organization_id', orgId)
+      .eq('is_default', true)
+      .eq('is_active', true)
+      .limit(1)
+      .single();
 
     // Parse optional clientCompanyId from request body
     let clientCompanyId: string | null = null;
@@ -225,6 +236,7 @@ export async function POST(request: NextRequest) {
         .insert({
           organization_id: orgId,
           client_company_id: clientCompany.id,
+          location_id: defaultLocation?.id ?? null,
           data: dashboardData,
           pulled_at: new Date().toISOString(),
         });
@@ -242,6 +254,58 @@ export async function POST(request: NextRequest) {
         { success: false, error: "Failed to store dashboard data" },
         { status: 500 }
       );
+    }
+
+    // ── Auto-discover locations from QBO Classes & Departments ──
+    try {
+      const [classResult, deptResult] = await Promise.allSettled([
+        qboClient.getClasses(accessToken, realmId),
+        qboClient.getDepartments(accessToken, realmId),
+      ]);
+
+      const discovered: DiscoveredLocation[] = [];
+
+      // Map QBO Classes → locations
+      if (classResult.status === 'fulfilled') {
+        const classes = classResult.value?.QueryResponse?.Class || [];
+        for (const cls of classes) {
+          if (!cls.Active) continue;
+          discovered.push({
+            source: 'qbo_class',
+            external_id: String(cls.Id),
+            name: cls.Name,
+            parent_external_id: cls.SubClass && cls.ParentRef?.value
+              ? String(cls.ParentRef.value)
+              : undefined,
+          });
+        }
+        console.log(`[sync] Found ${classes.length} QBO classes`);
+      }
+
+      // Map QBO Departments → locations
+      if (deptResult.status === 'fulfilled') {
+        const departments = deptResult.value?.QueryResponse?.Department || [];
+        for (const dept of departments) {
+          if (!dept.Active) continue;
+          discovered.push({
+            source: 'qbo_department',
+            external_id: String(dept.Id),
+            name: dept.Name,
+            parent_external_id: dept.SubDepartment && dept.ParentRef?.value
+              ? String(dept.ParentRef.value)
+              : undefined,
+          });
+        }
+        console.log(`[sync] Found ${departments.length} QBO departments`);
+      }
+
+      if (discovered.length > 0) {
+        await syncDiscoveredLocations(supabase as any, orgId, discovered);
+        console.log(`[sync] Auto-discovered ${discovered.length} locations from QBO`);
+      }
+    } catch (locErr: any) {
+      // Non-fatal — don't block the sync
+      console.error('[sync] Location discovery failed (non-fatal):', locErr?.message);
     }
 
     console.log("[sync] Success for", clientCompany.name);

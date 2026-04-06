@@ -123,6 +123,7 @@ export class SalesforceConnector extends BaseConnector {
     try {
       const query = encodeURIComponent(
         `SELECT Id, FirstName, LastName, Email, Phone, Account.Name, Title,
+         Account.BillingCity, Account.BillingState, Account.BillingStreet,
          LeadSource, Description
          FROM Contact
          WHERE CreatedDate = LAST_N_DAYS:365
@@ -150,6 +151,10 @@ export class SalesforceConnector extends BaseConnector {
         type: 'customer' as const,
         tags: contact.LeadSource ? [contact.LeadSource] : [],
         last_synced: new Date().toISOString(),
+        // Location data from Account (used by location auto-discovery)
+        _billingCity: contact.Account?.BillingCity || '',
+        _billingState: contact.Account?.BillingState || '',
+        _billingStreet: contact.Account?.BillingStreet || '',
       }));
     } catch (error) {
       console.error('Salesforce contacts sync error:', error);

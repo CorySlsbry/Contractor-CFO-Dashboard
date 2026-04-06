@@ -103,7 +103,7 @@ export class HubSpotConnector extends BaseConnector {
         {
           params: {
             limit: '100',
-            properties: 'firstname,lastname,email,phone,company,jobtitle,lifecyclestage,hs_lead_status',
+            properties: 'firstname,lastname,email,phone,company,jobtitle,lifecyclestage,hs_lead_status,city,state',
           },
         }
       );
@@ -126,6 +126,9 @@ export class HubSpotConnector extends BaseConnector {
           type: this.mapLifecycleStage(props.lifecyclestage),
           tags: props.hs_lead_status ? [props.hs_lead_status] : [],
           last_synced: new Date().toISOString(),
+          // Location data (used by location auto-discovery)
+          _city: props.city || '',
+          _state: props.state || '',
         });
       }
 
@@ -139,7 +142,7 @@ export class HubSpotConnector extends BaseConnector {
             params: {
               limit: '100',
               after,
-              properties: 'firstname,lastname,email,phone,company,jobtitle,lifecyclestage,hs_lead_status',
+              properties: 'firstname,lastname,email,phone,company,jobtitle,lifecyclestage,hs_lead_status,city,state',
             },
           }
         );

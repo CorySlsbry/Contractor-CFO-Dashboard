@@ -236,6 +236,24 @@ export class QBOClient {
       `/query?query=${query}`
     );
   }
+
+  /**
+   * Gets all Classes (used by contractors for divisions/locations)
+   * Returns: { QueryResponse: { Class: [{ Id, Name, FullyQualifiedName, SubClass, ParentRef, Active }] } }
+   */
+  async getClasses(accessToken: string, realmId: string): Promise<any> {
+    const query = encodeURIComponent("select * from Class maxresults 1000");
+    return this.makeRequest(accessToken, realmId, `/query?query=${query}`);
+  }
+
+  /**
+   * Gets all Departments (alternative to Classes for location/cost center tracking)
+   * Returns: { QueryResponse: { Department: [{ Id, Name, FullyQualifiedName, SubDepartment, ParentRef, Active }] } }
+   */
+  async getDepartments(accessToken: string, realmId: string): Promise<any> {
+    const query = encodeURIComponent("select * from Department maxresults 1000");
+    return this.makeRequest(accessToken, realmId, `/query?query=${query}`);
+  }
 }
 
 // Export singleton instance

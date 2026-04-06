@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,11 +48,19 @@ export default function InvoicesPage() {
   const [sortField, setSortField] = useState<SortField>('status');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  useEffect(() => {
-    const fetchInvoices = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch('/api/qbo/data');
+  const getClientId = () =>
+    typeof window !== 'undefined' ? window.localStorage?.getItem?.('selectedClientId') || null : null;
+  const getLocationId = () =>
+    typeof window !== 'undefined' ? window.localStorage?.getItem?.('selectedLocationId') || null : null;
+
+  const fetchInvoices = useCallback(async (clientId?: string | null, locationId?: string | null) => {
+    try {
+      setLoading(true);
+      const p = new URLSearchParams();
+      if (clientId) p.set('clientCompanyId', clientId);
+      if (locationId) p.set('locationId', locationId);
+      const qs = p.size > 0 ? '?' + p.toString() : '';
+      const res = await fetch(`/api/qbo/data${qs}`);
         if (!res.ok) throw new Error('Failed to fetch invoices');
 
         const data = await res.json();
@@ -94,10 +102,27 @@ export default function InvoicesPage() {
       } finally {
         setLoading(false);
       }
+  }, []);
+
+  useEffect(() => {
+    fetchInvoices(getClientId(), getLocationId());
+
+    const handleClientChanged = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      fetchInvoices(detail?.clientId ?? null, getLocationId());
+    };
+    const handleLocationChanged = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      fetchInvoices(getClientId(), detail?.locationId ?? null);
     };
 
-    fetchInvoices();
-  }, []);
+    window.addEventListener('clientChanged', handleClientChanged);
+    window.addEventListener('locationChanged', handleLocationChanged);
+    return () => {
+      window.removeEventListener('clientChanged', handleClientChanged);
+      window.removeEventListener('locationChanged', handleLocationChanged);
+    };
+  }, [fetchInvoices]);
 
   const filteredAndSorted = useMemo(() => {
     let filtered = [...invoices];
