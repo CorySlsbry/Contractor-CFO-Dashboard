@@ -5,30 +5,26 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Check } from 'lucide-react';
-import { PLAN_FEATURES } from '@/lib/plan-features';
 
 const plans = [
   {
     key: 'basic',
-    name: PLAN_FEATURES.basic.name,
-    price: PLAN_FEATURES.basic.price,
-    audience: 'Solo contractors & small crews',
-    features: ['Financial dashboard', 'Job costing & WIP tracking', 'Cash flow forecasting', 'QuickBooks sync', 'AI CFO Advisor — unlimited', 'Monthly AI financial brief'],
+    name: 'Starter',
+    price: 199,
+    features: ['Financial dashboard', 'Job costing & WIP', 'Cash flow forecasting', 'QuickBooks sync'],
   },
   {
     key: 'pro',
-    name: PLAN_FEATURES.pro.name,
-    price: PLAN_FEATURES.pro.price,
+    name: 'Professional',
+    price: 399,
     popular: true,
-    audience: 'Growing companies ($1M–$10M)',
-    features: ['Everything in Starter', 'Buildertrend + HubSpot + JobNimbus', 'AI Bookkeeper Toolkit (24 prompts)', 'Weekly AI financial brief', 'AR/AP aging by job', 'Priority support'],
+    features: ['Everything in Starter', 'Buildertrend + HubSpot + JobNimbus', 'AI CFO advisor', 'Priority support'],
   },
   {
     key: 'enterprise',
-    name: PLAN_FEATURES.enterprise.name,
-    price: PLAN_FEATURES.enterprise.price,
-    audience: '$10M+ with multiple PMs',
-    features: ['Everything in Professional', 'Procore + Salesforce + ServiceTitan', 'AI Toolkit — all 24 + custom', 'Quarterly strategy call', 'Dedicated account manager', 'NAHB Chart of Accounts'],
+    name: 'Enterprise',
+    price: 599,
+    features: ['Everything in Professional', 'Procore + Salesforce + ServiceTitan', 'Quarterly strategy call', 'Dedicated account manager'],
   },
 ];
 
@@ -90,27 +86,10 @@ function SignupContent() {
         return;
       }
 
-      // Step 3: Create Stripe checkout session with 14-day trial
-      setLoadingStep('Setting up your free trial...');
-      const checkoutRes = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: selectedPlan }),
-      });
-
-      const checkoutData = await checkoutRes.json();
-
-      if (checkoutRes.ok && checkoutData.data?.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = checkoutData.data.url;
-      } else {
-        // Checkout failed — show the actual error
-        console.error('Checkout creation failed:', checkoutRes.status, checkoutData);
-        const serverError = checkoutData?.error || 'Unknown error';
-        setError(`Billing setup failed: ${serverError}. Please sign in and set up billing in Settings.`);
-        setLoading(false);
-        setLoadingStep('');
-      }
+      // Step 3: Redirect to dashboard (trial starts immediately, no card required)
+      setLoadingStep('Getting your dashboard ready...');
+      router.push('/dashboard');
+      return;
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
       setLoading(false);
@@ -135,7 +114,7 @@ function SignupContent() {
             Start Your 14-Day Free Trial
           </h2>
           <p className="text-sm text-[#b0b0c8] mt-1">
-            No charge for 14 days. Card required — cancel anytime.
+            No charge for 14 days. Cancel anytime.
           </p>
         </div>
 
@@ -158,7 +137,6 @@ function SignupContent() {
                 </div>
               )}
               <div className="text-sm font-semibold text-[#e8e8f0]">{plan.name}</div>
-              <div className="text-[9px] text-[#8888a0] mt-0.5">{plan.audience}</div>
               <div className="mt-1">
                 <span className="text-lg font-bold text-[#e8e8f0]">${plan.price}</span>
                 <span className="text-xs text-[#8888a0]">/mo</span>

@@ -1,983 +1,509 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, ArrowRight, ShieldCheck, CalendarCheck, Menu, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { LandingTracker } from '@/components/landing-tracker';
-import { BookingCalendar } from '@/components/booking-calendar';
-
-type DemoTab = 'overview' | 'ar' | 'ap' | 'wip' | 'retainage' | 'sales';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock } from 'lucide-react';
+import { useState } from 'react';
+import Head from 'next/head';
 
 export default function LandingPage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [demoTab, setDemoTab] = useState<DemoTab>('overview');
-  const [advisorMessages, setAdvisorMessages] = useState<{role: 'user' | 'ai'; text: string}[]>([
-    { role: 'user', text: 'My gross margin on the Henderson job dropped from 22% to 14%. What happened?' },
-    { role: 'ai', text: 'Looking at the Henderson job cost detail — your framing labor came in at $47,200 vs. the $31,500 budget (GL 3800). That\'s a 50% overage. Two factors: you had 3 change orders that added scope but weren\'t re-estimated, and the framing crew logged 340 hours vs. 220 budgeted. Recommendation: Submit a change order for the added scope ($15,700) and review crew allocation before the drywall phase starts next week.' },
-  ]);
-  const [advisorInput, setAdvisorInput] = useState('');
-  const [rotatingPain, setRotatingPain] = useState(0);
-  const painPoints = [
-    "Are we making money on the Henderson job?",
-    "Can I afford to hire another PM?",
-    "Why is cash tight when we're billing $200K/month?",
-    "Am I over-billed on any jobs right now?",
-    "How much retainage is stuck out there?",
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRotatingPain((prev) => (prev + 1) % painPoints.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleAdvisorDemo = () => {
-    if (!advisorInput.trim()) return;
-    const userMsg = advisorInput.trim().toLowerCase();
-    setAdvisorInput('');
-    setAdvisorMessages(prev => [...prev, { role: 'user', text: advisorInput.trim() }]);
-
-    let response = '';
-
-    if (/margin|profit|drop|lost money/.test(userMsg)) {
-      response = 'Looking at the cost code detail — your framing labor came in at $47,200 vs. the $31,500 budget (GL 3800). That\'s a 50% overage driven by 3 un-re-estimated change orders and 340 crew hours vs. 220 budgeted. Recommendation: Submit a change order for the added scope ($15,700) and review crew allocation before drywall starts next week.';
-    } else if (/hire|afford|pm|project manager/.test(userMsg)) {
-      response = 'Based on your current cash flow — you have $744K net cash with $487K in AR. Your monthly burn is ~$180K. At current backlog ($3.2M signed, $1.8M remaining), you have 10 months of runway. A PM at $85K/yr ($7,083/mo) is affordable if you maintain 2+ jobs in production. Risk: your AR aging is stretching — collect the $28.7K in 61-90 day bucket first.';
-    } else if (/bill|draw|invoice/.test(userMsg)) {
-      response = 'Your draw schedule shows 3 invoices outstanding: Riverside Estate $125K (current), Heritage Park $125K (current), and Mountain View $32K (current). You also have $85K in 1-30 day past-due across two jobs. The Heritage Park job is 80% billed but only 65% complete — that\'s $141.5K in over-billing risk. Recommend slowing billing on Heritage until work catches up.';
-    } else if (/over.?bill|wip|overbill|under.?bill/.test(userMsg)) {
-      response = 'WIP analysis shows 2 jobs flagged: Riverside Estate is over-billed by $69K (82% billed vs 71% complete) and Heritage Park is over-billed by $141.5K (77% billed vs 52% complete). Combined over-billing exposure: $210.5K. That\'s cash you\'ll owe back at job close if completion percentages don\'t catch up. Heritage Park needs immediate attention.';
-    } else if (/retainage/.test(userMsg)) {
-      response = 'You have $196,500 in retainage held across 6 active jobs. The largest: Heritage Park at $62K (release date: 60 days after substantial completion), Riverside Estate at $48K (90-day holdback). Three jobs have retainage past their release date totaling $34K — that\'s money you\'re owed right now. Recommend sending release requests this week.';
-    } else if (/cash|flow|forecast|runway/.test(userMsg)) {
-      response = '60-day cash forecast: You\'ll collect ~$310K in current AR, plus $85K in 1-30 day AR (80% probability). Outflows: $312K AP + $180K monthly burn × 2 = $672K total. Projected net cash in 60 days: $467K. Risk flag: if Heritage Park AR ($125K) slips to 60+ days, net drops to $342K. Collections on the 31-60 day bucket ($63.5K) are critical.';
-    } else {
-      response = 'That\'s a great question — but the AI CFO needs your real QuickBooks data to answer it accurately. <a href="/signup" style="color:#6366f1;text-decoration:underline;font-weight:600;">Start your free trial</a> and ask this with your actual numbers. Setup takes under 10 minutes, and we\'ll do the integration for you.';
-    }
-
-    setTimeout(() => {
-      setAdvisorMessages(prev => [...prev, { role: 'ai', text: response }]);
-    }, 1200);
-  };
+  const [activeTab, setActiveTab] = useState<'starter' | 'professional' | 'enterprise'>('professional');
 
   return (
-    <div className="bg-[#0a0a0f] text-[#e8e8f0] overflow-x-hidden">
-      <LandingTracker />
-
+    <div className="bg-[#0a0a0f] text-[#e8e8f0]">
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-[#0a0a0f]/80 backdrop-blur border-b border-[#1e1e2e] z-50">
-        <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14 sm:h-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
             <div className="font-bold text-lg tracking-tight">
               <span className="text-[#6366f1]">Builder</span><span className="text-[#e8e8f0]">CFO</span>
             </div>
             <span className="text-[10px] text-[#8888a0] hidden sm:inline">by <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">Salisbury Bookkeeping</a></span>
           </div>
-          <div className="hidden md:flex items-center gap-6 text-sm text-[#8888a0]">
-            <a href="#live-demo" className="hover:text-[#e8e8f0] transition">Demo</a>
-            <a href="#cfo-advisor" className="hover:text-[#e8e8f0] transition">CFO Advisor</a>
-            <a href="#pricing" className="hover:text-[#e8e8f0] transition">Pricing</a>
-            <a href="#faq" className="hover:text-[#e8e8f0] transition">FAQ</a>
-            <a href="#schedule" className="hover:text-[#e8e8f0] transition">Book a Call</a>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm text-[#e8e8f0] hover:text-[#6366f1] transition hidden sm:inline">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/demo"
+              className="text-sm sm:text-base text-[#e8e8f0] hover:text-[#6366f1] transition"
+            >
+              Try Demo
+            </Link>
+            <Link
+              href="/login"
+              className="text-sm sm:text-base text-[#e8e8f0] hover:text-[#6366f1] transition"
+            >
               Sign In
             </Link>
-            <Link href="/signup" className="text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded bg-[#6366f1] text-white hover:bg-[#5558d9] transition hidden sm:inline-block">
-              Start Free Trial
-            </Link>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-[#e8e8f0] hover:text-[#6366f1] transition"
-              aria-label="Toggle menu"
+            <Link
+              href="/signup"
+              className="text-sm sm:text-base px-3 py-1.5 sm:px-4 sm:py-2 rounded bg-[#6366f1] text-white hover:bg-[#5558d9] transition"
             >
-              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
+              Start Free
+            </Link>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-[#0a0a0f] border-t border-[#1e1e2e] px-4 py-4 space-y-3">
-            <a href="#live-demo" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#8888a0] hover:text-[#e8e8f0] transition">Demo</a>
-            <a href="#cfo-advisor" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#8888a0] hover:text-[#e8e8f0] transition">CFO Advisor</a>
-            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#8888a0] hover:text-[#e8e8f0] transition">Pricing</a>
-            <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#8888a0] hover:text-[#e8e8f0] transition">FAQ</a>
-            <a href="#schedule" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#8888a0] hover:text-[#e8e8f0] transition">Book a Call</a>
-            <div className="pt-3 border-t border-[#1e1e2e] flex items-center gap-3">
-              <Link href="/login" className="text-sm text-[#e8e8f0] hover:text-[#6366f1] transition">
-                Sign In
-              </Link>
-              <Link href="/signup" className="text-sm px-4 py-2 rounded bg-[#6366f1] text-white hover:bg-[#5558d9] transition">
-                Start Free Trial
-              </Link>
-            </div>
-          </div>
-        )}
       </nav>
 
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 1 — HERO with dashboard preview + cost math       */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="pt-20 pb-6 sm:pt-28 sm:pb-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Hero Section — GEO Quick-Answer Block */}
+      <section className="pt-24 pb-12 sm:pt-32 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#6366f1]/5 via-transparent to-transparent pointer-events-none" />
 
-        <div className="w-full max-w-6xl mx-auto relative">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Left — copy */}
-            <div>
-              {/* Social proof bar — above everything */}
-              <div className="flex items-center gap-3 mb-4 flex-wrap">
-                <div className="flex items-center gap-1">
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-yellow-400 text-sm">★</span>
-                    ))}
-                  </div>
-                  <span className="text-sm font-semibold text-[#e8e8f0] ml-1">5.0</span>
+        <div className="max-w-4xl mx-auto relative">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8e8f0] mb-6 leading-tight">
+            Construction Financial Dashboard for Contractors &{' '}
+            <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
+              Home Builders
+            </span>
+          </h1>
+
+          {/* GEO Quick-Answer Block — primary AI extraction target */}
+          <p className="text-base sm:text-lg md:text-xl text-[#b0b0c8] mb-4 max-w-2xl leading-relaxed">
+            BuilderCFO is a real-time financial dashboard built specifically for construction companies. It syncs with QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to give contractors instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging — without hiring a $150K CFO.
+          </p>
+          <p className="text-base text-[#8888a0] mb-8 max-w-2xl">
+            Built by{' '}
+            <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
+              Salisbury Bookkeeping
+            </a>
+            , a fractional controller firm serving construction companies nationwide. Plans start at $199/month with a 14-day free trial.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 mb-12">
+            <Link
+              href="/signup"
+              className="px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2"
+            >
+              Start Free — No Card Required <ChevronRight size={18} />
+            </Link>
+            <Link
+              href="/demo"
+              className="px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center"
+            >
+              See It In Action
+            </Link>
+          </div>
+          <div className="text-center">
+            <Link
+              href="#schedule"
+              className="text-center text-sm text-[#6366f1] hover:text-[#818cf8] transition"
+            >
+              or Book a 15-Min Demo →
+            </Link>
+          </div>
+
+          {/* Dashboard Mock — Rich Preview */}
+          <div className="bg-gradient-to-b from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 sm:p-6 shadow-2xl overflow-hidden">
+            {/* Tab bar */}
+            <div className="flex gap-1 mb-4 border-b border-[#2a2a3d] pb-2 overflow-x-auto">
+              {['Overview', 'AR by Job', 'AP by Job', 'WIP', 'Retainage', 'Sales'].map((tab, i) => (
+                <div key={tab} className={`px-3 py-1.5 text-xs font-medium rounded-t whitespace-nowrap ${i === 0 ? 'bg-[#6366f1]/15 text-[#a5b4fc] border-b-2 border-[#6366f1]' : 'text-[#8888a0]'}`}>
+                  {tab}
                 </div>
-                <span className="text-sm text-[#b0b0c8]">from contractors who stopped guessing</span>
-              </div>
-
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8e8f0] mb-4 leading-tight">
-                You Billed $200K Last Month.<br />
-                <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
-                  Your Bank Account Disagrees.
-                </span>
-              </h1>
-
-              {/* Done-for-you setup — mobile only (desktop version in right column) */}
-              <div className="flex items-start gap-2 mb-4 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5 lg:hidden">
-                <ShieldCheck size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-[#e8e8f0]">
-                  <span className="font-semibold text-[#22c55e]">We set it up for you.</span>{' '}
-                  Connects to QuickBooks, Buildertrend, Procore — whatever you use. If you get stuck, our team does the integration for you. Zero tech headaches.
-                </p>
-              </div>
-
-              <p className="text-base sm:text-lg text-[#b0b0c8] mb-4 leading-relaxed">
-                Jobs look profitable on paper. Then you close them out and the money&apos;s just&hellip; gone. BuilderCFO connects to QuickBooks and your field tools so you see exactly where every dollar went — on every job — before it&apos;s too late.
-              </p>
-
-              {/* Rotating pain point */}
-              <div className="h-8 flex items-center mb-5">
-                <p className="text-[#6366f1] font-medium text-sm sm:text-base animate-pulse">
-                  &quot;{painPoints[rotatingPain]}&quot;
-                </p>
-              </div>
-
-              {/* Social proof mini-quote */}
-              <div className="bg-[#12121a] border border-[#6366f1]/20 rounded-lg p-3 mb-4">
-                <p className="text-sm text-[#b0b0c8] italic">&quot;Recovered $8K in unbilled change orders in 60 days. System makes billable work slip through nearly impossible.&quot;</p>
-                <p className="text-xs text-[#8888a0] mt-1">— Zach, Custom Home Builder <span className="text-yellow-400">★★★★★</span></p>
-              </div>
-
-              {/* Cost math box — mobile only (desktop version in right column) */}
-              <div className="bg-[#12121a] border border-[#2a2a3d] rounded-lg p-4 mb-4 lg:hidden">
-                <div className="space-y-1.5 mb-3">
-                  <p className="text-sm text-[#8888a0] line-through">Fractional controller: $3,000–$8,000/mo</p>
-                  <p className="text-sm text-[#8888a0] line-through">One missed over-billing: $50,000+ at job close</p>
-                </div>
-                <p className="text-lg font-bold text-[#6366f1]">
-                  BuilderCFO: $199/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
-                </p>
-              </div>
-
-              <div>
-                <Link
-                  href="/signup"
-                  className="px-6 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2 text-base shadow-lg shadow-[#6366f1]/20"
-                >
-                  Start Free — See Your Numbers in 10 Min <ChevronRight size={18} />
-                </Link>
-              </div>
-              <p className="text-xs text-[#b0b0c8] mt-3">
-                Starts at $199/mo. 14 days free. Card required — cancel anytime. Or{' '}
-                <a href="#schedule" className="text-[#6366f1] hover:text-[#818cf8] font-medium transition">book a call</a> first.
-              </p>
+              ))}
             </div>
 
-            {/* Right — done-for-you callout + dashboard preview */}
-            <div className="hidden lg:block">
-              {/* Done-for-you setup promise — desktop only, above the dashboard preview */}
-              <div className="flex items-start gap-2 mb-4 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2.5">
-                <ShieldCheck size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-[#e8e8f0]">
-                  <span className="font-semibold text-[#22c55e]">We set it up for you.</span>{' '}
-                  Connects to QuickBooks, Buildertrend, Procore — whatever you use. If you get stuck, our team does the integration for you. Zero tech headaches.
-                </p>
-              </div>
-
-              {/* Cost math box — desktop only */}
-              <div className="bg-[#12121a] border border-[#2a2a3d] rounded-lg p-4 mb-4">
-                <div className="space-y-1.5 mb-3">
-                  <p className="text-sm text-[#8888a0] line-through">Fractional controller: $3,000–$8,000/mo</p>
-                  <p className="text-sm text-[#8888a0] line-through">One missed over-billing: $50,000+ at job close</p>
+            {/* KPI Row */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+              {[
+                { label: 'Revenue (YTD)', value: '$2.85M', change: '+12.3%', up: true },
+                { label: 'AR Outstanding', value: '$487.2K', change: '+3.1%', up: false },
+                { label: 'AP Outstanding', value: '$312.8K', change: '-8.2%', up: true },
+                { label: 'Net Cash', value: '$744.3K', change: '+26.1%', up: true },
+                { label: 'WIP Over-Billing', value: '$82.4K', change: '-12.5%', up: true },
+                { label: 'Retainage Held', value: '$196.5K', change: '+4.3%', up: false },
+              ].map((kpi) => (
+                <div key={kpi.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
+                  <div className="text-[#8888a0] text-[10px] uppercase tracking-wide mb-1">{kpi.label}</div>
+                  <div className="text-lg font-bold text-[#e8e8f0]">{kpi.value}</div>
+                  <div className={`text-[10px] font-semibold ${kpi.up ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{kpi.change}</div>
                 </div>
-                <p className="text-lg font-bold text-[#6366f1]">
-                  BuilderCFO: $199/mo. <span className="text-[#22c55e]">With an AI CFO included.</span>
-                </p>
+              ))}
+            </div>
+
+            {/* Two Column: AR Aging + Cash Flow */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+              {/* AR Aging */}
+              <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                <div className="text-sm font-semibold text-[#e8e8f0] mb-3">AR Aging Summary</div>
+                <div className="space-y-2">
+                  {[
+                    { range: 'Current', amount: '$310K', pct: 64, color: '#22c55e' },
+                    { range: '1-30 Days', amount: '$85K', pct: 17, color: '#eab308' },
+                    { range: '31-60 Days', amount: '$63.5K', pct: 13, color: '#ef9d44' },
+                    { range: '61-90 Days', amount: '$28.7K', pct: 6, color: '#ef4444' },
+                  ].map((item) => (
+                    <div key={item.range} className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                      <span className="text-[10px] text-[#8888a0] w-16">{item.range}</span>
+                      <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${item.pct}%` }} />
+                      </div>
+                      <span className="text-[10px] font-semibold text-[#e8e8f0] w-12 text-right">{item.amount}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-4 shadow-2xl">
-                {/* Mini KPIs */}
-                <div className="grid grid-cols-2 gap-2 mb-3">
+              {/* Cash Flow Chart Mock — Overlapping Bars */}
+              <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Cash Flow Forecast</div>
+                <div className="flex items-end gap-3 h-28">
                   {[
-                    { label: 'Revenue (YTD)', value: '$2.85M', change: '+12.3%', up: true, icon: TrendingUp },
-                    { label: 'Net Cash', value: '$744.3K', change: '+26.1%', up: true, icon: Zap },
-                    { label: 'WIP Over-Billing', value: '$82.4K', change: '-12.5%', up: true, icon: Eye },
-                    { label: 'AR Outstanding', value: '$487.2K', change: '+3.1%', up: false, icon: TrendingUp },
-                  ].map((kpi) => {
-                    const Icon = kpi.icon;
+                    { week: 'W1', inflow: 72, outflow: 55 },
+                    { week: 'W2', inflow: 68, outflow: 82 },
+                    { week: 'W3', inflow: 65, outflow: 47 },
+                    { week: 'W4', inflow: 90, outflow: 76 },
+                  ].map((w) => {
+                    const isPositive = w.inflow >= w.outflow;
                     return (
-                      <div key={kpi.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3 hover:border-[#6366f1]/40 transition">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[9px] text-[#8888a0] uppercase tracking-wide">{kpi.label}</span>
-                          <Icon size={12} className="text-[#6366f1] opacity-50" />
+                      <div key={w.week} className="flex-1 flex flex-col items-center gap-1.5">
+                        <div className="w-full relative h-24 flex items-end justify-center">
+                          <div
+                            className="absolute bottom-0 left-1 right-1 rounded-t-md"
+                            style={{
+                              height: `${Math.max(w.inflow, w.outflow)}%`,
+                              backgroundColor: isPositive ? '#14532d' : '#7f1d1d',
+                              border: `1.5px solid ${isPositive ? '#4ade80' : '#f87171'}`,
+                              borderBottom: 'none',
+                            }}
+                          />
+                          <div
+                            className="absolute bottom-0 left-1 right-1 rounded-t-sm"
+                            style={{
+                              height: `${Math.min(w.inflow, w.outflow)}%`,
+                              backgroundColor: isPositive ? '#7f1d1d' : '#14532d',
+                              border: `1.5px solid ${isPositive ? '#f87171' : '#4ade80'}`,
+                              borderBottom: 'none',
+                            }}
+                          />
+                          <div className="absolute -top-3.5 left-0 right-0 text-center">
+                            <span className="text-[8px] font-bold" style={{ color: isPositive ? '#4ade80' : '#f87171' }}>
+                              {isPositive ? '+' : '-'}{Math.abs(w.inflow - w.outflow)}%
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-xl font-bold text-[#e8e8f0]">{kpi.value}</div>
-                        <div className={`text-[10px] font-semibold ${kpi.up ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{kpi.change}</div>
+                        <span className="text-[9px] text-[#b0b0c8]">{w.week}</span>
                       </div>
                     );
                   })}
                 </div>
-                {/* AI Brief */}
-                <div className="bg-[#0a0a0f] border border-[#6366f1]/30 rounded-lg p-3 mb-3">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Brain size={12} className="text-[#a5b4fc]" />
-                    <span className="text-[9px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI CFO Advisor</span>
-                  </div>
-                  <p className="text-[11px] text-[#c8c8d8] leading-relaxed">
-                    <span className="text-[#22c55e] font-medium">Win:</span> Net cash up 26.1%.{' '}
-                    <span className="text-[#eab308] font-medium">Watch:</span> $82.4K WIP over-billing — cash risk at job close.
-                  </p>
-                </div>
-                {/* WIP bars */}
-                <div className="space-y-1.5">
-                  {[
-                    { name: 'Riverside Estate', pct: 82, status: 'Over-Billed: $69K', color: '#eab308' },
-                    { name: 'Heritage Park', pct: 77, status: 'Over-Billed: $141.5K', color: '#eab308' },
-                    { name: 'Mountain View', pct: 100, status: 'Under-Billed: $39.5K', color: '#6366f1' },
-                  ].map((job) => (
-                    <div key={job.name} className="flex items-center gap-2">
-                      <span className="text-[10px] text-[#e8e8f0] w-24 truncate">{job.name}</span>
-                      <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${job.pct >= 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
-                      </div>
-                      <span className="text-[9px] font-semibold w-28 text-right" style={{ color: job.color }}>{job.status}</span>
-                    </div>
-                  ))}
+                <div className="flex gap-4 mt-3 justify-center">
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#14532d', border: '1.5px solid #4ade80' }} /><span className="text-[9px] text-[#b0b0c8]">Cash In</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#7f1d1d', border: '1.5px solid #f87171' }} /><span className="text-[9px] text-[#b0b0c8]">Cash Out</span></div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 2 — SCROLL TRIGGER (proof numbers + trust strip)  */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-[#6366f1]/10 via-[#6366f1]/5 to-[#6366f1]/10">
-        <div className="w-full max-w-4xl mx-auto">
-          {/* Big number proof */}
-          <div className="text-center mb-6">
-            <p className="text-5xl sm:text-6xl font-bold text-[#6366f1] mb-3">$140K</p>
-            <p className="text-base sm:text-lg text-[#e8e8f0] mb-2">
-              caught in over-billing across two jobs. Before job close. In the first week.
-            </p>
-            <p className="text-sm text-[#8888a0]">
-              — Sarah M., CFO, Denver CO
-            </p>
-          </div>
-
-          {/* Trust strip — real results from real contractors */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-            {[
-              { number: '$34K', label: 'forgotten retainage recovered', who: 'Rachel K., Electrical Sub' },
-              { number: '4x', label: 'ROI in first 60 days', who: 'Zach, Custom Home Builder' },
-              { number: '21 days', label: 'faster AR collection', who: 'Adam, Commercial GC' },
-              { number: '$8K', label: 'unbilled change orders found', who: 'Zach, Custom Homes' },
-            ].map((stat, idx) => (
-              <div key={idx} className="text-center">
-                <p className="text-xl sm:text-2xl font-bold text-[#e8e8f0]">{stat.number}</p>
-                <p className="text-xs text-[#b0b0c8] mt-0.5">{stat.label}</p>
-                <p className="text-[10px] text-[#8888a0] mt-0.5">{stat.who}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 3 — COMPRESSED PAIN STRIP                         */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { pain: "You check your bank balance to see if you're okay", emoji: "😬", detail: "That's not financial management. That's financial anxiety." },
-              { pain: "You don't know if a job made money until it's over", emoji: "🤷", detail: "By then it's too late. The money already left." },
-              { pain: "You've been over-billed on a job and didn't catch it", emoji: "💣", detail: "That's a cash bomb. It explodes at job close." },
-            ].map((item, idx) => (
-              <div key={idx} className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-4 flex items-start gap-3">
-                <span className="text-xl flex-shrink-0">{item.emoji}</span>
-                <div>
-                  <p className="text-sm text-[#e8e8f0] font-medium mb-0.5">{item.pain}</p>
-                  <p className="text-xs text-[#8888a0]">{item.detail}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 3.5 — WHO THIS IS FOR (ICP)                       */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-3xl mx-auto">
-          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6 sm:p-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-5 text-center">
-              BuilderCFO Works For:
-            </h2>
-            <div className="space-y-3">
-              {[
-                'Custom home builders tracking 5–15 active jobs',
-                'General contractors managing subs and retainage',
-                'Remodelers who bill by phase or draw schedule',
-                'Electrical, plumbing, and HVAC subs with retainage across multiple GCs',
-                'Spec builders managing lender draws and cash flow',
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <Check size={18} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-[#e8e8f0]">{item}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-center text-sm text-[#6366f1] font-medium mt-5">
-              If you use QuickBooks and run jobs, this was built for you.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 3.6 — COMPETITOR COMPARISON                       */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-3xl mx-auto">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-5 text-center">
-            How Contractors Track Money Today
-          </h2>
-          <div className="space-y-3">
-            {[
-              { method: 'Excel spreadsheets', limitation: 'Manual entry, breaks constantly, no real-time visibility, no AI' },
-              { method: 'QuickBooks reports', limitation: 'Shows accounting, not job profitability or WIP status' },
-              { method: 'Monthly bookkeeper report', limitation: '30 days old by the time you see it' },
-              { method: 'Fractional controller', limitation: 'Great insight, $3,000–$8,000/month' },
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-start gap-3 bg-[#12121a] border border-[#1e1e2e] rounded-lg p-3 sm:p-4 opacity-60">
-                <span className="text-[#ef4444] text-sm mt-0.5">✗</span>
-                <div>
-                  <span className="text-sm text-[#e8e8f0] line-through">{item.method}</span>
-                  <span className="text-xs text-[#8888a0] ml-2">— {item.limitation}</span>
-                </div>
-              </div>
-            ))}
-            <div className="flex items-start gap-3 bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-lg p-3 sm:p-4">
-              <Check size={18} className="text-[#6366f1] flex-shrink-0 mt-0.5" />
-              <div>
-                <span className="text-sm text-[#e8e8f0] font-semibold">BuilderCFO</span>
-                <span className="text-xs text-[#b0b0c8] ml-2">— Real-time, automated, AI-powered, $199/month</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 4 — INTERACTIVE DASHBOARD DEMO (moved up)         */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-10 sm:py-16 px-4 sm:px-6 lg:px-8" id="live-demo">
-        <div className="w-full max-w-6xl mx-auto">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-2">
-              This Is What Your Money Looks Like
-            </h2>
-            <p className="text-sm text-[#8888a0]">Click the tabs. This is real data from a $3M general contractor.</p>
-            {/* Integrations micro-strip */}
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
-              {['QuickBooks', 'Procore', 'Buildertrend', 'ServiceTitan', 'Salesforce', 'HubSpot', 'JobNimbus'].map((t) => (
-                <span key={t} className="text-[10px] text-[#8888a0] bg-[#12121a] border border-[#1e1e2e] rounded px-2 py-0.5">{t}</span>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-b from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-3 sm:p-6 shadow-2xl overflow-hidden scroll-mt-24">
-            <div className="flex gap-1 mb-4 border-b border-[#2a2a3d] pb-2 overflow-x-auto">
-              {([
-                { key: 'overview', label: 'Overview' },
-                { key: 'ar', label: 'AR by Job' },
-                { key: 'ap', label: 'AP by Job' },
-                { key: 'wip', label: 'WIP' },
-                { key: 'retainage', label: 'Retainage' },
-                { key: 'sales', label: 'Sales' },
-              ] as { key: DemoTab; label: string }[]).map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setDemoTab(tab.key)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-t whitespace-nowrap transition-all cursor-pointer ${
-                    demoTab === tab.key
-                      ? 'bg-[#6366f1]/15 text-[#a5b4fc] border-b-2 border-[#6366f1]'
-                      : 'text-[#8888a0] hover:text-[#e8e8f0]'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* ── OVERVIEW TAB ── */}
-            {demoTab === 'overview' && (
-              <>
-                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] mb-3">
-                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Brief</span></div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#22c55e]">▲</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> Net cash up 26.1% — strong collections building a healthy runway</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> AR growing faster than revenue — collections lagging billings</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> $82.4K WIP over-billing exposes cash risk at job close</p></div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-4">
-                  {[
-                    { label: 'Revenue (YTD)', value: '$2.85M', change: '+12.3%', up: true },
-                    { label: 'AR Outstanding', value: '$487.2K', change: '+3.1%', up: false },
-                    { label: 'AP Outstanding', value: '$312.8K', change: '-8.2%', up: true },
-                    { label: 'Net Cash', value: '$744.3K', change: '+26.1%', up: true },
-                    { label: 'WIP Over-Billing', value: '$82.4K', change: '-12.5%', up: true },
-                    { label: 'Retainage Held', value: '$196.5K', change: '+4.3%', up: false },
-                  ].map((kpi) => (
-                    <div key={kpi.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
-                      <div className="text-[#8888a0] text-[10px] uppercase tracking-wide mb-1">{kpi.label}</div>
-                      <div className="text-lg font-bold text-[#e8e8f0]">{kpi.value}</div>
-                      <div className={`text-[10px] font-semibold ${kpi.up ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{kpi.change}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
-                  <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
-                    <div className="text-sm font-semibold text-[#e8e8f0] mb-3">AR Aging Summary</div>
-                    <div className="space-y-2">
-                      {[
-                        { range: 'Current', amount: '$310K', pct: 64, color: '#22c55e' },
-                        { range: '1-30 Days', amount: '$85K', pct: 17, color: '#eab308' },
-                        { range: '31-60 Days', amount: '$63.5K', pct: 13, color: '#ef9d44' },
-                        { range: '61-90 Days', amount: '$28.7K', pct: 6, color: '#ef4444' },
-                      ].map((item) => (
-                        <div key={item.range} className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                          <span className="text-[10px] text-[#8888a0] w-16">{item.range}</span>
-                          <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
-                            <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${item.pct}%` }} />
-                          </div>
-                          <span className="text-[10px] font-semibold text-[#e8e8f0] w-12 text-right">{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
-                    <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Cash Flow Forecast</div>
-                    <div className="flex items-end gap-3 h-28">
-                      {[
-                        { week: 'W1', inflow: 72, outflow: 55 },
-                        { week: 'W2', inflow: 68, outflow: 82 },
-                        { week: 'W3', inflow: 65, outflow: 47 },
-                        { week: 'W4', inflow: 90, outflow: 76 },
-                      ].map((w) => {
-                        const isPositive = w.inflow >= w.outflow;
-                        return (
-                          <div key={w.week} className="flex-1 flex flex-col items-center gap-1.5">
-                            <div className="w-full relative h-24 flex items-end justify-center">
-                              <div className="absolute bottom-0 left-1 right-1 rounded-t-md" style={{ height: `${Math.max(w.inflow, w.outflow)}%`, backgroundColor: isPositive ? '#14532d' : '#7f1d1d', border: `1.5px solid ${isPositive ? '#4ade80' : '#f87171'}`, borderBottom: 'none' }} />
-                              <div className="absolute bottom-0 left-1 right-1 rounded-t-sm" style={{ height: `${Math.min(w.inflow, w.outflow)}%`, backgroundColor: isPositive ? '#7f1d1d' : '#14532d', border: `1.5px solid ${isPositive ? '#f87171' : '#4ade80'}`, borderBottom: 'none' }} />
-                              <div className="absolute -top-3.5 left-0 right-0 text-center">
-                                <span className="text-[8px] font-bold" style={{ color: isPositive ? '#4ade80' : '#f87171' }}>
-                                  {isPositive ? '+' : '-'}{Math.abs(w.inflow - w.outflow)}%
-                                </span>
-                              </div>
-                            </div>
-                            <span className="text-[9px] text-[#b0b0c8]">{w.week}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="flex gap-4 mt-3 justify-center">
-                      <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#14532d', border: '1.5px solid #4ade80' }} /><span className="text-[9px] text-[#b0b0c8]">Cash In</span></div>
-                      <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#7f1d1d', border: '1.5px solid #f87171' }} /><span className="text-[9px] text-[#b0b0c8]">Cash Out</span></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
-                  <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Active Jobs — WIP Status</div>
-                  <div className="space-y-2">
-                    {[
-                      { name: 'Riverside Estate Custom Home', pct: 82, contract: '$950K', billing: 'Over-Billed', billingAmt: '$69K', billingColor: '#eab308' },
-                      { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', billing: 'Over-Billed', billingAmt: '$141.5K', billingColor: '#eab308' },
-                      { name: 'Mountain View Remodel', pct: 100, contract: '$165K', billing: 'Under-Billed', billingAmt: '$39.5K', billingColor: '#6366f1' },
-                      { name: 'Cedar Heights Addition', pct: 93, contract: '$210K', billing: 'Under-Billed', billingAmt: '$55.3K', billingColor: '#6366f1' },
-                      { name: 'Oakwood Duplex', pct: 94, contract: '$380K', billing: 'Over-Billed', billingAmt: '$5.2K', billingColor: '#eab308' },
-                    ].map((job) => (
-                      <div key={job.name} className="flex items-center gap-3">
-                        <span className="text-xs text-[#e8e8f0] w-24 sm:w-48 truncate">{job.name}</span>
-                        <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${job.pct >= 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
-                        </div>
-                        <span className="text-[10px] text-[#8888a0] w-10">{job.pct}%</span>
-                        <span className="hidden sm:block text-[10px] text-[#8888a0] w-14 text-right">{job.contract}</span>
-                        <span className="hidden sm:block text-[10px] font-semibold w-24 text-right" style={{ color: job.billingColor }}>
-                          {job.billing}: {job.billingAmt}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* ── AR BY JOB TAB ── */}
-            {demoTab === 'ar' && (
-              <div className="space-y-3">
-                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d]">
-                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Brief</span></div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#22c55e]">▲</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> 64% of AR is current — solid billing discipline</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Oakwood Duplex 92 days past due — escalate before write-off</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Heritage Park $45K at 62 days — contact before dispute</p></div>
-                  </div>
-                </div>
-                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] text-[10px] sm:text-xs">
-                  <span className="text-[#c8c8d8]">Total AR: <span className="font-semibold text-[#e8e8f0]">$487,200</span> · Past Due: <span className="font-semibold text-[#ef4444]">$177,200 (36%)</span> · Current: <span className="font-semibold text-[#22c55e]">$310,000</span></span>
-                </div>
+            {/* Job WIP Row */}
+            <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+              <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Active Jobs — WIP Status</div>
+              <div className="space-y-2">
                 {[
-                  { job: 'Oakwood Duplex', customer: 'Oakwood Investments', total: '$28,700', pastDue: '$28,700', items: [
-                    { inv: 'INV-2024-133', amount: '$28,700', due: '2023-11-30', days: 92, status: 'Past Due' },
-                  ]},
-                  { job: 'Heritage Park Commercial', customer: 'Heritage Park LLC', total: '$170,000', pastDue: '$45,000', items: [
-                    { inv: 'INV-2024-149', amount: '$45,000', due: '2024-12-15', days: 62, status: 'Past Due' },
-                    { inv: 'INV-2024-155', amount: '$125,000', due: '2024-03-05', days: 0, status: 'Current' },
-                  ]},
-                ].map((group) => (
-                  <div key={group.job} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <div className="text-xs font-semibold text-[#e8e8f0]">{group.job}</div>
-                        <div className="text-[10px] text-[#8888a0]">{group.customer}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs font-semibold text-[#e8e8f0]">{group.total}</div>
-                        {group.pastDue !== '$0' && <div className="text-[10px] text-[#ef4444]">{group.pastDue} past due</div>}
-                      </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-[10px] sm:text-xs">
-                        <thead><tr className="border-b border-[#2a2a3d]">
-                          <th className="text-left py-1 text-[#8888a0]">Invoice</th>
-                          <th className="text-right py-1 text-[#8888a0]">Amount</th>
-                          <th className="text-right py-1 text-[#8888a0]">Due</th>
-                          <th className="text-right py-1 text-[#8888a0]">Days</th>
-                          <th className="text-right py-1 text-[#8888a0]">Status</th>
-                        </tr></thead>
-                        <tbody>
-                          {group.items.map((item) => (
-                            <tr key={item.inv} className={`border-b border-[#2a2a3d]/30 ${item.days > 0 ? 'bg-[#ef4444]/5' : ''}`}>
-                              <td className="py-1.5 font-mono">{item.inv}</td>
-                              <td className={`py-1.5 text-right font-semibold ${item.days > 0 ? 'text-[#ef4444]' : 'text-[#e8e8f0]'}`}>{item.amount}</td>
-                              <td className="py-1.5 text-right text-[#8888a0]">{item.due}</td>
-                              <td className={`py-1.5 text-right font-semibold ${item.days > 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>{item.days || '—'}</td>
-                              <td className="py-1.5 text-right">
-                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${item.status === 'Past Due' ? 'bg-[#ef4444]/15 text-[#ef4444]' : 'bg-[#22c55e]/15 text-[#22c55e]'}`}>{item.status}</span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* ── AP BY JOB TAB ── */}
-            {demoTab === 'ap' && (
-              <div className="space-y-3">
-                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d]">
-                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Brief</span></div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#22c55e]">▲</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> AP down 8.2% — paying vendors on time</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Rocky Mtn Concrete $35K, 41 days late — lien risk</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Valley HVAC $45.3K — verify held for punch list</p></div>
-                  </div>
-                </div>
-                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d] text-[10px] sm:text-xs">
-                  <span className="text-[#c8c8d8]">Total AP: <span className="font-semibold text-[#e8e8f0]">$296,600</span> · Past Due: <span className="font-semibold text-[#ef4444]">$129,000 (43%)</span> · Current: <span className="font-semibold text-[#22c55e]">$167,600</span></span>
-                </div>
-                {[
-                  { job: 'Riverside Estate Custom Home', total: '$95,700', pastDue: '$53,200', items: [
-                    { vendor: 'Rocky Mtn Concrete', bill: 'BILL-4477', amount: '$35,000', days: 41, status: 'Past Due' },
-                    { vendor: 'Wasatch Electric Co', bill: 'BILL-4498', amount: '$18,200', days: 31, status: 'Past Due' },
-                    { vendor: 'Summit Lumber Supply', bill: 'BILL-4521', amount: '$42,500', days: 0, status: 'Current' },
-                  ]},
-                ].map((group) => (
-                  <div key={group.job} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-xs font-semibold text-[#e8e8f0]">{group.job}</div>
-                      <div className="text-right">
-                        <div className="text-xs font-semibold text-[#e8e8f0]">{group.total}</div>
-                        <div className="text-[10px] text-[#ef4444]">{group.pastDue} past due</div>
-                      </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-[10px] sm:text-xs">
-                        <thead><tr className="border-b border-[#2a2a3d]">
-                          <th className="text-left py-1 text-[#8888a0]">Vendor</th>
-                          <th className="text-left py-1 text-[#8888a0]">Bill #</th>
-                          <th className="text-right py-1 text-[#8888a0]">Amount</th>
-                          <th className="text-right py-1 text-[#8888a0]">Days</th>
-                          <th className="text-right py-1 text-[#8888a0]">Status</th>
-                        </tr></thead>
-                        <tbody>
-                          {group.items.map((item) => (
-                            <tr key={item.bill} className={`border-b border-[#2a2a3d]/30 ${item.days > 0 ? 'bg-[#ef4444]/5' : ''}`}>
-                              <td className="py-1.5">{item.vendor}</td>
-                              <td className="py-1.5 font-mono">{item.bill}</td>
-                              <td className={`py-1.5 text-right font-semibold ${item.days > 0 ? 'text-[#ef4444]' : 'text-[#e8e8f0]'}`}>{item.amount}</td>
-                              <td className={`py-1.5 text-right font-semibold ${item.days > 0 ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>{item.days || '—'}</td>
-                              <td className="py-1.5 text-right">
-                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${item.status === 'Past Due' ? 'bg-[#ef4444]/15 text-[#ef4444]' : 'bg-[#22c55e]/15 text-[#22c55e]'}`}>{item.status}</span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* ── WIP TAB ── */}
-            {demoTab === 'wip' && (
-              <div className="space-y-3">
-                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d]">
-                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Summary</span></div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                    <div className="flex items-start gap-1.5"><span className="text-[#22c55e] text-[10px]">▲</span><p className="text-[10px] text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> Portfolio margin at 18.9% across 5 active jobs</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[#eab308] text-[10px]">▼</span><p className="text-[10px] text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Cedar Heights is $55K under-billed — submit draw request</p></div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { label: 'Total Contract', value: '$3.16M', color: '' },
-                    { label: 'Over-Billed', value: '$215.7K', color: 'text-[#eab308]' },
-                    { label: 'Under-Billed', value: '$94.8K', color: 'text-[#6366f1]' },
-                    { label: 'Net Position', value: 'Over: $120.9K', color: 'text-[#eab308]' },
-                  ].map((m) => (
-                    <div key={m.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-2.5">
-                      <div className="text-[9px] text-[#8888a0] uppercase tracking-wide">{m.label}</div>
-                      <div className={`text-sm sm:text-base font-bold mt-0.5 ${m.color || 'text-[#e8e8f0]'}`}>{m.value}</div>
-                    </div>
-                  ))}
-                </div>
-                {[
-                  { name: 'Riverside Estate Custom Home', pct: 82, contract: '$950K', cost: '$623K', billed: '$710K', overUnder: 'Over-Billed: $69K', color: '#eab308', margin: '20.0%' },
-                  { name: 'Mountain View Remodel', pct: 112, contract: '$165K', cost: '$148K', billed: '$125.5K', overUnder: 'Under-Billed: $39.5K', color: '#6366f1', margin: '-10.3%' },
-                  { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', cost: '$890K', billed: '$975K', overUnder: 'Over-Billed: $141.5K', color: '#eab308', margin: '20.0%' },
+                  { name: 'Riverside Estate Custom Home', pct: 82, contract: '$950K', billing: 'Over-Billed', billingAmt: '$69K', billingColor: '#eab308' },
+                  { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', billing: 'Over-Billed', billingAmt: '$141.5K', billingColor: '#eab308' },
+                  { name: 'Mountain View Remodel', pct: 100, contract: '$165K', billing: 'Under-Billed', billingAmt: '$39.5K', billingColor: '#6366f1' },
+                  { name: 'Cedar Heights Addition', pct: 93, contract: '$210K', billing: 'Under-Billed', billingAmt: '$55.3K', billingColor: '#6366f1' },
+                  { name: 'Oakwood Duplex', pct: 94, contract: '$380K', billing: 'Over-Billed', billingAmt: '$5.2K', billingColor: '#eab308' },
                 ].map((job) => (
-                  <div key={job.name} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <div className="text-xs font-semibold text-[#e8e8f0]">{job.name}</div>
-                        <div className="text-[10px] text-[#8888a0]">Contract: {job.contract}</div>
-                      </div>
-                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${job.pct >= 100 ? 'bg-[#ef4444]/15 text-[#ef4444]' : 'bg-[#6366f1]/15 text-[#a5b4fc]'}`}>{job.pct}% Complete</span>
+                  <div key={job.name} className="flex items-center gap-3">
+                    <span className="text-xs text-[#e8e8f0] w-24 sm:w-48 truncate">{job.name}</span>
+                    <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${job.pct >= 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
                     </div>
-                    <div className="h-2 bg-[#2a2a3d] rounded-full overflow-hidden mb-2">
-                      <div className={`h-full rounded-full ${job.pct > 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2 text-[10px]">
-                      <div className="bg-[#1a1a26] rounded p-1.5"><span className="text-[#8888a0]">Cost to Date</span><div className="font-semibold text-[#e8e8f0]">{job.cost}</div></div>
-                      <div className="bg-[#1a1a26] rounded p-1.5"><span className="text-[#8888a0]">Billed</span><div className="font-semibold text-[#e8e8f0]">{job.billed}</div></div>
-                      <div className="rounded p-1.5" style={{ backgroundColor: job.color + '15' }}><span className="text-[#8888a0]">Billing Status</span><div className="font-semibold" style={{ color: job.color }}>{job.overUnder}</div></div>
-                      <div className="bg-[#1a1a26] rounded p-1.5"><span className="text-[#8888a0]">Margin</span><div className={`font-semibold ${job.margin.startsWith('-') ? 'text-[#ef4444]' : 'text-[#22c55e]'}`}>{job.margin}</div></div>
-                    </div>
+                    <span className="text-[10px] text-[#8888a0] w-10">{job.pct}%</span>
+                    <span className="hidden sm:block text-[10px] text-[#8888a0] w-14 text-right">{job.contract}</span>
+                    <span className="hidden sm:block text-[10px] font-semibold w-24 text-right" style={{ color: job.billingColor }}>
+                      {job.billing}: {job.billingAmt}
+                    </span>
                   </div>
                 ))}
-              </div>
-            )}
-
-            {/* ── RETAINAGE TAB ── */}
-            {demoTab === 'retainage' && (
-              <div className="space-y-3">
-                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d]">
-                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Brief</span></div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#22c55e]">▲</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> Net retainage $171K in your favor</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> $68.1K overdue for release — file requests now</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> 2 release dates approaching — schedule walk-throughs</p></div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { label: 'Total Held', value: '$223,250', color: 'text-[#22c55e]' },
-                    { label: 'Total Overdue', value: '$68,200', color: 'text-[#ef4444]' },
-                    { label: 'Total Paid', value: '$116,400', color: 'text-[#6366f1]' },
-                    { label: 'Net Position', value: '$171,550', color: 'text-[#6366f1]' },
-                  ].map((m) => (
-                    <div key={m.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-2.5">
-                      <div className="text-[9px] text-[#8888a0] uppercase tracking-wide">{m.label}</div>
-                      <div className={`text-sm sm:text-base font-bold mt-0.5 ${m.color}`}>{m.value}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3 overflow-x-auto">
-                  <div className="text-xs font-semibold text-[#e8e8f0] mb-2">Retainage by Job</div>
-                  <table className="w-full text-[10px] sm:text-xs">
-                    <thead><tr className="border-b border-[#2a2a3d]">
-                      <th className="text-left py-1 text-[#8888a0]">Job</th>
-                      <th className="text-right py-1 text-[#8888a0]">Recv</th>
-                      <th className="text-right py-1 text-[#8888a0]">Pay</th>
-                      <th className="text-right py-1 text-[#8888a0]">Net</th>
-                      <th className="text-right py-1 text-[#8888a0]">Status</th>
-                    </tr></thead>
-                    <tbody>
-                      {[
-                        { job: 'Lakeside Office', recv: '$28.5K', pay: '$15.6K', net: '$12.9K', status: 'Overdue', sc: 'bg-[#ef4444]/15 text-[#ef4444]' },
-                        { job: 'Westfield Center', recv: '$31.2K', pay: '$18.9K', net: '$12.3K', status: 'Overdue', sc: 'bg-[#ef4444]/15 text-[#ef4444]' },
-                        { job: 'Riverside Estate', recv: '$71K', pay: '$38.2K', net: '$32.8K', status: 'Held', sc: 'bg-[#8888a0]/15 text-[#c8c8d8]' },
-                        { job: 'Oakwood Duplex', recv: '$35.2K', pay: '$18.5K', net: '$16.7K', status: 'Ready', sc: 'bg-[#22c55e]/15 text-[#22c55e]' },
-                      ].map((r) => (
-                        <tr key={r.job} className={`border-b border-[#2a2a3d]/30 ${r.status === 'Overdue' ? 'bg-[#ef4444]/5' : ''}`}>
-                          <td className="py-1.5 font-medium">{r.job}</td>
-                          <td className="py-1.5 text-right text-[#22c55e] font-semibold">{r.recv}</td>
-                          <td className="py-1.5 text-right text-[#ef9d44] font-semibold">{r.pay}</td>
-                          <td className="py-1.5 text-right text-[#6366f1] font-semibold">{r.net}</td>
-                          <td className="py-1.5 text-right"><span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${r.sc}`}>{r.status}</span></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* ── SALES TAB ── */}
-            {demoTab === 'sales' && (
-              <div className="space-y-3">
-                <div className="p-2 rounded-lg bg-[#0a0a0f] border border-[#2a2a3d]">
-                  <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-semibold text-[#a5b4fc] uppercase tracking-wider">AI Brief</span></div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#22c55e]">▲</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#22c55e]">Win:</span> Team at 73% quota with $10.6M pipeline</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Westfield $1.25M at 35% — needs strategy session</p></div>
-                    <div className="flex items-start gap-1.5"><span className="text-[10px] text-[#eab308]">▼</span><p className="text-[10px] sm:text-xs text-[#c8c8d8]"><span className="font-medium text-[#eab308]">Watch:</span> Pipeline top-heavy in proposals — move to negotiation</p></div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { label: 'Total Pipeline', value: '$10.6M', color: '' },
-                    { label: 'Won (Quarter)', value: '$78K', color: 'text-[#22c55e]' },
-                    { label: 'Avg Deal Size', value: '$272K', color: '' },
-                    { label: 'Team Quota', value: '78%', color: 'text-[#eab308]' },
-                  ].map((m) => (
-                    <div key={m.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-2.5">
-                      <div className="text-[9px] text-[#8888a0] uppercase tracking-wide">{m.label}</div>
-                      <div className={`text-sm sm:text-base font-bold mt-0.5 ${m.color || 'text-[#e8e8f0]'}`}>{m.value}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
-                  <div className="text-xs font-semibold text-[#e8e8f0] mb-3">Pipeline Stages</div>
-                  <div className="space-y-2">
-                    {[
-                      { stage: 'Leads', count: 24, value: '$4.2M', pct: 100 },
-                      { stage: 'Proposals', count: 8, value: '$2.85M', pct: 68 },
-                      { stage: 'Negotiation', count: 4, value: '$1.68M', pct: 40 },
-                      { stage: 'Won', count: 3, value: '$1.25M', pct: 30 },
-                    ].map((s) => (
-                      <div key={s.stage} className="flex items-center gap-2">
-                        <span className="text-[10px] text-[#8888a0] w-16 sm:w-20">{s.stage}</span>
-                        <div className="flex-1 h-5 bg-[#2a2a3d] rounded-full overflow-hidden">
-                          <div className="h-full bg-[#6366f1] rounded-full flex items-center justify-end pr-2" style={{ width: `${s.pct}%` }}>
-                            <span className="text-[9px] font-bold text-white">{s.count}</span>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-semibold text-[#e8e8f0] w-12 text-right">{s.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="mt-4 pt-3 border-t border-[#2a2a3d] text-center">
-              <p className="text-[10px] sm:text-xs text-[#8888a0]">
-                This is fake data. Want to see yours? <Link href="/signup" className="text-[#6366f1] hover:text-[#818cf8] font-medium transition">Start your free trial</Link> — your real numbers load in 10 minutes.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 5 — AI CFO ADVISOR                                */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="cfo-advisor">
-        <div className="w-full max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6366f1]/10 border border-[#6366f1]/30 text-[#a5b4fc] text-xs font-semibold mb-4">
-                <Brain size={14} /> ON EVERY PLAN — NO EXTRA CHARGE
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-3">
-                Your CPA Charges $300/hr for These Answers.<br />
-                <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">Your AI CFO Does It in Seconds.</span>
-              </h2>
-              <p className="text-sm sm:text-base text-[#b0b0c8] mb-5 leading-relaxed">
-                Right now you wait days for your bookkeeper to pull a report — or pay your CPA $300/hr to answer one question. BuilderCFO answers in plain English, using your real numbers, the second you ask.
-              </p>
-
-              <div className="space-y-2.5">
-                {[
-                  { q: '\u201cWhy did my margin drop on the Henderson job?\u201d', a: 'Without this, you find out at job close \u2014 $15K too late' },
-                  { q: '\u201cCan I afford to hire another PM next quarter?\u201d', a: 'Guessing this wrong costs you a bad hire or a missed opportunity' },
-                  { q: '\u201cWhat should I bill this month?\u201d', a: 'Under-billing by one draw cycle can choke your cash for 60 days' },
-                  { q: '\u201cAm I over-billed on any jobs right now?\u201d', a: 'One missed over-billing cost a contractor $140K. This catches it in real time.' },
-                ].map((item, idx) => (
-                  <div key={idx} className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-3 hover:border-[#6366f1]/40 transition">
-                    <p className="text-sm font-medium text-[#e8e8f0] mb-0.5">{item.q}</p>
-                    <p className="text-xs text-[#8888a0]">{item.a}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Interactive Advisor Chat Demo */}
-            <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-xl overflow-hidden shadow-2xl">
-              <div className="flex items-center gap-2 px-4 py-3 bg-[#12121a] border-b border-[#2a2a3d]">
-                <Brain size={16} className="text-[#6366f1]" />
-                <span className="text-sm font-semibold text-[#e8e8f0]">CFO Advisor</span>
-                <span className="ml-auto text-[9px] px-2 py-0.5 rounded-full bg-[#22c55e]/15 text-[#22c55e]">Live</span>
-              </div>
-              <div className="p-4 space-y-4 max-h-[350px] overflow-y-auto">
-                {advisorMessages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs leading-relaxed ${
-                      msg.role === 'user'
-                        ? 'bg-[#6366f1] text-white'
-                        : 'bg-[#1a1a26] border border-[#2a2a3d] text-[#c8c8d8]'
-                    }`} dangerouslySetInnerHTML={{ __html: msg.text }}>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="px-4 py-3 border-t border-[#2a2a3d]">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={advisorInput}
-                    onChange={(e) => setAdvisorInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAdvisorDemo()}
-                    placeholder="Ask about your job costs, cash flow, WIP..."
-                    className="flex-1 bg-[#12121a] border border-[#2a2a3d] rounded-lg px-3 py-2 text-xs text-[#e8e8f0] placeholder-[#555] focus:outline-none focus:border-[#6366f1] transition"
-                  />
-                  <button
-                    onClick={handleAdvisorDemo}
-                    className="px-3 py-2 bg-[#6366f1] rounded-lg hover:bg-[#5558d9] transition"
-                  >
-                    <ArrowRight size={14} className="text-white" />
-                  </button>
-                </div>
-                <p className="text-[9px] text-[#555] mt-2 text-center">Go ahead — type a question and see what happens</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 6 — REVIEWS (before pricing)                      */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-3 mb-3">
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <span key={i} className="text-yellow-400 text-lg">★</span>
-              ))}
-            </div>
-            <span className="text-lg font-bold text-[#e8e8f0]">5.0</span>
-            <span className="text-sm text-[#8888a0]">across Salisbury Bookkeeping + BuilderCFO clients</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-8 text-center">
-            Builders Don&apos;t Sugarcoat. Here&apos;s What They Said.
+      {/* What Is BuilderCFO? — GEO Definition Block */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-6 text-center">
+            What Is BuilderCFO?
           </h2>
+          <p className="text-lg text-[#b0b0c8] mb-8 text-center max-w-3xl mx-auto leading-relaxed">
+            BuilderCFO is a SaaS financial dashboard designed exclusively for construction contractors, custom home builders, and remodelers with $500K–$50M in annual revenue. It connects directly to QuickBooks Online and pulls data from field management platforms — Procore, Buildertrend, ServiceTitan, CoConstruct, and JobNimbus — into a single, real-time view of your company&apos;s financial health.
+          </p>
 
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                quote: '"Recovered $8K in unbilled change orders in 60 days. System makes billable work slip through nearly impossible."',
-                author: 'Zach',
-                title: 'Custom Home Builder',
-                result: '4x ROI in 60 days',
+                title: 'You check your bank balance to gauge financial health',
+                fix: 'BuilderCFO shows net cash, AR/AP, and WIP in one screen — updated in real time from QuickBooks.',
+                icon: '💳',
               },
               {
-                quote: '"P&L said we were profitable, but bank account disagreed. Now I see which jobs make money in real time."',
-                author: 'Dave',
-                title: 'Residential Remodeler',
-                result: '+2% pricing accuracy',
+                title: "You don't know if a job is profitable until it's done",
+                fix: 'Per-job P&L with budget vs. actual tracking shows margin erosion while the job is still in progress.',
+                icon: '📊',
               },
               {
-                quote: '"Managing retainage across 8 GCs was a nightmare. Recovered $34K in forgotten retainage in Q1."',
-                author: 'Rachel K.',
-                title: 'Electrical Subcontractor',
-                result: '$34K recovered',
+                title: 'Month-end close takes weeks, not days',
+                fix: 'Automated WIP schedules and pre-built reports cut close time from weeks to 2–3 days.',
+                icon: '📅',
+              },
+            ].map((pain, idx) => (
+              <div
+                key={idx}
+                className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6 hover:border-[#6366f1]/50 transition"
+              >
+                <div className="text-4xl mb-4">{pain.icon}</div>
+                <p className="text-[#e8e8f0] font-medium mb-3">{pain.title}</p>
+                <p className="text-sm text-[#b0b0c8]">{pain.fix}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How Does BuilderCFO Work? — GEO Step-by-Step Block */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
+            How Does BuilderCFO Work?
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                step: '1',
+                title: 'Connect QuickBooks in 2 Minutes',
+                desc: 'Securely link your QuickBooks Online account via OAuth 2.0. BuilderCFO reads your data — it never modifies your books. Your data stays encrypted in transit and at rest.',
+                icon: Plug,
               },
               {
-                quote: '"Lender used to question draw requests. Now I submit bank-ready reports approved in days, not weeks."',
-                author: 'Marcus T.',
-                title: 'Spec Home Builder',
-                result: 'Bank-ready draws',
+                step: '2',
+                title: 'Add Your Field Management Tools',
+                desc: 'Connect Procore, Buildertrend, ServiceTitan, HubSpot, Salesforce, or JobNimbus. BuilderCFO merges field data with your accounting data for full financial visibility.',
+                icon: Zap,
               },
               {
-                quote: '"Knowing cash position 2 months out changed everything. Bank conversations easier, numbers finally trustworthy."',
-                author: 'Adam',
-                title: 'Commercial Contractor',
-                result: '21-day AR reduction',
+                step: '3',
+                title: 'See Your Numbers in Real Time',
+                desc: 'Your dashboard populates instantly with job costing, WIP schedules, cash flow forecasts, AR/AP aging, retainage tracking, and AI-powered financial analysis.',
+                icon: Eye,
+              },
+            ].map((item, idx) => {
+              const IconComponent = item.icon;
+              return (
+                <div key={idx} className="text-center">
+                  <div className="bg-[#6366f1]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <IconComponent size={28} className="text-[#6366f1]" />
+                  </div>
+                  <div className="text-xs font-bold text-[#6366f1] mb-2">STEP {item.step}</div>
+                  <h3 className="text-xl font-semibold text-[#e8e8f0] mb-3">{item.title}</h3>
+                  <p className="text-[#b0b0c8] text-sm">{item.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="text-center text-[#8888a0] mt-10 text-sm">
+            Setup takes under 15 minutes. No data migration, no implementation fees, no long-term contracts.
+          </p>
+        </div>
+      </section>
+
+      {/* Features Section — GEO Keyword-Rich Headings */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
+            Construction Financial Management Features
+          </h2>
+          <p className="text-center text-[#b0b0c8] mb-12 max-w-2xl mx-auto">
+            Every feature is purpose-built for how construction companies actually operate — project-based accounting, progress billing, retainage, and percentage-of-completion reporting.
+          </p>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                title: 'Real-Time Financial Dashboard',
+                desc: 'Auto-syncs with QuickBooks Online every hour. See revenue, expenses, net cash, AR/AP, and WIP across all active jobs in a single view.',
+                icon: Zap,
               },
               {
-                quote: '"The AI Advisor told me I was over-billed $140K across two jobs. Caught it before job close."',
+                title: 'Job Costing & WIP Tracking',
+                desc: 'Per-job profit & loss with budget vs. actual spend. Automated WIP schedules show over-billing and under-billing by job — critical for construction percentage-of-completion accounting.',
+                icon: Eye,
+              },
+              {
+                title: 'Cash Flow Forecasting',
+                desc: 'See 30, 60, and 90 days ahead based on scheduled draws, open invoices, and committed AP. Plan payroll, equipment purchases, and sub payments with confidence.',
+                icon: TrendingUp,
+              },
+              {
+                title: 'AI-Powered CFO Analysis',
+                desc: 'Monthly narrative reports that explain your financial data in plain English — flagging margin erosion, cash crunches, and growth opportunities before they become problems.',
+                icon: Brain,
+              },
+              {
+                title: '7+ Construction Tool Integrations',
+                desc: 'Connect Procore, Buildertrend, ServiceTitan, Salesforce, HubSpot, JobNimbus, and CoConstruct. Field data merges with accounting data for total financial visibility.',
+                icon: Plug,
+              },
+              {
+                title: 'AR/AP Aging & Retainage Tracking',
+                desc: 'See exactly who owes you, who you owe, and how much retainage is outstanding by job. Color-coded aging buckets (current, 30, 60, 90+ days) highlight collection risks.',
+                icon: Shield,
+              },
+            ].map((feature, idx) => {
+              const IconComponent = feature.icon;
+              return (
+                <div
+                  key={idx}
+                  className="bg-gradient-to-br from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-5 sm:p-8 hover:border-[#6366f1]/50 transition"
+                >
+                  <div className="bg-[#6366f1]/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                    <IconComponent size={24} className="text-[#6366f1]" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-[#e8e8f0] mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-[#b0b0c8]">{feature.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Integrations Banner */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 border-y border-[#1e1e2e]">
+        <div className="max-w-5xl mx-auto text-center">
+          <p className="text-sm text-[#8888a0] uppercase tracking-wider mb-6">
+            Connects with the construction tools you already use
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-8 md:gap-12">
+            {[
+              { name: 'QuickBooks', color: '#2CA01C' },
+              { name: 'Procore', color: '#F47E20' },
+              { name: 'Buildertrend', color: '#00B4D8' },
+              { name: 'ServiceTitan', color: '#002B5C' },
+              { name: 'Salesforce', color: '#00A1E0' },
+              { name: 'HubSpot', color: '#FF7A59' },
+              { name: 'JobNimbus', color: '#4CAF50' },
+            ].map((tool) => (
+              <div
+                key={tool.name}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#12121a] border border-[#1e1e2e] hover:border-[#6366f1]/30 transition"
+              >
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: tool.color }}
+                />
+                <span className="text-sm font-medium text-[#8888a0]">{tool.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* BuilderCFO vs Hiring a Full-Time CFO — GEO Comparison Block */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
+            BuilderCFO vs. Hiring a Full-Time CFO
+          </h2>
+
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl overflow-hidden">
+            <div className="grid grid-cols-3 text-center">
+              <div className="p-2 sm:p-4 border-b border-r border-[#1e1e2e]">
+                <span className="text-xs sm:text-sm font-semibold text-[#8888a0]"></span>
+              </div>
+              <div className="p-2 sm:p-4 border-b border-r border-[#1e1e2e] bg-[#6366f1]/5">
+                <span className="text-xs sm:text-sm font-bold text-[#6366f1]">BuilderCFO</span>
+              </div>
+              <div className="p-2 sm:p-4 border-b border-[#1e1e2e]">
+                <span className="text-xs sm:text-sm font-semibold text-[#8888a0]">Full-Time CFO</span>
+              </div>
+            </div>
+            {[
+              { label: 'Annual Cost', builder: '$3,588–$8,388', cfo: '$120,000–$200,000+' },
+              { label: 'Setup Time', builder: '15 minutes', cfo: '2–3 months' },
+              { label: 'Real-Time Data', builder: 'Yes — auto-synced', cfo: 'Monthly reports' },
+              { label: 'Construction Specific', builder: 'Job costing, WIP, retainage', cfo: 'Depends on hire' },
+              { label: 'Integrations', builder: '7+ tools built in', cfo: 'Manual data entry' },
+              { label: 'AI Analysis', builder: 'Included', cfo: 'Not available' },
+              { label: 'Contract Required', builder: 'No — cancel anytime', cfo: 'Employment contract' },
+            ].map((row, idx) => (
+              <div key={idx} className="grid grid-cols-3 text-center">
+                <div className="p-2 sm:p-3 border-b border-r border-[#1e1e2e] text-xs sm:text-sm text-[#b0b0c8] text-left pl-3 sm:pl-6">{row.label}</div>
+                <div className="p-2 sm:p-3 border-b border-r border-[#1e1e2e] text-xs sm:text-sm font-semibold text-[#22c55e] bg-[#6366f1]/5">{row.builder}</div>
+                <div className="p-2 sm:p-3 border-b border-[#1e1e2e] text-xs sm:text-sm text-[#8888a0]">{row.cfo}</div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-[#8888a0] mt-6 text-sm">
+            BuilderCFO gives you CFO-level financial visibility at a fraction of the cost. For contractors who need hands-on advisory,{' '}
+            <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
+              Salisbury Bookkeeping
+            </a>{' '}
+            offers fractional controller services that pair perfectly with the dashboard.
+          </p>
+        </div>
+      </section>
+
+      {/* Social Proof Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4 text-center">
+            Trusted by Contractors Nationwide
+          </h2>
+          <p className="text-center text-[#b0b0c8] mb-12">
+            General contractors, custom home builders, remodelers, and specialty trades use BuilderCFO to manage their finances.
+          </p>
+
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {[
+              {
+                quote:
+                  '"We were bleeding money on two jobs and had no idea. This dashboard caught it in the first week."',
+                author: 'Mike J.',
+                title: 'GC Owner — Austin, TX',
+              },
+              {
+                quote:
+                  '"Our bookkeeper used to spend 3 weeks on month-end close. Now it takes 2 days. The WIP tracking alone is worth it."',
                 author: 'Sarah M.',
                 title: 'CFO — Denver, CO',
-                result: '$140K caught',
+              },
+              {
+                quote:
+                  '"I can finally see retainage, AR aging, and job profitability in one place instead of digging through QuickBooks reports."',
+                author: 'David C.',
+                title: 'Custom Home Builder — Nashville, TN',
+              },
+              {
+                quote:
+                  '"The cash flow forecast saved us from a payroll crunch. We moved a draw request up two weeks because of what we saw."',
+                author: 'Rachel T.',
+                title: 'Remodeling Company Owner — Phoenix, AZ',
+              },
+              {
+                quote:
+                  '"My accountant called me after seeing the dashboard and said, \'Why didn\'t we have this years ago?\'"',
+                author: 'Brandon L.',
+                title: 'Commercial GC — Atlanta, GA',
+              },
+              {
+                quote:
+                  '"We went from guessing on bids to knowing exactly what our margins are on every job type. Game changer."',
+                author: 'Tony R.',
+                title: 'Framing Contractor — Salt Lake City, UT',
               },
             ].map((testimonial, idx) => (
-              <div key={idx} className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-yellow-400 text-base">★</span>
-                    ))}
-                  </div>
-                  <span className="text-[10px] font-semibold text-[#22c55e] bg-[#22c55e]/10 px-2 py-0.5 rounded-full">{testimonial.result}</span>
-                </div>
-                <p className="text-[#b0b0c8] italic mb-3 text-sm">{testimonial.quote}</p>
+              <div key={idx} className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6">
+                <p className="text-[#b0b0c8] italic mb-4">{testimonial.quote}</p>
                 <div>
-                  <p className="text-[#e8e8f0] font-semibold text-sm">{testimonial.author}</p>
-                  <p className="text-[#8888a0] text-xs">{testimonial.title}</p>
+                  <p className="text-[#e8e8f0] font-semibold">{testimonial.author}</p>
+                  <p className="text-[#8888a0] text-sm">{testimonial.title}</p>
                 </div>
               </div>
             ))}
@@ -985,362 +511,345 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 6.5 — COST OF INACTION (Hormozi math)             */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-3xl mx-auto">
-          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6 sm:p-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-6 text-center">
-              What You&apos;re Losing Every Month Without Financial Visibility
-            </h2>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <span className="text-[#6366f1] font-bold text-lg flex-shrink-0">$8K–$15K</span>
-                <span className="text-sm text-[#b0b0c8] pt-1">in unbilled change orders slipping through the cracks</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-[#6366f1] font-bold text-lg flex-shrink-0">$3K–$5K</span>
-                <span className="text-sm text-[#b0b0c8] pt-1">in retainage you forgot to collect</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-[#6366f1] font-bold text-lg flex-shrink-0">$2K–$4K</span>
-                <span className="text-sm text-[#b0b0c8] pt-1">in over-billing surprises that blow up at job close</span>
-              </div>
-            </div>
-            <div className="mt-6 pt-5 border-t border-[#2a2a3d] text-center">
-              <p className="text-lg font-bold text-[#e8e8f0]">
-                That&apos;s <span className="text-[#6366f1]">$13K–$24K per month</span>. BuilderCFO is <span className="text-[#22c55e]">$199</span>.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 7 — PRICING                                       */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="pricing">
-        <div className="w-full max-w-6xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 text-center">
-            Pick a Plan. Try It Free.
+      {/* Pricing Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8" id="pricing">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 text-center">
+            Construction Dashboard Pricing Plans
           </h2>
-          <p className="text-center text-[#b0b0c8] mb-1">
-            14 days free on every plan. No charge until day 15.
-          </p>
-          <p className="text-center text-[#22c55e] mb-4 text-sm font-medium">
-            No contracts. No setup fees. Cancel anytime.
+          <p className="text-center text-[#b0b0c8] mb-12 text-lg">
+            No credit card required. 14 days free on every plan.
           </p>
 
-          {/* 30-Day Money-Back Guarantee — Hormozi risk reversal */}
-          <div className="flex items-center justify-center gap-3 mb-8 px-4 py-3 rounded-lg bg-[#22c55e]/8 border border-[#22c55e]/20 max-w-lg mx-auto">
-            <ShieldCheck size={20} className="text-[#22c55e] flex-shrink-0" />
-            <p className="text-sm text-[#e8e8f0]">
-              <span className="font-bold text-[#22c55e]">30-Day Money-Back Guarantee.</span>{' '}
-              If BuilderCFO doesn&apos;t give you clearer financial visibility in 30 days, we&apos;ll refund every penny. No questions asked.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
-            {/* Starter */}
-            <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-xl p-5 sm:p-8 flex flex-col">
-              <h3 className="text-2xl font-bold text-white mb-1">Starter</h3>
-              <p className="text-sm text-[#b0b0c8] mb-5">Solo contractors and small crews</p>
-              <div className="mb-5">
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Starter Tier */}
+            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-8 flex flex-col">
+              <h3 className="text-2xl font-bold text-white mb-2">
+                Starter
+              </h3>
+              <p className="text-[#b0b0c8] mb-6">For solo contractors and small crews getting financial visibility</p>
+              <div className="mb-6">
                 <span className="text-4xl sm:text-5xl font-bold text-white">$199</span>
-                <span className="text-[#b0b0c8] ml-2">/mo</span>
+                <span className="text-[#b0b0c8] ml-2">/month</span>
               </div>
-              <ul className="space-y-2.5 mb-6 flex-1">
+
+              <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Real-time financial dashboard',
                   'Job costing & WIP tracking',
                   'Cash flow forecasting (30/60/90 day)',
                   'QuickBooks Online sync',
-                  { text: 'AI CFO Advisor — ask anything', highlight: true },
-                  'Monthly AI financial brief',
+                  'Monthly AI CFO brief',
                   'Email support',
-                ].map((feature, idx) => {
-                  const isHighlight = typeof feature === 'object';
-                  const text = isHighlight ? feature.text : feature;
-                  return (
-                    <li key={idx} className="flex items-center gap-2.5">
-                      <Check size={16} className={isHighlight ? 'text-[#22c55e] flex-shrink-0' : 'text-[#6366f1] flex-shrink-0'} />
-                      <span className={`text-sm ${isHighlight ? 'text-[#e8e8f0] font-medium' : 'text-[#d0d0e0]'}`}>{text}</span>
-                    </li>
-                  );
-                })}
+                ].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-3">
+                    <Check size={18} className="text-[#6366f1] flex-shrink-0" />
+                    <span className="text-[#d0d0e0]">{feature}</span>
+                  </li>
+                ))}
               </ul>
-              <Link href="/signup?plan=basic" className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#2a2a3d] hover:bg-[#3a3a4d] transition text-center block">
+
+              <Link
+                href="/signup?plan=basic"
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#2a2a3d] hover:bg-[#3a3a4d] transition text-center block"
+              >
                 Start Free Trial
               </Link>
-              <p className="text-center text-[10px] text-[#8888a0] mt-2">Card required. Cancel anytime.</p>
+              <Link href="#schedule" className="block text-center text-sm text-[#6366f1] hover:text-[#818cf8] mt-2">
+                or Book a Demo →
+              </Link>
             </div>
 
-            {/* Professional */}
-            <div className="bg-gradient-to-br from-[#6366f1]/10 to-transparent border-2 border-[#6366f1]/60 rounded-xl p-5 sm:p-8 relative flex flex-col shadow-lg shadow-[#6366f1]/10">
+            {/* Professional Tier */}
+            <div className="bg-gradient-to-br from-[#6366f1]/10 to-transparent border-2 border-[#6366f1]/60 rounded-xl p-8 relative flex flex-col shadow-lg shadow-[#6366f1]/10">
               <div className="absolute -top-3 left-6 bg-[#6366f1] text-white text-xs font-bold px-4 py-1 rounded-full tracking-wide">
                 MOST POPULAR
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">Professional</h3>
-              <p className="text-sm text-[#b0b0c8] mb-5">Growing companies ($1M–$10M)</p>
-              <div className="mb-5">
+
+              <h3 className="text-2xl font-bold text-white mb-2">Professional</h3>
+              <p className="text-[#b0b0c8] mb-6">For growing construction companies with $1M–$10M revenue</p>
+              <div className="mb-6">
                 <span className="text-4xl sm:text-5xl font-bold text-white">$399</span>
-                <span className="text-[#b0b0c8] ml-2">/mo</span>
+                <span className="text-[#b0b0c8] ml-2">/month</span>
               </div>
-              <ul className="space-y-2.5 mb-6 flex-1">
+
+              <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Everything in Starter',
-                  'Buildertrend + HubSpot + JobNimbus',
+                  'Buildertrend + HubSpot + JobNimbus integrations',
                   'Sales pipeline dashboard',
-                  { text: 'AI CFO Advisor — unlimited', highlight: true },
-                  { text: 'AI Toolkit — 24 construction prompts', highlight: true },
-                  { text: 'NAHB Chart of Accounts', highlight: true },
+                  'AI-powered CFO advisor',
                   'AR/AP aging reports by job',
                   'Priority support',
-                ].map((feature, idx) => {
-                  const isHighlight = typeof feature === 'object';
-                  const text = isHighlight ? feature.text : feature;
-                  return (
-                    <li key={idx} className="flex items-center gap-2.5">
-                      <Check size={16} className={isHighlight ? 'text-[#22c55e] flex-shrink-0' : 'text-[#6366f1] flex-shrink-0'} />
-                      <span className={`text-sm ${isHighlight ? 'text-[#e8e8f0] font-medium' : 'text-[#d0d0e0]'}`}>{text}</span>
-                    </li>
-                  );
-                })}
+                ].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-3">
+                    <Check size={18} className="text-[#6366f1] flex-shrink-0" />
+                    <span className="text-[#d0d0e0]">{feature}</span>
+                  </li>
+                ))}
               </ul>
-              <Link href="/signup?plan=pro" className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-center block">
+
+              <Link
+                href="/signup?plan=pro"
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-center block"
+              >
                 Start Free Trial
               </Link>
-              <p className="text-center text-[10px] text-[#8888a0] mt-2">Card required. Cancel anytime.</p>
+              <Link href="#schedule" className="block text-center text-sm text-[#6366f1] hover:text-[#818cf8] mt-2">
+                or Book a Demo →
+              </Link>
             </div>
 
-            {/* Enterprise */}
-            <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-xl p-5 sm:p-8 flex flex-col">
-              <h3 className="text-2xl font-bold text-white mb-1">Enterprise</h3>
-              <p className="text-sm text-[#b0b0c8] mb-5">$10M+ with multiple PMs</p>
-              <div className="mb-5">
+            {/* Enterprise Tier */}
+            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-8 flex flex-col">
+              <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
+              <p className="text-[#b0b0c8] mb-6">For scaling operations with $10M+ revenue and multiple project managers</p>
+              <div className="mb-6">
                 <span className="text-4xl sm:text-5xl font-bold text-white">$599</span>
-                <span className="text-[#b0b0c8] ml-2">/mo</span>
+                <span className="text-[#b0b0c8] ml-2">/month</span>
               </div>
-              <ul className="space-y-2.5 mb-6 flex-1">
+
+              <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Everything in Professional',
-                  'Procore + Salesforce + ServiceTitan',
+                  'Procore + Salesforce + ServiceTitan integrations',
                   'All 7+ integrations included',
-                  { text: 'AI CFO Advisor — priority', highlight: true },
-                  { text: 'AI Toolkit — all 24 + custom', highlight: true },
-                  { text: 'NAHB Chart of Accounts + trades', highlight: true },
                   'Crew utilization tracking',
-                  'Quarterly call with Salisbury Bookkeeping',
+                  'Quarterly strategy call with Salisbury Bookkeeping',
                   'Dedicated account manager',
-                ].map((feature, idx) => {
-                  const isHighlight = typeof feature === 'object';
-                  const text = isHighlight ? feature.text : feature;
-                  return (
-                    <li key={idx} className="flex items-center gap-2.5">
-                      <Check size={16} className={isHighlight ? 'text-[#22c55e] flex-shrink-0' : 'text-[#6366f1] flex-shrink-0'} />
-                      <span className={`text-sm ${isHighlight ? 'text-[#e8e8f0] font-medium' : 'text-[#d0d0e0]'}`}>{text}</span>
-                    </li>
-                  );
-                })}
+                ].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-3">
+                    <Check size={18} className="text-[#6366f1] flex-shrink-0" />
+                    <span className="text-[#d0d0e0]">{feature}</span>
+                  </li>
+                ))}
               </ul>
-              <Link href="/signup?plan=enterprise" className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#2a2a3d] hover:bg-[#3a3a4d] transition text-center block">
+
+              <Link
+                href="/signup?plan=enterprise"
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#2a2a3d] hover:bg-[#3a3a4d] transition text-center block"
+              >
                 Start Free Trial
               </Link>
-              <p className="text-center text-[10px] text-[#8888a0] mt-2">Card required. Cancel anytime.</p>
-            </div>
-          </div>
-
-          {/* Value anchor */}
-          <div className="mt-8 bg-[#0a0a0f] border border-[#2a2a3d] rounded-xl p-5 sm:p-8 max-w-3xl mx-auto text-center">
-            <p className="text-sm text-[#8888a0] mb-2">Let&apos;s do the math</p>
-            <p className="text-base sm:text-lg text-[#e8e8f0] font-medium mb-1">
-              A fractional controller costs $3,000–$8,000/month.
-            </p>
-            <p className="text-base sm:text-lg text-[#e8e8f0] font-medium mb-1">
-              One missed over-billing costs $50K+ at job close.
-            </p>
-            <p className="text-base sm:text-lg text-[#6366f1] font-bold mb-3">
-              BuilderCFO starts at $199/month. With an AI CFO included.
-            </p>
-            <p className="text-sm text-[#8888a0] mb-3">
-              You do the math. Actually, BuilderCFO will do the math for you.
-            </p>
-            <div className="flex items-center justify-center gap-2">
-              <ShieldCheck size={16} className="text-[#22c55e]" />
-              <p className="text-sm text-[#22c55e] font-medium">
-                30-day money-back guarantee on every plan.
-              </p>
+              <Link href="#schedule" className="block text-center text-sm text-[#6366f1] hover:text-[#818cf8] mt-2">
+                or Book a Demo →
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 8 — FAQ (8 key questions)                         */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8" id="faq">
-        <div className="w-full max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-8 text-center">
-            Questions? Answers.
+      {/* FAQ Section — GEO Optimized with Question-Based H3s */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="faq">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-12 text-center">
+            Frequently Asked Questions About BuilderCFO
           </h2>
 
-          <div className="space-y-5">
+          <div className="space-y-6 sm:space-y-8">
             <div>
-              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">What is BuilderCFO?</h3>
-              <p className="text-[#b0b0c8] text-sm leading-relaxed">
-                A financial dashboard made for construction companies. It connects to QuickBooks Online and field tools like Procore, Buildertrend, and ServiceTitan. You see job costs, WIP, cash flow, and AR/AP in one place. Every plan includes an AI CFO Advisor that answers your money questions using your real data.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is BuilderCFO and who is it for?</h3>
+              <p className="text-[#b0b0c8]">
+                BuilderCFO is a real-time financial dashboard built specifically for construction contractors, custom home builders, and remodelers. It connects to QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to provide instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging. It is designed for construction companies with $500K–$50M in annual revenue who need CFO-level financial insight without the CFO-level salary.
               </p>
             </div>
 
             <div>
-              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">How much does it cost?</h3>
-              <p className="text-[#b0b0c8] text-sm leading-relaxed">
-                Starter is $199/month. Professional is $399/month. Enterprise is $599/month. Every plan gets a 14-day free trial and includes the AI CFO Advisor. No setup fees. No contracts. Cancel anytime.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How does BuilderCFO connect to QuickBooks Online?</h3>
+              <p className="text-[#b0b0c8]">
+                BuilderCFO uses OAuth 2.0 to securely connect to your QuickBooks Online account. The connection is read-only — BuilderCFO never modifies your books. Your financial data is encrypted in transit and at rest using industry-standard AES-256 encryption. Setup takes under 2 minutes.
               </p>
             </div>
 
             <div>
-              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">Is my data safe?</h3>
-              <p className="text-[#b0b0c8] text-sm leading-relaxed">
-                Yes. Your data is encrypted at rest and in transit. The QuickBooks connection is read-only — we can&apos;t touch your books. Payments go through Stripe (PCI compliant).
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">What is WIP tracking and why does it matter for contractors?</h3>
+              <p className="text-[#b0b0c8]">
+                WIP (Work in Progress) tracking compares the percentage of work completed on a job against the percentage billed. If you&apos;ve completed 60% of a job but billed 80%, you&apos;re over-billed by 20% — which means you may owe money back or face cash flow problems when the job finishes. BuilderCFO automates WIP schedule calculations using QuickBooks data and field management progress reports, giving you accurate over/under billing figures for every active job.
               </p>
             </div>
 
             <div>
-              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">Can I cancel anytime?</h3>
-              <p className="text-[#b0b0c8] text-sm leading-relaxed">
-                Yes. No contracts. No fees. Cancel whenever you want and keep access through the end of your billing period. Plus, every plan comes with a 30-day money-back guarantee — if BuilderCFO doesn&apos;t deliver clearer financial visibility, you get a full refund.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How much does BuilderCFO cost compared to a full-time CFO?</h3>
+              <p className="text-[#b0b0c8]">
+                BuilderCFO starts at $199/month (Starter), $399/month (Professional), or $599/month (Enterprise). A full-time construction CFO typically costs $120,000–$200,000+ per year in salary and benefits. BuilderCFO provides real-time dashboards, automated WIP, and AI analysis for $2,388–$7,188 per year — roughly 2–5% the cost of a dedicated hire. Every plan includes a 14-day free trial.
               </p>
             </div>
 
             <div>
-              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">What integrations do you support?</h3>
-              <p className="text-[#b0b0c8] text-sm leading-relaxed">
-                QuickBooks Online, Procore, Buildertrend, ServiceTitan, Salesforce, HubSpot, and JobNimbus. All sync automatically — your dashboard always reflects the latest data from the field and your books.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Who built BuilderCFO?</h3>
+              <p className="text-[#b0b0c8]">
+                BuilderCFO was built by{' '}
+                <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
+                  Salisbury Bookkeeping
+                </a>
+                , a fractional controller and construction bookkeeping firm that works with custom home builders, general contractors, and remodelers nationwide. The dashboard was created from real client needs — the same WIP schedules, job costing reports, and cash flow forecasts that Salisbury&apos;s controllers build manually for clients, now automated and available in real time.
               </p>
             </div>
 
             <div>
-              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">How does the AI CFO Advisor work?</h3>
-              <p className="text-[#b0b0c8] text-sm leading-relaxed">
-                Ask it anything about your financials — &quot;Why is cash tight this month?&quot; or &quot;Am I over-billed on the Henderson job?&quot; — and it pulls your actual QuickBooks data, job costs, and WIP numbers to give you a specific answer with actionable next steps.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Is my financial data secure?</h3>
+              <p className="text-[#b0b0c8]">
+                Yes. BuilderCFO uses Supabase for secure database hosting with row-level security policies, and Stripe for PCI-compliant payment processing. All data is encrypted in transit (TLS 1.3) and at rest (AES-256). The QuickBooks connection is read-only — BuilderCFO cannot create, modify, or delete any data in your accounting system.
               </p>
             </div>
 
             <div>
-              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">How long does setup take?</h3>
-              <p className="text-[#b0b0c8] text-sm leading-relaxed">
-                Under 5 minutes. Sign up, connect QuickBooks, and your dashboard starts populating immediately. If you want help with integrations, our team does it for you at no extra cost.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-base font-semibold text-[#e8e8f0] mb-1.5">Who built this?</h3>
-              <p className="text-[#b0b0c8] text-sm leading-relaxed">
-                Salisbury Bookkeeping — a fractional controller firm that works with custom home builders, GCs, and remodelers nationwide. BuilderCFO automates the same WIP schedules, job cost reports, and cash flow forecasts our controllers build manually for clients.
+              <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Can I cancel my BuilderCFO subscription at any time?</h3>
+              <p className="text-[#b0b0c8]">
+                Yes. There are no long-term contracts, no cancellation fees, and no setup fees. You can cancel your subscription at any time and retain access through the end of your current billing cycle. Every plan starts with a 14-day free trial — no credit card required during the trial. You&apos;ll only be asked for payment details when you decide to continue after 14 days.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 8.5 — SCHEDULE A CALL (Calendly)                  */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-[#0a0a0f]" id="schedule">
-        <div className="w-full max-w-3xl mx-auto">
-          <div className="text-center mb-6">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <CalendarCheck size={20} className="text-[#6366f1]" />
-              <span className="text-xs font-semibold text-[#a5b4fc] uppercase tracking-wider">Talk to a Human</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-2">
-              Want to See What&apos;s Leaking in Your Books?
-            </h2>
-            <p className="text-sm text-[#8888a0] max-w-lg mx-auto">
-              15 minutes. We pull up your QuickBooks, show you what BuilderCFO sees, and tell you exactly where money is slipping through. If it&apos;s not for you, no hard feelings.
-            </p>
-          </div>
-          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-5 sm:p-8">
-            <BookingCalendar />
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* SECTION 9 — FINAL CTA                                     */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-[#12121a]/50">
+      {/* CTA Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#6366f1]/5 via-transparent to-[#a78bfa]/5 pointer-events-none" />
-        <div className="w-full max-w-3xl mx-auto text-center relative">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#e8e8f0] mb-3">
-            Stop Guessing. Start Seeing Where the Money Goes.
+
+        <div className="max-w-3xl mx-auto text-center relative">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e8e8f0] mb-4">
+            Ready to See Where Every Dollar Goes on Every Job?
           </h2>
-          <p className="text-base text-[#b0b0c8] mb-2">
-            14 days free. AI CFO included. 30-day money-back guarantee.
+          <p className="text-lg text-[#b0b0c8] mb-8">
+            Join contractors nationwide who use BuilderCFO to track job costs, forecast cash flow, and make smarter financial decisions — starting with a free 14-day trial.
           </p>
-          <p className="text-sm text-[#8888a0] mb-6">
-            Card required. Cancel anytime. If your numbers aren&apos;t clearer, you pay nothing.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-lg shadow-lg shadow-[#6366f1]/20"
-          >
-            Start Your Free Trial <ChevronRight size={18} />
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-2 px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition"
+            >
+              Start Free — No Card Required <ChevronRight size={18} />
+            </Link>
+            <Link
+              href="#schedule"
+              className="inline-flex items-center gap-2 px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition"
+            >
+              Book a Demo →
+            </Link>
+          </div>
           <p className="text-sm text-[#8888a0] mt-4">
-            Built by{' '}
+            No credit card required. Cancel anytime. Built by{' '}
             <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
               Salisbury Bookkeeping
-            </a>{' '}
-            — Fractional CFO Services for Construction Companies
+            </a>.
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#12121a] border-t border-[#1e1e2e] py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8">
+      <footer className="bg-[#12121a] border-t border-[#1e1e2e] py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div>
-              <h4 className="text-sm font-semibold text-[#8888a0] mb-3 uppercase">Product</h4>
-              <ul className="space-y-1.5 text-sm">
-                <li><a href="#live-demo" className="text-[#e8e8f0] hover:text-[#6366f1]">Dashboard Demo</a></li>
-                <li><a href="#cfo-advisor" className="text-[#e8e8f0] hover:text-[#6366f1]">CFO Advisor</a></li>
-                <li><a href="#pricing" className="text-[#e8e8f0] hover:text-[#6366f1]">Pricing</a></li>
-                <li><a href="#faq" className="text-[#e8e8f0] hover:text-[#6366f1]">FAQ</a></li>
+              <h4 className="text-sm font-semibold text-[#8888a0] mb-4 uppercase">
+                Product
+              </h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#faq" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    FAQ
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-[#8888a0] mb-3 uppercase">Company</h4>
-              <ul className="space-y-1.5 text-sm">
-                <li><a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#e8e8f0] hover:text-[#6366f1]">Salisbury Bookkeeping</a></li>
-                <li><a href="https://salisburybookkeeping.com/about" target="_blank" rel="noopener noreferrer" className="text-[#e8e8f0] hover:text-[#6366f1]">About Us</a></li>
+              <h4 className="text-sm font-semibold text-[#8888a0] mb-4 uppercase">
+                Company
+              </h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    Salisbury Bookkeeping
+                  </a>
+                </li>
+                <li>
+                  <a href="https://salisburybookkeeping.com/about" target="_blank" rel="noopener noreferrer" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    About Us
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-[#8888a0] mb-3 uppercase">Legal</h4>
-              <ul className="space-y-1.5 text-sm">
-                <li><a href="/privacy" className="text-[#e8e8f0] hover:text-[#6366f1]">Privacy Policy</a></li>
-                <li><a href="/terms" className="text-[#e8e8f0] hover:text-[#6366f1]">Terms of Service</a></li>
+              <h4 className="text-sm font-semibold text-[#8888a0] mb-4 uppercase">
+                Legal
+              </h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    Privacy Policy
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    Terms of Service
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-[#8888a0] mb-3 uppercase">Contact</h4>
-              <ul className="space-y-1.5 text-sm">
-                <li><a href="mailto:cory@salisburybookkeeping.com" className="text-[#e8e8f0] hover:text-[#6366f1]">cory@salisburybookkeeping.com</a></li>
+              <h4 className="text-sm font-semibold text-[#8888a0] mb-4 uppercase">
+                Contact
+              </h4>
+              <ul className="space-y-2">
+                <li>
+                  <a
+                    href="mailto:support@topbuildercfo.com"
+                    className="text-[#e8e8f0] hover:text-[#6366f1]"
+                  >
+                    support@topbuildercfo.com
+                  </a>
+                </li>
+                <li>
+                  <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#e8e8f0] hover:text-[#6366f1]">
+                    Salisbury Bookkeeping
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-[#1e1e2e] pt-6 flex flex-col md:flex-row items-center justify-between text-sm text-[#8888a0]">
-            <div>© 2026 BuilderCFO. All rights reserved.</div>
-            <div className="mt-3 md:mt-0">
-              Built by <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">Salisbury Bookkeeping</a>
+
+          <div className="border-t border-[#1e1e2e] pt-8 flex flex-col md:flex-row items-center justify-between">
+            <div className="text-sm text-[#8888a0]">
+              © 2026 BuilderCFO. All rights reserved.
+            </div>
+            <div className="text-sm text-[#8888a0] mt-4 md:mt-0">
+              Built by <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">Salisbury Bookkeeping</a> — Fractional Controllers for Construction Companies
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Sticky Mobile CTA Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#12121a]/95 backdrop-blur border-t border-[#1e1e2e] p-3 flex items-center justify-between gap-3 z-50 sm:hidden">
+        <div className="text-xs text-[#b0b0c8] leading-tight">
+          <span className="font-semibold text-[#e8e8f0]">14 days free</span> — no card needed
+        </div>
+        <div className="flex gap-2 flex-shrink-0">
+          <Link
+            href="/demo"
+            className="px-3 py-2 rounded text-xs font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition"
+          >
+            Demo
+          </Link>
+          <Link
+            href="/signup"
+            className="px-3 py-2 rounded text-xs font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition"
+          >
+            Start Free
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

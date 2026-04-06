@@ -12,6 +12,7 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === "/signup" ||
     request.nextUrl.pathname === "/auth/callback";
 
+  const isDemoRoute = request.nextUrl.pathname === "/demo";
   const isDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard");
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin") ||
     request.nextUrl.pathname.startsWith("/api/admin");
@@ -19,6 +20,11 @@ export async function middleware(request: NextRequest) {
   // Redirect authenticated users away from auth pages
   if (isAuthRoute && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // Allow demo route for unauthenticated users
+  if (isDemoRoute) {
+    return response;
   }
 
   // Redirect unauthenticated users trying to access protected routes
