@@ -102,7 +102,7 @@ async function getAccessToken(): Promise<string | null> {
   const refreshToken = process.env.GOOGLE_CALENDAR_REFRESH_TOKEN;
 
   if (!clientId || !clientSecret || !refreshToken) {
-    console.warn('[booking/slots] Google Calendar credentials not configured');
+    console.warn(`[booking/slots] Google Calendar credentials not configured (clientId=${!!clientId}, clientSecret=${!!clientSecret}, refreshToken=${!!refreshToken})`);
     return null;
   }
 
@@ -120,13 +120,18 @@ async function getAccessToken(): Promise<string | null> {
     const tokenData = await tokenRes.json();
 
     if (!tokenData.access_token) {
-      console.error('[booking/slots] Token refresh failed:', tokenData.error || tokenData);
+      // Surface full Google OAuth error payload so we can diagnose from Vercel logs.
+      // Common values: invalid_grant (refresh token revoked/expired), invalid_client,
+      // unauthorized_client, invalid_scope.
+      const errCode = tokenData.error || 'unknown';
+      const errDesc = tokenData.error_description || 'no description';
+      console.error(`[booking/slots] Token refresh FAILED status=${tokenRes.status} error=${errCode} description="${errDesc}" — Google Calendar free/busy check will be skipped, all slots will show as available. FIX: regenerate GOOGLE_CALENDAR_REFRESH_TOKEN via OAuth consent flow.`);
       return null;
     }
 
     return tokenData.access_token;
   } catch (err) {
-    console.error('[booking/slots] Token refresh error:', err);
+    console.error('[booking/slots] Token refresh network error:', err instanceof Error ? err.message : String(err));
     return null;
   }
 }
