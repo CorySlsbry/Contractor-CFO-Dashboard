@@ -197,7 +197,7 @@ export default function CashFlowPage() {
                         : '—'}
                     </td>
                     <td className="py-3 px-2 text-right">
-                      <Badge variant={inv.status === 'overdue' ? 'destructive' : 'info'}>
+                      <Badge variant={inv.status === 'overdue' ? 'danger' : 'info'}>
                         {inv.status}
                       </Badge>
                     </td>

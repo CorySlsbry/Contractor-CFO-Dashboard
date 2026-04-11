@@ -373,6 +373,309 @@ function transformBudgetActualReport(plData: any): any {
     }));
 }
 
+/**
+ * Builds synthetic report data from a seeded dashboard snapshot for demo mode.
+ * The snapshot contains the full DashboardData shape (revenue, expenses, jobs,
+ * invoices, bills, cash_flow, metrics) which we can project into every report.
+ */
+function buildDemoReport(reportType: string, snap: any): any {
+  const revenue = Number(snap.revenue || 0);
+  const expenses = Number(snap.expenses || 0);
+  const netIncome = revenue - expenses;
+  const cashBalance = Number(snap.cash_balance || 0);
+  const ar = Number(snap.accounts_receivable || 0);
+  const ap = Number(snap.accounts_payable || 0);
+  const jobs = Array.isArray(snap.jobs) ? snap.jobs : [];
+  const invoices = Array.isArray(snap.invoices) ? snap.invoices : [];
+  const bills = Array.isArray(snap.bills) ? snap.bills : [];
+  const cashFlow = Array.isArray(snap.cash_flow) ? snap.cash_flow : [];
+
+  switch (reportType) {
+    case "pl": {
+      const revenues = [
+        { category: "Construction Revenue", amount: revenue * 0.82 },
+        { category: "Change Order Revenue", amount: revenue * 0.12 },
+        { category: "Retainage Release", amount: revenue * 0.06 },
+      ];
+      const exp = [
+        { category: "Materials", amount: expenses * 0.42 },
+        { category: "Labor", amount: expenses * 0.28 },
+        { category: "Subcontractors", amount: expenses * 0.16 },
+        { category: "Equipment & Rental", amount: expenses * 0.05 },
+        { category: "Permits & Fees", amount: expenses * 0.02 },
+        { category: "Insurance", amount: expenses * 0.025 },
+        { category: "Office & Admin", amount: expenses * 0.03 },
+        { category: "Vehicle & Fuel", amount: expenses * 0.015 },
+      ];
+      return {
+        revenues,
+        expenses: exp,
+        totalRevenue: revenue,
+        totalExpenses: expenses,
+        netIncome,
+      };
+    }
+
+    case "balance-sheet": {
+      const currentAssets = cashBalance + ar + 125_000; // + inventory
+      const fixedAssets = 640_000;
+      const totalAssets = currentAssets + fixedAssets;
+      const currentLiab = ap + 85_000; // + accrued
+      const longTermDebt = 420_000;
+      const totalLiab = currentLiab + longTermDebt;
+      const retainedEarnings = totalAssets - totalLiab - 50_000;
+      return {
+        assets: [
+          {
+            category: "Current Assets",
+            amount: currentAssets,
+            subcategories: [
+              { name: "Cash & Equivalents", amount: cashBalance },
+              { name: "Accounts Receivable", amount: ar },
+              { name: "Inventory (Materials)", amount: 125_000 },
+            ],
+          },
+          {
+            category: "Fixed Assets",
+            amount: fixedAssets,
+            subcategories: [
+              { name: "Trucks & Vehicles", amount: 215_000 },
+              { name: "Equipment & Tools", amount: 185_000 },
+              { name: "Office & Shop", amount: 240_000 },
+            ],
+          },
+        ],
+        liabilities: [
+          {
+            category: "Current Liabilities",
+            amount: currentLiab,
+            subcategories: [
+              { name: "Accounts Payable", amount: ap },
+              { name: "Accrued Expenses", amount: 85_000 },
+            ],
+          },
+          {
+            category: "Long-Term Debt",
+            amount: longTermDebt,
+            subcategories: [
+              { name: "Equipment Loan", amount: 180_000 },
+              { name: "Line of Credit", amount: 240_000 },
+            ],
+          },
+        ],
+        equity: [
+          {
+            category: "Owner's Equity",
+            amount: retainedEarnings + 50_000,
+            subcategories: [
+              { name: "Owner Capital", amount: 50_000 },
+              { name: "Retained Earnings", amount: retainedEarnings },
+            ],
+          },
+        ],
+        totalAssets,
+        totalLiabilities: totalLiab,
+        totalEquity: retainedEarnings + 50_000,
+      };
+    }
+
+    case "cash-flow": {
+      const operating = [
+        { item: "Net Income", amount: netIncome },
+        { item: "Depreciation & Amortization", amount: 64_000 },
+        { item: "Change in A/R", amount: -42_000 },
+        { item: "Change in A/P", amount: 28_500 },
+        { item: "Change in WIP", amount: -31_200 },
+      ];
+      const investing = [
+        { item: "Equipment Purchases", amount: -85_000 },
+        { item: "Vehicle Purchases", amount: -42_000 },
+      ];
+      const financing = [
+        { item: "Line of Credit Draw", amount: 60_000 },
+        { item: "Equipment Loan Payments", amount: -36_000 },
+        { item: "Owner Draws", amount: -120_000 },
+      ];
+      const operatingTotal = operating.reduce((s, i) => s + i.amount, 0);
+      const investingTotal = investing.reduce((s, i) => s + i.amount, 0);
+      const financingTotal = financing.reduce((s, i) => s + i.amount, 0);
+      return {
+        operating,
+        investing,
+        financing,
+        operatingTotal,
+        investingTotal,
+        financingTotal,
+        netCashFlow: operatingTotal + investingTotal + financingTotal,
+        totalRevenue: revenue,
+        totalExpenses: expenses,
+      };
+    }
+
+    case "ar-aging": {
+      return invoices
+        .filter((inv: any) => inv.status !== "paid")
+        .map((inv: any) => ({
+          customer: inv.customer_name || "Unknown",
+          invoice: inv.invoice_number || inv.id,
+          amount: inv.balance ?? inv.amount,
+          days: inv.days_overdue || 0,
+          status:
+            (inv.days_overdue || 0) === 0
+              ? "Current"
+              : (inv.days_overdue || 0) <= 30
+              ? "Current"
+              : (inv.days_overdue || 0) <= 60
+              ? "Overdue"
+              : "Past Due",
+        }));
+    }
+
+    case "ap-aging": {
+      return bills
+        .filter((b: any) => b.status !== "paid")
+        .map((b: any) => ({
+          vendor: b.vendor_name || "Unknown",
+          invoiceNum: b.doc_number || b.id,
+          amount: b.balance ?? b.amount,
+          days: b.days_overdue || 0,
+          status:
+            (b.days_overdue || 0) === 0
+              ? "Current"
+              : (b.days_overdue || 0) <= 30
+              ? "Current"
+              : (b.days_overdue || 0) <= 60
+              ? "Overdue"
+              : "Past Due",
+        }));
+    }
+
+    case "job-costing": {
+      return jobs.map((j: any, idx: number) => {
+        const laborCost = j.actual_cost * 0.32;
+        const materialCost = j.actual_cost * 0.45;
+        const overheadCost = j.actual_cost * 0.23;
+        return {
+          jobNumber: `J-${1000 + idx}`,
+          jobName: j.name,
+          laborCost: Math.round(laborCost),
+          materialCost: Math.round(materialCost),
+          overheadCost: Math.round(overheadCost),
+          totalCost: Math.round(j.actual_cost),
+          contractAmount: Math.round(j.revenue),
+          margin: Math.round(j.revenue - j.actual_cost),
+          percentComplete: j.percent_complete,
+        };
+      });
+    }
+
+    case "wip": {
+      return jobs
+        .filter((j: any) => j.status === "in_progress")
+        .map((j: any, idx: number) => {
+          const pctComplete = (j.percent_complete || 0) / 100;
+          const earned = j.revenue * pctComplete;
+          const billed = earned * (0.96 + ((idx * 13) % 7) / 100);
+          const wipInventory = Math.max(0, Math.round(j.actual_cost - billed * 0.85));
+          return {
+            jobNumber: `J-${1000 + idx}`,
+            jobName: j.name,
+            wipInventory,
+            invoiced: Math.round(billed),
+            totalRevenue: Math.round(j.revenue),
+            remaining: Math.round(j.revenue - billed),
+            billingStatus: billed >= earned * 0.98 ? "On Track" : "Behind",
+          };
+        });
+    }
+
+    case "tax": {
+      const taxableIncome = Math.max(0, netIncome);
+      const deductions = [
+        { item: "Materials", amount: expenses * 0.42 },
+        { item: "Labor", amount: expenses * 0.28 },
+        { item: "Subcontractors", amount: expenses * 0.16 },
+        { item: "Equipment & Rental", amount: expenses * 0.05 },
+        { item: "Insurance", amount: expenses * 0.025 },
+        { item: "Vehicle & Fuel", amount: expenses * 0.015 },
+      ];
+      const totalDeductions = deductions.reduce((s, d) => s + d.amount, 0);
+      const adjustedIncome = Math.max(0, taxableIncome);
+      const federalRate = 0.22;
+      const stateRate = 0.0485;
+      const seRate = 0.153;
+      const totalEstimatedTax = adjustedIncome * (federalRate + stateRate + seRate);
+      return {
+        taxableIncome,
+        deductions,
+        totalDeductions,
+        adjustedIncome,
+        estimatedFederalTax: adjustedIncome * federalRate,
+        estimatedStateTax: adjustedIncome * stateRate,
+        estimatedSelfEmploymentTax: adjustedIncome * seRate,
+        totalEstimatedTax,
+        quarterlyPayments: [
+          { quarter: "Q1", amount: totalEstimatedTax / 4 },
+          { quarter: "Q2", amount: totalEstimatedTax / 4 },
+          { quarter: "Q3", amount: totalEstimatedTax / 4 },
+          { quarter: "Q4", amount: totalEstimatedTax / 4 },
+        ],
+      };
+    }
+
+    case "retainage": {
+      const today = new Date();
+      return jobs
+        .filter((j: any) => j.status === "in_progress" || j.status === "completed")
+        .map((j: any, idx: number) => {
+          const retainagePct = 10;
+          const billed = j.revenue * ((j.percent_complete || 0) / 100);
+          const retainageHeld = Math.round(billed * (retainagePct / 100));
+          const dueDate = new Date(today);
+          dueDate.setDate(dueDate.getDate() + 30 + idx * 15);
+          return {
+            jobNumber: `J-${1000 + idx}`,
+            jobName: j.name,
+            contractAmount: Math.round(j.revenue),
+            retainagePercent: retainagePct,
+            retainageAmount: retainageHeld,
+            dueDate: dueDate.toISOString(),
+            status: j.status === "completed" ? "Ready for Release" : "Holding",
+          };
+        });
+    }
+
+    case "budget-actual": {
+      const categories = [
+        { category: "Materials", pct: 0.42 },
+        { category: "Labor", pct: 0.28 },
+        { category: "Subcontractors", pct: 0.16 },
+        { category: "Equipment & Rental", pct: 0.05 },
+        { category: "Permits & Fees", pct: 0.02 },
+        { category: "Insurance", pct: 0.025 },
+        { category: "Office & Admin", pct: 0.03 },
+        { category: "Vehicle & Fuel", pct: 0.015 },
+      ];
+      return categories.map((c) => {
+        const actual = expenses * c.pct;
+        const budget = actual * (0.93 + Math.random() * 0.14);
+        const variance = budget - actual;
+        const variancePercent = budget > 0 ? (variance / budget) * 100 : 0;
+        return {
+          category: c.category,
+          budget: Math.round(budget),
+          actual: Math.round(actual),
+          variance: Math.round(variance),
+          variancePercent: Math.round(variancePercent * 10) / 10,
+        };
+      });
+    }
+
+    default:
+      return {};
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -438,6 +741,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json<ApiResponse<null>>(
         { success: false, error: "No client company found. Connect a QBO company first." },
         { status: 400 }
+      );
+    }
+
+    // ── DEMO MODE ──────────────────────────────────────────────────────────
+    // For the demo client_company (qbo_realm_id === 'DEMO-MODE'), synthesize
+    // reports from the seeded dashboard_snapshots row instead of hitting QBO.
+    if (clientCompany.qbo_realm_id === "DEMO-MODE") {
+      const { data: snapshot } = await (supabase as any)
+        .from("dashboard_snapshots")
+        .select("data")
+        .eq("organization_id", orgId)
+        .eq("client_company_id", clientCompany.id)
+        .order("pulled_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      const snap = snapshot?.data || {};
+      const demoReport = buildDemoReport(reportType, snap);
+
+      return NextResponse.json<ApiResponse<any>>(
+        {
+          success: true,
+          data: demoReport,
+          message: `${reportType} report generated successfully (demo)`,
+        },
+        { status: 200 }
       );
     }
 

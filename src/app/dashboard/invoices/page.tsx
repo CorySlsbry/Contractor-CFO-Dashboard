@@ -8,14 +8,15 @@ import { ArrowUpDown, Loader2 } from 'lucide-react';
 import { formatCompactCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
-interface QBOInvoice {
-  DocNumber: string;
-  CustomerRef: { name: string };
-  TotalAmt: number;
-  Balance: number;
-  DueDate: string;
-  TxnDate: string;
-  status?: string;
+interface NormalizedInvoice {
+  id: string;
+  invoice_number?: string;
+  customer_name: string;
+  amount: number;
+  balance: number;
+  due_date: string;
+  status: 'draft' | 'sent' | 'viewed' | 'paid' | 'overdue';
+  days_overdue: number;
 }
 
 interface Invoice {
@@ -64,33 +65,24 @@ export default function InvoicesPage() {
         if (!res.ok) throw new Error('Failed to fetch invoices');
 
         const data = await res.json();
-        const qboInvoices = data.snapshot_data?.accounts_receivable?.invoices || [];
+        const normalizedInvoices: NormalizedInvoice[] = data.data?.invoices || [];
 
-        // Transform QBO invoices to our format
-        const today = new Date();
-        const transformedInvoices = qboInvoices.map((inv: QBOInvoice, index: number) => {
-          const dueDate = new Date(inv.DueDate);
-          let status: 'Paid' | 'Open' | 'Overdue' = 'Open';
-          let daysOverdue = 0;
-
-          if (inv.Balance === 0) {
-            status = 'Paid';
-          } else if (dueDate < today && inv.Balance > 0) {
-            status = 'Overdue';
-            daysOverdue = Math.floor(
-              (today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
-            );
-          }
+        // Map normalized invoice shape to the view model used by this page.
+        const transformedInvoices: Invoice[] = normalizedInvoices.map((inv, index) => {
+          let displayStatus: 'Paid' | 'Open' | 'Overdue' = 'Open';
+          if (inv.status === 'paid') displayStatus = 'Paid';
+          else if (inv.status === 'overdue') displayStatus = 'Overdue';
+          else displayStatus = 'Open';
 
           return {
-            id: `${inv.DocNumber}-${index}`,
-            number: inv.DocNumber,
-            customer: inv.CustomerRef?.name || 'Unknown',
-            amount: inv.TotalAmt,
-            issueDate: inv.TxnDate,
-            dueDate: inv.DueDate,
-            status,
-            daysOverdue,
+            id: inv.id || `${inv.invoice_number ?? 'inv'}-${index}`,
+            number: inv.invoice_number || String(index + 1),
+            customer: inv.customer_name || 'Unknown',
+            amount: inv.amount,
+            issueDate: inv.due_date, // seed only stores due_date; reuse for "issued"
+            dueDate: inv.due_date,
+            status: displayStatus,
+            daysOverdue: inv.days_overdue || 0,
           };
         });
 
