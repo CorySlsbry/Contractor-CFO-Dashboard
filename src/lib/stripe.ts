@@ -5,17 +5,21 @@
 
 import Stripe from "stripe";
 
+export type StripePlan = "basic" | "pro" | "enterprise" | "whiteglove";
+
 export class StripeService {
   private stripe: Stripe;
   private basicPriceId: string;
   private proPriceId: string;
   private enterprisePriceId: string;
+  private whiteglovePriceId: string;
 
   constructor(
     apiKey: string = process.env.STRIPE_SECRET_KEY || "",
     basicPriceId: string = process.env.STRIPE_PRICE_ID_ESSENTIAL || "",
     proPriceId: string = process.env.STRIPE_PRICE_ID_PRO || "",
-    enterprisePriceId: string = process.env.STRIPE_PRICE_ID_ENTERPRISE || ""
+    enterprisePriceId: string = process.env.STRIPE_PRICE_ID_ENTERPRISE || "",
+    whiteglovePriceId: string = process.env.STRIPE_PRICE_ID_WHITEGLOVE || ""
   ) {
     this.stripe = new Stripe(apiKey, {
       apiVersion: "2026-02-25.clover",
@@ -23,12 +27,16 @@ export class StripeService {
     this.basicPriceId = basicPriceId;
     this.proPriceId = proPriceId;
     this.enterprisePriceId = enterprisePriceId;
+    this.whiteglovePriceId = whiteglovePriceId;
   }
 
   /**
    * Gets the price ID for a given plan
    */
-  private getPriceId(plan: "basic" | "pro" | "enterprise"): string {
+  private getPriceId(plan: StripePlan): string {
+    if (plan === "whiteglove") {
+      return this.whiteglovePriceId;
+    }
     if (plan === "enterprise") {
       return this.enterprisePriceId;
     }
@@ -79,16 +87,30 @@ export class StripeService {
   }
 
   /**
-   * Creates a Stripe checkout session
+   * Creates a Stripe checkout session.
+   *
+   * @param customerId  Stripe customer ID
+   * @param plan        "basic" | "pro" | "enterprise" | "whiteglove"
+   * @param orgId       Internal organization id (stored in metadata)
+   * @param options     Optional: couponId or promotionCodeId to apply a discount
    */
   async createCheckoutSession(
     customerId: string,
-    plan: "basic" | "pro" | "enterprise",
-    orgId: string
+    plan: StripePlan,
+    orgId: string,
+    options: { couponId?: string; promotionCodeId?: string; discountCode?: string } = {}
   ): Promise<Stripe.Checkout.Session> {
     const priceId = this.getPriceId(plan);
 
-    return this.stripe.checkout.sessions.create({
+    // Build discounts array if coupon or promotion code provided
+    const discounts: Stripe.Checkout.SessionCreateParams.Discount[] = [];
+    if (options.couponId) {
+      discounts.push({ coupon: options.couponId });
+    } else if (options.promotionCodeId) {
+      discounts.push({ promotion_code: options.promotionCodeId });
+    }
+
+    const params: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       mode: "subscription",
       payment_method_types: ["card"],
@@ -103,14 +125,25 @@ export class StripeService {
       metadata: {
         org_id: orgId,
         plan,
+        discount_code: options.discountCode || "",
       },
       subscription_data: {
         trial_period_days: 14,
         metadata: {
           org_id: orgId,
+          discount_code: options.discountCode || "",
         },
       },
-    });
+    };
+
+    if (discounts.length > 0) {
+      params.discounts = discounts;
+    } else {
+      // Only allow customer-entered promo codes if we aren't already forcing one
+      params.allow_promotion_codes = true;
+    }
+
+    return this.stripe.checkout.sessions.create(params);
   }
 
   /**
@@ -174,7 +207,10 @@ export class StripeService {
   /**
    * Gets the plan from a price ID
    */
-  getPlanFromPriceId(priceId: string): "basic" | "pro" | "enterprise" | null {
+  getPlanFromPriceId(priceId: string): StripePlan | null {
+    if (this.whiteglovePriceId && priceId === this.whiteglovePriceId) {
+      return "whiteglove";
+    }
     if (this.enterprisePriceId && priceId === this.enterprisePriceId) {
       return "enterprise";
     }
@@ -191,7 +227,7 @@ export class StripeService {
    * Gets the plan from a subscription by checking the actual price amount.
    * This is a fallback when price IDs are not configured in env vars.
    */
-  getPlanFromSubscription(subscription: Stripe.Subscription): "basic" | "pro" | "enterprise" {
+  getPlanFromSubscription(subscription: Stripe.Subscription): StripePlan {
     const item = subscription.items?.data?.[0];
     if (!item?.price) return "basic";
 
@@ -201,11 +237,13 @@ export class StripeService {
 
     // Fallback: match by price amount (in cents)
     const amountCents = item.price.unit_amount;
+    if (amountCents === 299700) return "whiteglove";
     if (amountCents === 59900) return "enterprise";
     if (amountCents === 39900) return "pro";
     if (amountCents === 19900) return "basic";
 
     // Fallback: match by price amount ranges (handles minor variations)
+    if (amountCents && amountCents >= 250000) return "whiteglove";
     if (amountCents && amountCents >= 50000) return "enterprise";
     if (amountCents && amountCents >= 30000) return "pro";
     return "basic";

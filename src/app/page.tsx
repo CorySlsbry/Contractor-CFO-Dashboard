@@ -5,6 +5,7 @@ import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock, 
 import { useState } from 'react';
 import Head from 'next/head';
 import ReferralModal from '@/components/ReferralModal';
+import WhiteGloveBookingModal from '@/components/WhiteGloveBookingModal';
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<'starter' | 'professional' | 'enterprise'>('professional');
@@ -13,6 +14,7 @@ export default function LandingPage() {
     plan: 'pro',
     planName: 'Professional',
   });
+  const [whiteGloveOpen, setWhiteGloveOpen] = useState(false);
 
   const openReferral = (plan: string, planName: string) => {
     setReferralPlan({ plan, planName });
@@ -688,25 +690,35 @@ export default function LandingPage() {
 
               <button
                 type="button"
-                onClick={() => openReferral('whiteglove', 'White Glove')}
+                onClick={() => setWhiteGloveOpen(true)}
                 className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-[#a78bfa] to-[#6366f1] hover:opacity-90 transition text-center block"
               >
                 Talk to Our Team
               </button>
-              <Link href="#schedule" className="block text-center text-xs text-[#a5b4fc] hover:text-[#c4b5fd] mt-2">
-                or Book a 15-Min Demo →
-              </Link>
+              <button
+                type="button"
+                onClick={() => setWhiteGloveOpen(true)}
+                className="block w-full text-center text-xs text-[#a5b4fc] hover:text-[#c4b5fd] mt-2"
+              >
+                or Book a 15-Min Intro Call →
+              </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Referral Modal */}
+      {/* Referral Modal (Starter / Pro / Enterprise) */}
       <ReferralModal
         isOpen={referralOpen}
         onClose={() => setReferralOpen(false)}
         plan={referralPlan.plan}
         planName={referralPlan.planName}
+      />
+
+      {/* White Glove Booking Modal */}
+      <WhiteGloveBookingModal
+        isOpen={whiteGloveOpen}
+        onClose={() => setWhiteGloveOpen(false)}
       />
 
       {/* FAQ Section — GEO Optimized with Question-Based H3s */}

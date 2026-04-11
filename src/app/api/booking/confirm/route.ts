@@ -18,14 +18,22 @@ export const dynamic = 'force-dynamic';
 const TIMEZONE = 'America/Denver';
 const CALENDAR_ID = 'cory.salisbury@gmail.com';
 const OWNER_EMAIL = 'cory@salisburybookkeeping.com';
-const BLOCK_MINUTES = 60; // 30 min call + 30 min buffer
+
+type BookingType = 'scope' | 'whiteglove';
+
+function getBlockMinutes(type: BookingType): number {
+  return type === 'whiteglove' ? 30 : 60;
+}
 
 interface BookingPayload {
   name: string;
   email: string;
   company?: string;
+  phone?: string;
+  notes?: string;
   start: string; // e.g. "2026-04-02T11:00:00"
   end: string;
+  type?: BookingType;
 }
 
 /**
@@ -97,12 +105,14 @@ async function getAccessToken(): Promise<string | null> {
  */
 async function checkAvailability(accessToken: string, payload: BookingPayload): Promise<{ available: boolean; error?: string }> {
   try {
+    const type: BookingType = payload.type === 'whiteglove' ? 'whiteglove' : 'scope';
+    const blockMinutes = getBlockMinutes(type);
     const datePart = payload.start.split('T')[0];
     const offset = getMountainOffset(datePart);
 
     // Check the full block (slot + buffer)
     const [startH, startM] = payload.start.split('T')[1].split(':').map(Number);
-    const totalMinutes = startH * 60 + startM + BLOCK_MINUTES;
+    const totalMinutes = startH * 60 + startM + blockMinutes;
     const endH = Math.floor(totalMinutes / 60);
     const endM = totalMinutes % 60;
 
@@ -155,28 +165,51 @@ async function checkAvailability(accessToken: string, payload: BookingPayload): 
  */
 async function createCalendarEvent(accessToken: string, payload: BookingPayload): Promise<{ success: boolean; eventId?: string; meetLink?: string; error?: string }> {
   try {
+    const type: BookingType = payload.type === 'whiteglove' ? 'whiteglove' : 'scope';
+    const blockMinutes = getBlockMinutes(type);
     const companyStr = payload.company ? ` (${payload.company})` : '';
 
-    // Calculate block end time (30 min call + 30 min buffer = 60 min total)
+    // Calculate block end time
     const [datePart, timePart] = payload.start.split('T');
     const [startH, startM] = timePart.split(':').map(Number);
-    const totalMinutes = startH * 60 + startM + BLOCK_MINUTES;
+    const totalMinutes = startH * 60 + startM + blockMinutes;
     const endH = Math.floor(totalMinutes / 60);
     const endM = totalMinutes % 60;
     const blockEnd = `${datePart}T${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00`;
 
+    const isWhiteGlove = type === 'whiteglove';
+    const summary = isWhiteGlove
+      ? `BuilderCFO White Glove Intro — ${payload.name}${companyStr}`
+      : `BuilderCFO Scope Call — ${payload.name}${companyStr}`;
+
+    const descriptionLines = isWhiteGlove
+      ? [
+          `White Glove intro call booked via topbuildercfo.com`,
+          ``,
+          `Name: ${payload.name}`,
+          `Email: ${payload.email}`,
+          payload.company ? `Company: ${payload.company}` : null,
+          payload.phone ? `Phone: ${payload.phone}` : null,
+          payload.notes ? `Notes: ${payload.notes}` : null,
+          ``,
+          `Plan interest: White Glove ($2,997/mo)`,
+          `15-minute intro call (30-minute calendar block).`,
+          `Qualify the prospect, understand their business, determine fit for the dedicated fractional controller tier.`,
+        ]
+      : [
+          `Scope call booked via topbuildercfo.com`,
+          ``,
+          `Name: ${payload.name}`,
+          `Email: ${payload.email}`,
+          payload.company ? `Company: ${payload.company}` : null,
+          ``,
+          `30-minute scope call + 30-minute buffer.`,
+          `Review their QuickBooks and show what BuilderCFO can do.`,
+        ];
+
     const eventBody = {
-      summary: `BuilderCFO Scope Call — ${payload.name}${companyStr}`,
-      description: [
-        `Scope call booked via topbuildercfo.com`,
-        ``,
-        `Name: ${payload.name}`,
-        `Email: ${payload.email}`,
-        payload.company ? `Company: ${payload.company}` : null,
-        ``,
-        `30-minute scope call + 30-minute buffer.`,
-        `Review their QuickBooks and show what BuilderCFO can do.`,
-      ].filter(Boolean).join('\n'),
+      summary,
+      description: descriptionLines.filter(Boolean).join('\n'),
       start: {
         dateTime: payload.start,
         timeZone: TIMEZONE,
@@ -270,8 +303,13 @@ async function pushToGHL(payload: BookingPayload): Promise<{ success: boolean; e
   }
 
   try {
+    const type: BookingType = payload.type === 'whiteglove' ? 'whiteglove' : 'scope';
     const [firstName, ...lastParts] = payload.name.split(' ');
     const lastName = lastParts.join(' ') || '';
+
+    const tags = type === 'whiteglove'
+      ? ['whiteglove-intro-booked', 'whiteglove-lead', 'buildercfo-landing']
+      : ['scope-call-booked', 'buildercfo-landing'];
 
     const res = await fetch('https://services.leadconnectorhq.com/contacts/', {
       method: 'POST',
@@ -285,8 +323,9 @@ async function pushToGHL(payload: BookingPayload): Promise<{ success: boolean; e
         firstName,
         lastName,
         email: payload.email,
+        phone: payload.phone || undefined,
         companyName: payload.company || undefined,
-        tags: ['scope-call-booked', 'buildercfo-landing'],
+        tags,
         source: 'BuilderCFO Website',
       }),
     });

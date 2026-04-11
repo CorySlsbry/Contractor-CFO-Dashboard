@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ChevronRight, Check, Play, Crown } from 'lucide-react';
 import ReferralModal from '@/components/ReferralModal';
+import WhiteGloveBookingModal from '@/components/WhiteGloveBookingModal';
 
 /**
  * /start — Shortened landing page for paid traffic (Google Ads, Facebook Ads).
@@ -16,6 +17,7 @@ export default function PaidTrafficPage() {
     plan: 'pro',
     planName: 'Professional',
   });
+  const [whiteGloveOpen, setWhiteGloveOpen] = useState(false);
 
   const openReferral = (plan: string, planName: string) => {
     setReferralPlan({ plan, planName });
@@ -172,7 +174,11 @@ export default function PaidTrafficPage() {
                 </ul>
                 <button
                   type="button"
-                  onClick={() => openReferral(tier.plan, tier.planName)}
+                  onClick={() =>
+                    tier.whiteglove
+                      ? setWhiteGloveOpen(true)
+                      : openReferral(tier.plan, tier.planName)
+                  }
                   className={`w-full py-2.5 rounded-lg font-semibold text-center block text-sm transition ${
                     tier.whiteglove
                       ? 'bg-gradient-to-r from-[#a78bfa] to-[#6366f1] text-white hover:opacity-90'
@@ -189,12 +195,18 @@ export default function PaidTrafficPage() {
         </div>
       </section>
 
-      {/* Referral Modal */}
+      {/* Referral Modal (Starter / Pro / Enterprise) */}
       <ReferralModal
         isOpen={referralOpen}
         onClose={() => setReferralOpen(false)}
         plan={referralPlan.plan}
         planName={referralPlan.planName}
+      />
+
+      {/* White Glove Booking Modal */}
+      <WhiteGloveBookingModal
+        isOpen={whiteGloveOpen}
+        onClose={() => setWhiteGloveOpen(false)}
       />
 
       {/* Final CTA */}

@@ -1,11 +1,13 @@
 /**
- * GET /api/booking/slots?date=2026-03-31
+ * GET /api/booking/slots?date=2026-03-31&type=whiteglove
  *
- * Returns available 30-minute booking slots for a given date.
+ * Returns available booking slots for a given date.
  *
  * Business hours: Mon–Fri 11 AM – 2 PM Mountain Time
- * Slot duration: 30 minutes
- * Calendar block: 60 minutes (30 min call + 30 min buffer)
+ * Slot spacing: 30 minutes (6 slots/day: 11:00, 11:30, 12:00, 12:30, 1:00, 1:30)
+ *
+ * type=scope      → 30-minute call, 60-minute block (default legacy behavior)
+ * type=whiteglove → 15-minute intro call, 30-minute block
  *
  * Performs a free/busy check against Google Calendar to exclude booked times.
  */
@@ -15,11 +17,16 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 const TIMEZONE = 'America/Denver';
-const SLOT_MINUTES = 30;
-const BLOCK_MINUTES = 60;
+const SLOT_MINUTES = 30; // how often a slot starts
 const START_HOUR = 11;
 const END_HOUR = 14;
 const CALENDAR_ID = 'cory.salisbury@gmail.com';
+
+type BookingType = 'scope' | 'whiteglove';
+
+function getBlockMinutes(type: BookingType): number {
+  return type === 'whiteglove' ? 30 : 60;
+}
 
 interface Slot {
   start: string;
@@ -127,14 +134,14 @@ async function getAccessToken(): Promise<string | null> {
 /**
  * Call Google Calendar free/busy API to check busy times
  */
-async function getBusyPeriods(dateStr: string): Promise<{ start: string; end: string }[]> {
+async function getBusyPeriods(dateStr: string, blockMinutes: number): Promise<{ start: string; end: string }[]> {
   const accessToken = await getAccessToken();
   if (!accessToken) return [];
 
   try {
     const offset = getMountainOffset(dateStr);
     const timeMin = `${dateStr}T${String(START_HOUR).padStart(2, '0')}:00:00${offset}`;
-    const bufferHours = Math.ceil(BLOCK_MINUTES / 60);
+    const bufferHours = Math.ceil(blockMinutes / 60);
     const timeMax = `${dateStr}T${String(END_HOUR + bufferHours).padStart(2, '0')}:00:00${offset}`;
 
     console.log(`[booking/slots] Free/busy query: ${timeMin} → ${timeMax}`);
@@ -176,15 +183,15 @@ async function getBusyPeriods(dateStr: string): Promise<{ start: string; end: st
 
 /**
  * Check if a slot overlaps any busy period.
- * Uses BLOCK_MINUTES (1 hour) to account for the 30-min buffer.
+ * Uses the block length (scope=60min, whiteglove=30min) to account for the buffer.
  */
-function isSlotBusy(slot: Slot, busyPeriods: { start: string; end: string }[], offset: string): boolean {
+function isSlotBusy(slot: Slot, busyPeriods: { start: string; end: string }[], offset: string, blockMinutes: number): boolean {
   for (const busy of busyPeriods) {
     const busyStart = new Date(busy.start).getTime();
     const busyEnd = new Date(busy.end).getTime();
     // Slot times with correct dynamic timezone offset
     const slotStart = new Date(`${slot.start}${offset}`).getTime();
-    const slotBlockEnd = slotStart + BLOCK_MINUTES * 60 * 1000;
+    const slotBlockEnd = slotStart + blockMinutes * 60 * 1000;
 
     if (slotStart < busyEnd && slotBlockEnd > busyStart) {
       return true;
@@ -196,6 +203,9 @@ function isSlotBusy(slot: Slot, busyPeriods: { start: string; end: string }[], o
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const dateStr = searchParams.get('date');
+  const typeParam = searchParams.get('type');
+  const type: BookingType = typeParam === 'whiteglove' ? 'whiteglove' : 'scope';
+  const blockMinutes = getBlockMinutes(type);
 
   if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return NextResponse.json({ error: 'Invalid date. Use YYYY-MM-DD.' }, { status: 400 });
@@ -230,11 +240,11 @@ export async function GET(request: NextRequest) {
   }
 
   // Check Google Calendar for busy periods
-  const busyPeriods = await getBusyPeriods(dateStr);
+  const busyPeriods = await getBusyPeriods(dateStr, blockMinutes);
   if (busyPeriods.length > 0) {
     const offset = getMountainOffset(dateStr);
-    allSlots = allSlots.filter(slot => !isSlotBusy(slot, busyPeriods, offset));
+    allSlots = allSlots.filter(slot => !isSlotBusy(slot, busyPeriods, offset, blockMinutes));
   }
 
-  return NextResponse.json({ slots: allSlots });
+  return NextResponse.json({ slots: allSlots, type, blockMinutes });
 }

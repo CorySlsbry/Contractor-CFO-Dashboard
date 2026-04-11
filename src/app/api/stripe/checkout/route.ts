@@ -8,16 +8,24 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 import { createClient } from "@/lib/supabase/server";
-import { stripeService } from "@/lib/stripe";
+import { stripeService, type StripePlan } from "@/lib/stripe";
 import type { ApiResponse } from "@/types";
 
 interface CheckoutRequest {
-  plan: "basic" | "pro" | "enterprise";
+  plan: StripePlan;
+  discountCode?: string; // e.g. "REFER20"
 }
 
 interface CheckoutResponse {
   url: string;
 }
+
+// Map internal discount codes to Stripe coupon IDs.
+// The Stripe coupon must be created first (see scripts/setup-stripe-whiteglove.mjs)
+// with ID matching the value below, or configure STRIPE_COUPON_REFER20 env var.
+const DISCOUNT_CODE_TO_COUPON: Record<string, string | undefined> = {
+  REFER20: process.env.STRIPE_COUPON_REFER20 || "REFER20",
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate plan
-    if (!body.plan || !["basic", "pro", "enterprise"].includes(body.plan)) {
+    if (!body.plan || !["basic", "pro", "enterprise", "whiteglove"].includes(body.plan)) {
       return NextResponse.json<ApiResponse<null>>(
         { success: false, error: "Invalid plan" },
         { status: 400 }
@@ -113,13 +121,32 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Resolve discount code → Stripe coupon ID (if present)
+    let couponId: string | undefined;
+    if (body.discountCode) {
+      couponId = DISCOUNT_CODE_TO_COUPON[body.discountCode];
+      if (!couponId) {
+        console.warn("[checkout] Unknown discount code:", body.discountCode);
+      }
+    }
+
     // Create checkout session
     try {
-      console.log("Creating checkout:", { customerId, plan: body.plan, orgId: (org as any).id });
+      console.log("Creating checkout:", {
+        customerId,
+        plan: body.plan,
+        orgId: (org as any).id,
+        discountCode: body.discountCode,
+        couponId,
+      });
       const session = await stripeService.createCheckoutSession(
         customerId,
         body.plan,
-        (org as any).id
+        (org as any).id,
+        {
+          couponId,
+          discountCode: body.discountCode,
+        }
       );
 
       if (!session.url) {

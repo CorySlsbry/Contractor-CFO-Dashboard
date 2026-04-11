@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Clock, User, Mail, Building2, CalendarCheck, Loader2, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, User, Mail, Building2, CalendarCheck, Loader2, Check, Phone, MessageSquare } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────
    TYPES
@@ -13,6 +13,14 @@ interface TimeSlot {
 }
 
 type BookingStep = 'date' | 'time' | 'info' | 'confirm';
+
+export type BookingVariant = 'scope' | 'whiteglove';
+
+interface BookingCalendarProps {
+  variant?: BookingVariant;
+  accentClass?: string;      // tailwind class for primary accent, e.g. "#a78bfa"
+  onBooked?: (payload: { email: string; name: string; company?: string }) => void;
+}
 
 /* ──────────────────────────────────────────────────────────
    HELPERS
@@ -36,7 +44,10 @@ function formatDate(d: Date) {
 /* ──────────────────────────────────────────────────────────
    COMPONENT
    ────────────────────────────────────────────────────────── */
-export function BookingCalendar() {
+export function BookingCalendar({ variant = 'scope', accentClass, onBooked }: BookingCalendarProps = {}) {
+  const isWG = variant === 'whiteglove';
+  const accent = accentClass || (isWG ? '#a78bfa' : '#6366f1');
+
   const today = new Date();
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -48,6 +59,8 @@ export function BookingCalendar() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
+  const [phone, setPhone] = useState('');
+  const [notes, setNotes] = useState('');
 
   // Async state
   const [slots, setSlots] = useState<TimeSlot[]>([]);
@@ -64,7 +77,8 @@ export function BookingCalendar() {
     setError('');
 
     const dateStr = selectedDate.toISOString().split('T')[0];
-    fetch(`/api/booking/slots?date=${dateStr}`)
+    const url = `/api/booking/slots?date=${dateStr}&type=${variant}`;
+    fetch(url)
       .then(r => r.json())
       .then(data => {
         if (data.slots) setSlots(data.slots);
@@ -72,7 +86,7 @@ export function BookingCalendar() {
       })
       .catch(() => setError('Failed to load slots.'))
       .finally(() => setLoadingSlots(false));
-  }, [selectedDate]);
+  }, [selectedDate, variant]);
 
   /* ── Submit booking ── */
   const handleSubmit = async () => {
@@ -87,13 +101,17 @@ export function BookingCalendar() {
           name,
           email,
           company,
+          phone: phone || undefined,
+          notes: notes || undefined,
           start: selectedSlot.start,
           end: selectedSlot.end,
+          type: variant,
         }),
       });
       const data = await res.json();
       if (data.ok) {
         setStep('confirm');
+        if (onBooked) onBooked({ name, email, company });
       } else {
         setError(data.error || 'Booking failed. Please try again.');
       }
@@ -139,22 +157,28 @@ export function BookingCalendar() {
           {formatDate(selectedDate!)} at {selectedSlot?.label}
         </p>
         <p className="text-sm text-[#8888a0] mb-4">
-          Check your email at <span className="text-[#a5b4fc]">{email}</span> for confirmation.
+          Check your email at <span style={{ color: accent }}>{email}</span> for confirmation.
         </p>
         <p className="text-xs text-[#555] mb-6">
-          We&apos;ll send you a Google Meet link before the call.
+          We&apos;ll send you a Google Meet link before the {isWG ? '15-minute intro call' : 'call'}.
         </p>
 
         {/* Signup push */}
-        <div className="bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-lg p-4 max-w-sm">
+        <div
+          className="rounded-lg p-4 max-w-sm border"
+          style={{ backgroundColor: `${accent}0D`, borderColor: `${accent}33` }}
+        >
           <p className="text-sm text-[#b0b0c8] mb-3">
-            While you wait for our call, start your free trial and connect your QuickBooks. That way we can look at <span className="text-[#e8e8f0] font-medium">YOUR numbers</span> together — not sample data.
+            {isWG
+              ? (<>Want to get a head start? Start your free trial and connect your QuickBooks now so we can look at <span className="text-[#e8e8f0] font-medium">YOUR numbers</span> on the call — not sample data.</>)
+              : (<>While you wait for our call, start your free trial and connect your QuickBooks. That way we can look at <span className="text-[#e8e8f0] font-medium">YOUR numbers</span> together — not sample data.</>)}
           </p>
           <a
-            href="/signup"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-sm"
+            href={isWG ? `/signup?plan=whiteglove&ref=${encodeURIComponent(email)}` : '/signup'}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-white transition text-sm"
+            style={{ backgroundColor: accent }}
           >
-            Start Free Trial
+            {isWG ? 'Start 14-Day Free Trial' : 'Start Free Trial'}
           </a>
         </div>
       </div>
@@ -201,10 +225,10 @@ export function BookingCalendar() {
                 key={day}
                 disabled={disabled}
                 onClick={() => { setSelectedDate(date); setStep('time'); }}
+                style={selected ? { backgroundColor: accent, color: 'white' } : undefined}
                 className={`
                   h-9 w-full rounded-lg text-sm font-medium transition cursor-pointer
-                  ${disabled ? 'text-[#333] cursor-not-allowed' : 'text-[#e8e8f0] hover:bg-[#6366f1]/15 hover:text-[#a5b4fc]'}
-                  ${selected ? 'bg-[#6366f1] text-white hover:bg-[#6366f1] hover:text-white' : ''}
+                  ${disabled ? 'text-[#333] cursor-not-allowed' : 'text-[#e8e8f0] hover:bg-white/10'}
                 `}
               >
                 {day}
@@ -233,11 +257,13 @@ export function BookingCalendar() {
             <p className="text-sm font-semibold text-[#e8e8f0] mb-1">
               {selectedDate && formatDate(selectedDate)}
             </p>
-            <p className="text-xs text-[#8888a0] mb-4">30-minute scope call</p>
+            <p className="text-xs text-[#8888a0] mb-4">
+              {isWG ? '15-minute intro call (30-min calendar block)' : '30-minute scope call'}
+            </p>
 
             {loadingSlots && (
               <div className="flex items-center justify-center py-8">
-                <Loader2 size={20} className="text-[#6366f1] animate-spin" />
+                <Loader2 size={20} className="animate-spin" style={{ color: accent }} />
               </div>
             )}
 
@@ -253,12 +279,12 @@ export function BookingCalendar() {
                     <button
                       key={slot.start}
                       onClick={() => { setSelectedSlot(slot); }}
-                      className={`
-                        px-3 py-2 rounded-lg text-sm font-medium transition cursor-pointer border
-                        ${active
-                          ? 'bg-[#6366f1] text-white border-[#6366f1]'
-                          : 'text-[#a5b4fc] border-[#6366f1]/30 hover:bg-[#6366f1]/10 hover:border-[#6366f1]/50'}
-                      `}
+                      style={
+                        active
+                          ? { backgroundColor: accent, color: 'white', borderColor: accent }
+                          : { color: accent, borderColor: `${accent}4D` }
+                      }
+                      className="px-3 py-2 rounded-lg text-sm font-medium transition cursor-pointer border hover:opacity-90"
                     >
                       {slot.label}
                     </button>
@@ -270,7 +296,8 @@ export function BookingCalendar() {
             {selectedSlot && (
               <button
                 onClick={() => setStep('info')}
-                className="w-full mt-4 px-4 py-2.5 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition cursor-pointer text-sm"
+                style={{ backgroundColor: accent }}
+                className="w-full mt-4 px-4 py-2.5 rounded-lg font-semibold text-white transition cursor-pointer text-sm hover:opacity-90"
               >
                 Continue
               </button>
@@ -280,13 +307,21 @@ export function BookingCalendar() {
 
         {step === 'info' && (
           <>
-            <button onClick={() => setStep('time')} className="text-xs text-[#6366f1] mb-3 hover:underline cursor-pointer">
+            <button
+              onClick={() => setStep('time')}
+              style={{ color: accent }}
+              className="text-xs mb-3 hover:underline cursor-pointer"
+            >
               &larr; Back to times
             </button>
             <p className="text-sm font-semibold text-[#e8e8f0] mb-1">
               {selectedDate && formatDate(selectedDate)} at {selectedSlot?.label}
             </p>
-            <p className="text-xs text-[#8888a0] mb-5">Enter your details to confirm the call.</p>
+            <p className="text-xs text-[#8888a0] mb-5">
+              {isWG
+                ? 'Tell us about your business so we can prepare for the call.'
+                : 'Enter your details to confirm the call.'}
+            </p>
 
             <div className="space-y-3">
               <div className="relative">
@@ -296,7 +331,7 @@ export function BookingCalendar() {
                   placeholder="Your name"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#12121a] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:border-[#6366f1] focus:outline-none"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#12121a] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:outline-none focus:border-white/30"
                 />
               </div>
               <div className="relative">
@@ -306,32 +341,58 @@ export function BookingCalendar() {
                   placeholder="Email address"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#12121a] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:border-[#6366f1] focus:outline-none"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#12121a] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:outline-none focus:border-white/30"
                 />
               </div>
               <div className="relative">
                 <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]" />
                 <input
                   type="text"
-                  placeholder="Company name (optional)"
+                  placeholder={isWG ? 'Company name' : 'Company name (optional)'}
                   value={company}
                   onChange={e => setCompany(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#12121a] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:border-[#6366f1] focus:outline-none"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#12121a] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:outline-none focus:border-white/30"
                 />
               </div>
+
+              {isWG && (
+                <>
+                  <div className="relative">
+                    <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]" />
+                    <input
+                      type="tel"
+                      placeholder="Phone (optional)"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#12121a] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:outline-none focus:border-white/30"
+                    />
+                  </div>
+                  <div className="relative">
+                    <MessageSquare size={14} className="absolute left-3 top-3 text-[#555]" />
+                    <textarea
+                      placeholder="Annual revenue + what you want to solve (optional)"
+                      value={notes}
+                      onChange={e => setNotes(e.target.value)}
+                      rows={3}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#12121a] border border-[#2a2a3d] text-[#e8e8f0] text-sm placeholder:text-[#555] focus:outline-none focus:border-white/30 resize-none"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             {error && <p className="text-xs text-[#ef4444] mt-2">{error}</p>}
 
             <button
               onClick={handleSubmit}
-              disabled={submitting || !name || !email.includes('@')}
-              className="w-full mt-4 px-4 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              disabled={submitting || !name || !email.includes('@') || (isWG && !company)}
+              style={{ backgroundColor: accent }}
+              className="w-full mt-4 px-4 py-3 rounded-lg font-semibold text-white transition cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:opacity-90"
             >
               {submitting ? (
                 <><Loader2 size={16} className="animate-spin" /> Booking...</>
               ) : (
-                <><CalendarCheck size={16} /> Confirm Booking</>
+                <><CalendarCheck size={16} /> {isWG ? 'Book My Intro Call' : 'Confirm Booking'}</>
               )}
             </button>
           </>
