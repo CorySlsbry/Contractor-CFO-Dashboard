@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserClient } from '@/lib/supabase/client';
-import { Check } from 'lucide-react';
+import { Check, Gift } from 'lucide-react';
 
 const plans = [
   {
@@ -26,6 +26,12 @@ const plans = [
     price: 599,
     features: ['Everything in Professional', 'Procore + Salesforce + ServiceTitan', 'Quarterly strategy call', 'Dedicated account manager'],
   },
+  {
+    key: 'whiteglove',
+    name: 'White Glove',
+    price: 2997,
+    features: ['Everything in Enterprise', 'Dedicated fractional controller', 'Weekly strategy call', 'Custom board reports'],
+  },
 ];
 
 function SignupContent() {
@@ -38,14 +44,36 @@ function SignupContent() {
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [referredBy, setReferredBy] = useState<string | null>(null);
   const router = useRouter();
 
-  // Read plan from URL params (from landing page links)
+  // Read plan + discount + ref from URL params and localStorage
   useEffect(() => {
     const planParam = searchParams.get('plan');
-    if (planParam && ['basic', 'pro', 'enterprise'].includes(planParam)) {
+    if (planParam && ['basic', 'pro', 'enterprise', 'whiteglove'].includes(planParam)) {
       setSelectedPlan(planParam);
     }
+
+    // Discount: URL takes precedence, then localStorage fallback
+    const urlDiscount = searchParams.get('discount');
+    const urlRef = searchParams.get('ref');
+    if (urlDiscount === 'REFER20') {
+      setDiscountCode('REFER20');
+      if (urlRef) setReferredBy(urlRef);
+      if (urlRef && !email) setEmail(urlRef);
+    } else if (typeof window !== 'undefined') {
+      try {
+        const stored = window.localStorage.getItem('referralDiscount');
+        const storedEmail = window.localStorage.getItem('referralEmail');
+        if (stored === 'REFER20') {
+          setDiscountCode('REFER20');
+          if (storedEmail) setReferredBy(storedEmail);
+          if (storedEmail && !email) setEmail(storedEmail);
+        }
+      } catch {}
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -118,31 +146,60 @@ function SignupContent() {
           </p>
         </div>
 
+        {/* Referral Discount Banner */}
+        {discountCode === 'REFER20' && (
+          <div className="mb-5 bg-gradient-to-r from-[#6366f1]/15 to-[#a78bfa]/15 border border-[#6366f1]/40 rounded-lg p-3 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#6366f1]/20 border border-[#6366f1]/40 flex items-center justify-center flex-shrink-0">
+              <Gift size={16} className="text-[#a5b4fc]" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white">20% off unlocked 🎉</p>
+              <p className="text-xs text-[#b0b0c8]">
+                {referredBy
+                  ? `Your 2 friend referrals from ${referredBy} are confirmed.`
+                  : 'Your referral discount is applied to this subscription.'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Plan Selector */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {plans.map((plan) => (
-            <button
-              key={plan.key}
-              type="button"
-              onClick={() => setSelectedPlan(plan.key)}
-              className={`relative p-3 rounded-lg border text-left transition-all ${
-                selectedPlan === plan.key
-                  ? 'border-[#6366f1] bg-[#6366f1]/10'
-                  : 'border-[#2a2a3d] bg-[#0a0a0f] hover:border-[#3a3a4d]'
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-2 left-3 bg-[#6366f1] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
-                  POPULAR
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          {plans.map((plan) => {
+            const discounted = discountCode === 'REFER20';
+            const finalPrice = discounted ? Math.round(plan.price * 0.8) : plan.price;
+            return (
+              <button
+                key={plan.key}
+                type="button"
+                onClick={() => setSelectedPlan(plan.key)}
+                className={`relative p-3 rounded-lg border text-left transition-all ${
+                  selectedPlan === plan.key
+                    ? 'border-[#6366f1] bg-[#6366f1]/10'
+                    : 'border-[#2a2a3d] bg-[#0a0a0f] hover:border-[#3a3a4d]'
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-2 left-3 bg-[#6366f1] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                    POPULAR
+                  </div>
+                )}
+                {plan.key === 'whiteglove' && (
+                  <div className="absolute -top-2 left-3 bg-gradient-to-r from-[#a78bfa] to-[#6366f1] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                    WHITE GLOVE
+                  </div>
+                )}
+                <div className="text-sm font-semibold text-[#e8e8f0]">{plan.name}</div>
+                <div className="mt-1 flex items-baseline gap-1.5 flex-wrap">
+                  {discounted && (
+                    <span className="text-xs text-[#8888a0] line-through">${plan.price}</span>
+                  )}
+                  <span className="text-lg font-bold text-[#e8e8f0]">${finalPrice}</span>
+                  <span className="text-xs text-[#8888a0]">/mo</span>
                 </div>
-              )}
-              <div className="text-sm font-semibold text-[#e8e8f0]">{plan.name}</div>
-              <div className="mt-1">
-                <span className="text-lg font-bold text-[#e8e8f0]">${plan.price}</span>
-                <span className="text-xs text-[#8888a0]">/mo</span>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
         {/* Selected Plan Features */}

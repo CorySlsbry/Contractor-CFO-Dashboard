@@ -1,12 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock } from 'lucide-react';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock, Crown } from 'lucide-react';
 import { useState } from 'react';
 import Head from 'next/head';
+import ReferralModal from '@/components/ReferralModal';
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<'starter' | 'professional' | 'enterprise'>('professional');
+  const [referralOpen, setReferralOpen] = useState(false);
+  const [referralPlan, setReferralPlan] = useState<{ plan: string; planName: string }>({
+    plan: 'pro',
+    planName: 'Professional',
+  });
+
+  const openReferral = (plan: string, planName: string) => {
+    setReferralPlan({ plan, planName });
+    setReferralOpen(true);
+  };
 
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0]">
@@ -513,27 +524,33 @@ export default function LandingPage() {
 
       {/* Pricing Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8" id="pricing">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 text-center">
             Construction Dashboard Pricing Plans
           </h2>
-          <p className="text-center text-[#b0b0c8] mb-12 text-lg">
+          <p className="text-center text-[#b0b0c8] mb-4 text-lg">
             No credit card required. 14 days free on every plan.
           </p>
+          <div className="text-center mb-12">
+            <span className="inline-flex items-center gap-2 bg-gradient-to-r from-[#6366f1]/15 to-[#a78bfa]/15 border border-[#6366f1]/40 rounded-full px-4 py-1.5 text-sm text-[#c7d2fe]">
+              <span className="text-lg">🎁</span>
+              Refer 2 friends at checkout → <span className="font-semibold text-white">20% off your plan</span> + 20% off theirs
+            </span>
+          </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Starter Tier */}
-            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-8 flex flex-col">
-              <h3 className="text-2xl font-bold text-white mb-2">
+            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-7 flex flex-col">
+              <h3 className="text-xl font-bold text-white mb-2">
                 Starter
               </h3>
-              <p className="text-[#b0b0c8] mb-6">For solo contractors and small crews getting financial visibility</p>
-              <div className="mb-6">
-                <span className="text-4xl sm:text-5xl font-bold text-white">$199</span>
-                <span className="text-[#b0b0c8] ml-2">/month</span>
+              <p className="text-sm text-[#b0b0c8] mb-5">For solo contractors and small crews getting financial visibility</p>
+              <div className="mb-5">
+                <span className="text-4xl font-bold text-white">$199</span>
+                <span className="text-[#b0b0c8] ml-1 text-sm">/month</span>
               </div>
 
-              <ul className="space-y-3 mb-8 flex-1">
+              <ul className="space-y-2.5 mb-7 flex-1">
                 {[
                   'Real-time financial dashboard',
                   'Job costing & WIP tracking',
@@ -542,38 +559,39 @@ export default function LandingPage() {
                   'Monthly AI CFO brief',
                   'Email support',
                 ].map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-3">
-                    <Check size={18} className="text-[#6366f1] flex-shrink-0" />
-                    <span className="text-[#d0d0e0]">{feature}</span>
+                  <li key={idx} className="flex items-start gap-2.5">
+                    <Check size={16} className="text-[#6366f1] flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-[#d0d0e0]">{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              <Link
-                href="/signup?plan=basic"
+              <button
+                type="button"
+                onClick={() => openReferral('basic', 'Starter')}
                 className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#2a2a3d] hover:bg-[#3a3a4d] transition text-center block"
               >
                 Start Free Trial
-              </Link>
-              <Link href="#schedule" className="block text-center text-sm text-[#6366f1] hover:text-[#818cf8] mt-2">
+              </button>
+              <Link href="#schedule" className="block text-center text-xs text-[#6366f1] hover:text-[#818cf8] mt-2">
                 or Book a Demo →
               </Link>
             </div>
 
             {/* Professional Tier */}
-            <div className="bg-gradient-to-br from-[#6366f1]/10 to-transparent border-2 border-[#6366f1]/60 rounded-xl p-8 relative flex flex-col shadow-lg shadow-[#6366f1]/10">
+            <div className="bg-gradient-to-br from-[#6366f1]/10 to-transparent border-2 border-[#6366f1]/60 rounded-xl p-7 relative flex flex-col shadow-lg shadow-[#6366f1]/10">
               <div className="absolute -top-3 left-6 bg-[#6366f1] text-white text-xs font-bold px-4 py-1 rounded-full tracking-wide">
                 MOST POPULAR
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-2">Professional</h3>
-              <p className="text-[#b0b0c8] mb-6">For growing construction companies with $1M–$10M revenue</p>
-              <div className="mb-6">
-                <span className="text-4xl sm:text-5xl font-bold text-white">$399</span>
-                <span className="text-[#b0b0c8] ml-2">/month</span>
+              <h3 className="text-xl font-bold text-white mb-2">Professional</h3>
+              <p className="text-sm text-[#b0b0c8] mb-5">For growing construction companies with $1M–$10M revenue</p>
+              <div className="mb-5">
+                <span className="text-4xl font-bold text-white">$399</span>
+                <span className="text-[#b0b0c8] ml-1 text-sm">/month</span>
               </div>
 
-              <ul className="space-y-3 mb-8 flex-1">
+              <ul className="space-y-2.5 mb-7 flex-1">
                 {[
                   'Everything in Starter',
                   'Buildertrend + HubSpot + JobNimbus integrations',
@@ -582,34 +600,35 @@ export default function LandingPage() {
                   'AR/AP aging reports by job',
                   'Priority support',
                 ].map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-3">
-                    <Check size={18} className="text-[#6366f1] flex-shrink-0" />
-                    <span className="text-[#d0d0e0]">{feature}</span>
+                  <li key={idx} className="flex items-start gap-2.5">
+                    <Check size={16} className="text-[#6366f1] flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-[#d0d0e0]">{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              <Link
-                href="/signup?plan=pro"
+              <button
+                type="button"
+                onClick={() => openReferral('pro', 'Professional')}
                 className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition text-center block"
               >
                 Start Free Trial
-              </Link>
-              <Link href="#schedule" className="block text-center text-sm text-[#6366f1] hover:text-[#818cf8] mt-2">
+              </button>
+              <Link href="#schedule" className="block text-center text-xs text-[#6366f1] hover:text-[#818cf8] mt-2">
                 or Book a Demo →
               </Link>
             </div>
 
             {/* Enterprise Tier */}
-            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-8 flex flex-col">
-              <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
-              <p className="text-[#b0b0c8] mb-6">For scaling operations with $10M+ revenue and multiple project managers</p>
-              <div className="mb-6">
-                <span className="text-4xl sm:text-5xl font-bold text-white">$599</span>
-                <span className="text-[#b0b0c8] ml-2">/month</span>
+            <div className="bg-[#12121a] border border-[#2a2a3d] rounded-xl p-7 flex flex-col">
+              <h3 className="text-xl font-bold text-white mb-2">Enterprise</h3>
+              <p className="text-sm text-[#b0b0c8] mb-5">For scaling operations with $10M+ revenue and multiple project managers</p>
+              <div className="mb-5">
+                <span className="text-4xl font-bold text-white">$599</span>
+                <span className="text-[#b0b0c8] ml-1 text-sm">/month</span>
               </div>
 
-              <ul className="space-y-3 mb-8 flex-1">
+              <ul className="space-y-2.5 mb-7 flex-1">
                 {[
                   'Everything in Professional',
                   'Procore + Salesforce + ServiceTitan integrations',
@@ -618,26 +637,77 @@ export default function LandingPage() {
                   'Quarterly strategy call with Salisbury Bookkeeping',
                   'Dedicated account manager',
                 ].map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-3">
-                    <Check size={18} className="text-[#6366f1] flex-shrink-0" />
-                    <span className="text-[#d0d0e0]">{feature}</span>
+                  <li key={idx} className="flex items-start gap-2.5">
+                    <Check size={16} className="text-[#6366f1] flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-[#d0d0e0]">{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              <Link
-                href="/signup?plan=enterprise"
+              <button
+                type="button"
+                onClick={() => openReferral('enterprise', 'Enterprise')}
                 className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-[#2a2a3d] hover:bg-[#3a3a4d] transition text-center block"
               >
                 Start Free Trial
-              </Link>
-              <Link href="#schedule" className="block text-center text-sm text-[#6366f1] hover:text-[#818cf8] mt-2">
+              </button>
+              <Link href="#schedule" className="block text-center text-xs text-[#6366f1] hover:text-[#818cf8] mt-2">
                 or Book a Demo →
+              </Link>
+            </div>
+
+            {/* White Glove Tier */}
+            <div className="bg-gradient-to-br from-[#a78bfa]/15 via-[#6366f1]/10 to-transparent border-2 border-[#a78bfa]/60 rounded-xl p-7 relative flex flex-col shadow-xl shadow-[#a78bfa]/10">
+              <div className="absolute -top-3 left-6 bg-gradient-to-r from-[#a78bfa] to-[#6366f1] text-white text-xs font-bold px-4 py-1 rounded-full tracking-wide inline-flex items-center gap-1">
+                <Crown size={12} /> WHITE GLOVE
+              </div>
+
+              <h3 className="text-xl font-bold text-white mb-2">White Glove</h3>
+              <p className="text-sm text-[#b0b0c8] mb-5">Done-for-you fractional controller for $10M+ builders who want zero lift</p>
+              <div className="mb-5">
+                <span className="text-4xl font-bold text-white">$2,997</span>
+                <span className="text-[#b0b0c8] ml-1 text-sm">/month</span>
+              </div>
+
+              <ul className="space-y-2.5 mb-7 flex-1">
+                {[
+                  'Everything in Enterprise',
+                  'Dedicated fractional controller',
+                  'Weekly strategy & cash flow call',
+                  'Monthly CFO-level financial review',
+                  'Custom KPI reports & board packages',
+                  'Priority integration setup (white-glove)',
+                  'Direct Slack line to your controller',
+                ].map((feature, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5">
+                    <Check size={16} className="text-[#a78bfa] flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-[#d0d0e0]">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                type="button"
+                onClick={() => openReferral('whiteglove', 'White Glove')}
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-[#a78bfa] to-[#6366f1] hover:opacity-90 transition text-center block"
+              >
+                Talk to Our Team
+              </button>
+              <Link href="#schedule" className="block text-center text-xs text-[#a5b4fc] hover:text-[#c4b5fd] mt-2">
+                or Book a 15-Min Demo →
               </Link>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Referral Modal */}
+      <ReferralModal
+        isOpen={referralOpen}
+        onClose={() => setReferralOpen(false)}
+        plan={referralPlan.plan}
+        planName={referralPlan.planName}
+      />
 
       {/* FAQ Section — GEO Optimized with Question-Based H3s */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#12121a]/50" id="faq">
@@ -671,7 +741,7 @@ export default function LandingPage() {
             <div>
               <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How much does BuilderCFO cost compared to a full-time CFO?</h3>
               <p className="text-[#b0b0c8]">
-                BuilderCFO starts at $199/month (Starter), $399/month (Professional), or $599/month (Enterprise). A full-time construction CFO typically costs $120,000–$200,000+ per year in salary and benefits. BuilderCFO provides real-time dashboards, automated WIP, and AI analysis for $2,388–$7,188 per year — roughly 2–5% the cost of a dedicated hire. Every plan includes a 14-day free trial.
+                BuilderCFO starts at $199/month (Starter), $399/month (Professional), $599/month (Enterprise), or $2,997/month (White Glove — done-for-you fractional controller). A full-time construction CFO typically costs $120,000–$200,000+ per year in salary and benefits. BuilderCFO self-serve plans run $2,388–$7,188 per year — roughly 2–5% the cost of a dedicated hire. White Glove delivers a dedicated fractional controller with weekly strategy calls for a fraction of a full-time CFO. Every plan includes a 14-day free trial, and if you refer 2 friends at checkout you get 20% off your subscription (and so do they).
               </p>
             </div>
 

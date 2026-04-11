@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Check, Play } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronRight, Check, Play, Crown } from 'lucide-react';
+import ReferralModal from '@/components/ReferralModal';
 
 /**
  * /start — Shortened landing page for paid traffic (Google Ads, Facebook Ads).
@@ -9,6 +11,17 @@ import { ChevronRight, Check, Play } from 'lucide-react';
  * No FAQ, no comparison table, no integration grid — cold traffic needs speed.
  */
 export default function PaidTrafficPage() {
+  const [referralOpen, setReferralOpen] = useState(false);
+  const [referralPlan, setReferralPlan] = useState<{ plan: string; planName: string }>({
+    plan: 'pro',
+    planName: 'Professional',
+  });
+
+  const openReferral = (plan: string, planName: string) => {
+    setReferralPlan({ plan, planName });
+    setReferralOpen(true);
+  };
+
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0] min-h-screen">
       {/* Nav — minimal */}
@@ -98,28 +111,51 @@ export default function PaidTrafficPage() {
 
       {/* Compact Pricing */}
       <section className="py-12 px-4 sm:px-6 lg:px-8" id="pricing">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <h2 className="text-xl sm:text-2xl font-bold mb-2 text-center">Simple Pricing. No Surprises.</h2>
-          <p className="text-center text-[#8888a0] mb-8 text-sm">Every plan includes a 14-day free trial. No credit card required.</p>
+          <p className="text-center text-[#8888a0] mb-3 text-sm">Every plan includes a 14-day free trial. No credit card required.</p>
+          <div className="text-center mb-8">
+            <span className="inline-flex items-center gap-2 bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-full px-3 py-1 text-xs text-[#c7d2fe]">
+              🎁 Refer 2 friends at checkout → 20% off your plan + 20% off theirs
+            </span>
+          </div>
 
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               {
                 name: 'Starter', price: '$199', features: ['Financial dashboard', 'Job costing & WIP', 'Cash flow forecasting', 'QuickBooks sync'],
-                plan: 'basic', highlight: false,
+                plan: 'basic', planName: 'Starter', highlight: false, whiteglove: false,
               },
               {
                 name: 'Professional', price: '$399', features: ['Everything in Starter', 'Buildertrend + HubSpot', 'AI CFO advisor', 'Priority support'],
-                plan: 'pro', highlight: true,
+                plan: 'pro', planName: 'Professional', highlight: true, whiteglove: false,
               },
               {
                 name: 'Enterprise', price: '$599', features: ['Everything in Pro', 'Procore + Salesforce', 'Quarterly strategy call', 'Dedicated manager'],
-                plan: 'enterprise', highlight: false,
+                plan: 'enterprise', planName: 'Enterprise', highlight: false, whiteglove: false,
+              },
+              {
+                name: 'White Glove', price: '$2,997', features: ['Everything in Enterprise', 'Dedicated controller', 'Weekly strategy call', 'Custom board reports'],
+                plan: 'whiteglove', planName: 'White Glove', highlight: false, whiteglove: true,
               },
             ].map((tier, idx) => (
-              <div key={idx} className={`rounded-xl p-6 flex flex-col ${tier.highlight ? 'bg-gradient-to-br from-[#6366f1]/10 to-transparent border-2 border-[#6366f1]/60 relative' : 'bg-[#12121a] border border-[#2a2a3d]'}`}>
+              <div
+                key={idx}
+                className={`rounded-xl p-5 flex flex-col ${
+                  tier.whiteglove
+                    ? 'bg-gradient-to-br from-[#a78bfa]/15 via-[#6366f1]/10 to-transparent border-2 border-[#a78bfa]/60 relative'
+                    : tier.highlight
+                    ? 'bg-gradient-to-br from-[#6366f1]/10 to-transparent border-2 border-[#6366f1]/60 relative'
+                    : 'bg-[#12121a] border border-[#2a2a3d]'
+                }`}
+              >
                 {tier.highlight && (
                   <div className="absolute -top-2.5 left-4 bg-[#6366f1] text-white text-[10px] font-bold px-3 py-0.5 rounded-full">POPULAR</div>
+                )}
+                {tier.whiteglove && (
+                  <div className="absolute -top-2.5 left-4 bg-gradient-to-r from-[#a78bfa] to-[#6366f1] text-white text-[10px] font-bold px-3 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <Crown size={10} /> WHITE GLOVE
+                  </div>
                 )}
                 <h3 className="text-lg font-bold text-white mb-1">{tier.name}</h3>
                 <div className="mb-4">
@@ -128,23 +164,38 @@ export default function PaidTrafficPage() {
                 </div>
                 <ul className="space-y-2 mb-6 flex-1">
                   {tier.features.map((f, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm">
-                      <Check size={14} className="text-[#6366f1] flex-shrink-0" />
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <Check size={14} className={`flex-shrink-0 mt-0.5 ${tier.whiteglove ? 'text-[#a78bfa]' : 'text-[#6366f1]'}`} />
                       <span className="text-[#d0d0e0]">{f}</span>
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href={`/signup?plan=${tier.plan}`}
-                  className={`w-full py-2.5 rounded-lg font-semibold text-center block text-sm transition ${tier.highlight ? 'bg-[#6366f1] text-white hover:bg-[#5558d9]' : 'bg-[#2a2a3d] text-white hover:bg-[#3a3a4d]'}`}
+                <button
+                  type="button"
+                  onClick={() => openReferral(tier.plan, tier.planName)}
+                  className={`w-full py-2.5 rounded-lg font-semibold text-center block text-sm transition ${
+                    tier.whiteglove
+                      ? 'bg-gradient-to-r from-[#a78bfa] to-[#6366f1] text-white hover:opacity-90'
+                      : tier.highlight
+                      ? 'bg-[#6366f1] text-white hover:bg-[#5558d9]'
+                      : 'bg-[#2a2a3d] text-white hover:bg-[#3a3a4d]'
+                  }`}
                 >
-                  Start Free Trial
-                </Link>
+                  {tier.whiteglove ? 'Talk to Our Team' : 'Start Free Trial'}
+                </button>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Referral Modal */}
+      <ReferralModal
+        isOpen={referralOpen}
+        onClose={() => setReferralOpen(false)}
+        plan={referralPlan.plan}
+        planName={referralPlan.planName}
+      />
 
       {/* Final CTA */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 relative">
