@@ -76,7 +76,7 @@ export default function LandingPage() {
             <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
               Salisbury Bookkeeping
             </a>
-            , a fractional controller firm serving construction companies nationwide. Plans start at $199/month with a 14-day free trial.
+            , a fractional controller firm serving construction companies nationwide. Plans start at $199/month with a 14-day free trial. Credit card required.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
@@ -84,7 +84,7 @@ export default function LandingPage() {
               href="/signup"
               className="px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2"
             >
-              Start Free — No Card Required <ChevronRight size={18} />
+              Start 14-Day Free Trial <ChevronRight size={18} />
             </Link>
             <Link
               href="/demo"
@@ -531,7 +531,7 @@ export default function LandingPage() {
             Construction Dashboard Pricing Plans
           </h2>
           <p className="text-center text-[#b0b0c8] mb-4 text-lg">
-            No credit card required. 14 days free on every plan.
+            14 days free on every plan. Credit card required to start trial.
           </p>
           <div className="text-center mb-12">
             <span className="inline-flex items-center gap-2 bg-gradient-to-r from-[#6366f1]/15 to-[#a78bfa]/15 border border-[#6366f1]/40 rounded-full px-4 py-1.5 text-sm text-[#c7d2fe]">
@@ -589,7 +589,7 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold text-white mb-2">Professional</h3>
               <p className="text-sm text-[#b0b0c8] mb-5">For growing construction companies with $1M–$10M revenue</p>
               <div className="mb-5">
-                <span className="text-4xl font-bold text-white">$399</span>
+                <span className="text-4xl font-bold text-white">$299</span>
                 <span className="text-[#b0b0c8] ml-1 text-sm">/month</span>
               </div>
 
@@ -600,6 +600,7 @@ export default function LandingPage() {
                   'Sales pipeline dashboard',
                   'AI-powered CFO advisor',
                   'AR/AP aging reports by job',
+                  'Direct access to the developer for suggestions, features & bug fixes',
                   'Priority support',
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2.5">
@@ -626,7 +627,7 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold text-white mb-2">Enterprise</h3>
               <p className="text-sm text-[#b0b0c8] mb-5">For scaling operations with $10M+ revenue and multiple project managers</p>
               <div className="mb-5">
-                <span className="text-4xl font-bold text-white">$599</span>
+                <span className="text-4xl font-bold text-white">$399</span>
                 <span className="text-[#b0b0c8] ml-1 text-sm">/month</span>
               </div>
 
@@ -667,7 +668,7 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold text-white mb-2">White Glove</h3>
               <p className="text-sm text-[#b0b0c8] mb-5">Done-for-you fractional controller for $10M+ builders who want zero lift</p>
               <div className="mb-5">
-                <span className="text-4xl font-bold text-white">$2,997</span>
+                <span className="text-4xl font-bold text-white">$1,499</span>
                 <span className="text-[#b0b0c8] ml-1 text-sm">/month</span>
               </div>
 
@@ -753,7 +754,7 @@ export default function LandingPage() {
             <div>
               <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">How much does BuilderCFO cost compared to a full-time CFO?</h3>
               <p className="text-[#b0b0c8]">
-                BuilderCFO starts at $199/month (Starter), $399/month (Professional), $599/month (Enterprise), or $2,997/month (White Glove — done-for-you fractional controller). A full-time construction CFO typically costs $120,000–$200,000+ per year in salary and benefits. BuilderCFO self-serve plans run $2,388–$7,188 per year — roughly 2–5% the cost of a dedicated hire. White Glove delivers a dedicated fractional controller with weekly strategy calls for a fraction of a full-time CFO. Every plan includes a 14-day free trial, and if you refer 2 friends at checkout you get 20% off your subscription (and so do they).
+                BuilderCFO starts at $199/month (Starter), $299/month (Professional), $399/month (Enterprise), or $1,499/month (White Glove — done-for-you fractional controller). A full-time construction CFO typically costs $120,000–$200,000+ per year in salary and benefits. BuilderCFO self-serve plans run $2,388–$4,788 per year — roughly 2–4% the cost of a dedicated hire. White Glove delivers a dedicated fractional controller with weekly strategy calls for a fraction of a full-time CFO. Every plan includes a 14-day free trial (credit card required), and if you refer 2 friends at checkout you get 20% off your subscription (and so do they). Professional plans and above include direct access to the developer for feature suggestions and quick bug fixes.
               </p>
             </div>
 
@@ -778,7 +779,7 @@ export default function LandingPage() {
             <div>
               <h3 className="text-lg font-semibold text-[#e8e8f0] mb-2">Can I cancel my BuilderCFO subscription at any time?</h3>
               <p className="text-[#b0b0c8]">
-                Yes. There are no long-term contracts, no cancellation fees, and no setup fees. You can cancel your subscription at any time and retain access through the end of your current billing cycle. Every plan starts with a 14-day free trial — no credit card required during the trial. You&apos;ll only be asked for payment details when you decide to continue after 14 days.
+                Yes. There are no long-term contracts, no cancellation fees, and no setup fees. You can cancel your subscription at any time and retain access through the end of your current billing cycle. Every plan starts with a 14-day free trial — a credit card is required to start the trial, but you won&apos;t be charged until the trial ends.
               </p>
             </div>
           </div>
@@ -801,7 +802,7 @@ export default function LandingPage() {
               href="/signup"
               className="inline-flex items-center gap-2 px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition"
             >
-              Start Free — No Card Required <ChevronRight size={18} />
+              Start 14-Day Free Trial <ChevronRight size={18} />
             </Link>
             <Link
               href="#schedule"
@@ -811,7 +812,7 @@ export default function LandingPage() {
             </Link>
           </div>
           <p className="text-sm text-[#8888a0] mt-4">
-            No credit card required. Cancel anytime. Built by{' '}
+            14-day free trial. Cancel anytime. Built by{' '}
             <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
               Salisbury Bookkeeping
             </a>.
@@ -915,7 +916,7 @@ export default function LandingPage() {
       {/* Sticky Mobile CTA Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#12121a]/95 backdrop-blur border-t border-[#1e1e2e] p-3 flex items-center justify-between gap-3 z-50 sm:hidden">
         <div className="text-xs text-[#b0b0c8] leading-tight">
-          <span className="font-semibold text-[#e8e8f0]">14 days free</span> — no card needed
+          <span className="font-semibold text-[#e8e8f0]">14 days free</span> — cancel anytime
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <Link

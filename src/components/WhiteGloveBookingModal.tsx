@@ -75,7 +75,7 @@ export default function WhiteGloveBookingModal({ isOpen, onClose }: WhiteGloveBo
             <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#a78bfa] to-[#6366f1] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
               <Crown size={11} /> White Glove
             </div>
-            <span className="text-xs text-[#8888a0]">· $2,997/month</span>
+            <span className="text-xs text-[#8888a0]">· $1,499/month</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white">
             Book a 15-Minute White Glove Intro Call
@@ -144,7 +144,7 @@ export default function WhiteGloveBookingModal({ isOpen, onClose }: WhiteGloveBo
                 Start Free Trial <ChevronRight size={14} />
               </Link>
               <p className="text-[10px] text-[#555] mt-2 text-center">
-                No card required. Cancel anytime.
+                14-day free trial. Cancel anytime.
               </p>
             </div>
           </aside>

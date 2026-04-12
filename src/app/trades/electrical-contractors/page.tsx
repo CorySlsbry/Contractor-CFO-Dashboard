@@ -55,12 +55,12 @@ export default function ElectricalContractorsPage() {
             BuilderCFO gives electrical contractors real-time visibility into job profitability across T&M and fixed-price work — with material cost tracking, WIP schedules, and cash flow forecasting synced from QuickBooks and ServiceTitan.
           </p>
           <p className="text-sm text-[#8888a0] mb-8 max-w-2xl">
-            Built by Salisbury Bookkeeping, a fractional controller firm serving specialty trades nationwide. 14-day free trial — no credit card required.
+            Built by Salisbury Bookkeeping, a fractional controller firm serving specialty trades nationwide. 14-day free trial. Credit card required.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <Link href="/signup" className="px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2">
-              Start Free — No Card Required <ChevronRight size={18} />
+              Start 14-Day Free Trial <ChevronRight size={18} />
             </Link>
             <Link href="/demo" className="px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center">
               See It In Action
@@ -133,19 +133,19 @@ export default function ElectricalContractorsPage() {
           <p className="text-lg text-[#b0b0c8] mb-8">BuilderCFO gives electrical contractors the financial visibility to price smarter, collect faster, and protect every dollar of margin.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup" className="inline-flex items-center gap-2 px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition">
-              Start Free — No Card Required <ChevronRight size={18} />
+              Start 14-Day Free Trial <ChevronRight size={18} />
             </Link>
             <Link href="/demo" className="inline-flex items-center gap-2 px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition">
               Try the Demo
             </Link>
           </div>
-          <p className="text-sm text-[#8888a0] mt-4">14-day free trial. No credit card required. Cancel anytime.</p>
+          <p className="text-sm text-[#8888a0] mt-4">14-day free trial. Credit card required. Cancel anytime.</p>
         </div>
       </section>
 
       <div className="fixed bottom-0 left-0 right-0 bg-[#12121a]/95 backdrop-blur border-t border-[#1e1e2e] p-3 flex items-center justify-between gap-3 z-50 sm:hidden">
         <div className="text-xs text-[#b0b0c8] leading-tight">
-          <span className="font-semibold text-[#e8e8f0]">14 days free</span> — no card needed
+          <span className="font-semibold text-[#e8e8f0]">14 days free</span> — cancel anytime
         </div>
         <Link href="/signup" className="px-4 py-2 rounded text-xs font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition flex-shrink-0">
           Start Free

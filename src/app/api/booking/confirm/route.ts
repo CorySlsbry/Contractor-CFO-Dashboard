@@ -192,7 +192,7 @@ async function createCalendarEvent(accessToken: string, payload: BookingPayload)
           payload.phone ? `Phone: ${payload.phone}` : null,
           payload.notes ? `Notes: ${payload.notes}` : null,
           ``,
-          `Plan interest: White Glove ($2,997/mo)`,
+          `Plan interest: White Glove ($1,499/mo)`,
           `15-minute intro call (30-minute calendar block).`,
           `Qualify the prospect, understand their business, determine fit for the dedicated fractional controller tier.`,
         ]

@@ -237,15 +237,15 @@ export class StripeService {
 
     // Fallback: match by price amount (in cents)
     const amountCents = item.price.unit_amount;
-    if (amountCents === 299700) return "whiteglove";
-    if (amountCents === 59900) return "enterprise";
-    if (amountCents === 39900) return "pro";
+    if (amountCents === 149900) return "whiteglove";
+    if (amountCents === 39900) return "enterprise";
+    if (amountCents === 29900) return "pro";
     if (amountCents === 19900) return "basic";
 
     // Fallback: match by price amount ranges (handles minor variations)
-    if (amountCents && amountCents >= 250000) return "whiteglove";
-    if (amountCents && amountCents >= 50000) return "enterprise";
-    if (amountCents && amountCents >= 30000) return "pro";
+    if (amountCents && amountCents >= 100000) return "whiteglove";
+    if (amountCents && amountCents >= 35000) return "enterprise";
+    if (amountCents && amountCents >= 25000) return "pro";
     return "basic";
   }
 

@@ -50,18 +50,18 @@ export default function PaidTrafficPage() {
           </h1>
 
           <p className="text-base sm:text-lg text-[#b0b0c8] mb-8 max-w-xl mx-auto">
-            Real-time financial dashboard for contractors. Job costing, WIP, cash flow, and AR/AP — synced from QuickBooks in 2 minutes. No credit card required.
+            Real-time financial dashboard for contractors. Job costing, WIP, cash flow, and AR/AP — synced from QuickBooks in 2 minutes. 14-day free trial.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
             <Link href="/signup" className="px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2">
-              Start Free — No Card Required <ChevronRight size={18} />
+              Start 14-Day Free Trial <ChevronRight size={18} />
             </Link>
             <Link href="/demo" className="px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center gap-2">
               <Play size={16} /> Watch Demo
             </Link>
           </div>
-          <p className="text-xs text-[#8888a0]">14-day free trial. Cancel anytime. Plans from $199/mo.</p>
+          <p className="text-xs text-[#8888a0]">14-day free trial. Credit card required. Cancel anytime. Plans from $199/mo.</p>
         </div>
       </section>
 
@@ -115,7 +115,7 @@ export default function PaidTrafficPage() {
       <section className="py-12 px-4 sm:px-6 lg:px-8" id="pricing">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-xl sm:text-2xl font-bold mb-2 text-center">Simple Pricing. No Surprises.</h2>
-          <p className="text-center text-[#8888a0] mb-3 text-sm">Every plan includes a 14-day free trial. No credit card required.</p>
+          <p className="text-center text-[#8888a0] mb-3 text-sm">Every plan includes a 14-day free trial. Credit card required.</p>
           <div className="text-center mb-8">
             <span className="inline-flex items-center gap-2 bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-full px-3 py-1 text-xs text-[#c7d2fe]">
               🎁 Refer 2 friends at checkout → 20% off your plan + 20% off theirs
@@ -129,15 +129,15 @@ export default function PaidTrafficPage() {
                 plan: 'basic', planName: 'Starter', highlight: false, whiteglove: false,
               },
               {
-                name: 'Professional', price: '$399', features: ['Everything in Starter', 'Buildertrend + HubSpot', 'AI CFO advisor', 'Priority support'],
+                name: 'Professional', price: '$299', features: ['Everything in Starter', 'Buildertrend + HubSpot', 'AI CFO advisor', 'Direct developer access'],
                 plan: 'pro', planName: 'Professional', highlight: true, whiteglove: false,
               },
               {
-                name: 'Enterprise', price: '$599', features: ['Everything in Pro', 'Procore + Salesforce', 'Quarterly strategy call', 'Dedicated manager'],
+                name: 'Enterprise', price: '$399', features: ['Everything in Pro', 'Procore + Salesforce', 'Quarterly strategy call', 'Dedicated manager'],
                 plan: 'enterprise', planName: 'Enterprise', highlight: false, whiteglove: false,
               },
               {
-                name: 'White Glove', price: '$2,997', features: ['Everything in Enterprise', 'Dedicated controller', 'Weekly strategy call', 'Custom board reports'],
+                name: 'White Glove', price: '$1,499', features: ['Everything in Enterprise', 'Dedicated controller', 'Weekly strategy call', 'Custom board reports'],
                 plan: 'whiteglove', planName: 'White Glove', highlight: false, whiteglove: true,
               },
             ].map((tier, idx) => (
@@ -222,14 +222,14 @@ export default function PaidTrafficPage() {
           <Link href="/signup" className="inline-flex items-center gap-2 px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition">
             Start Your Free Trial <ChevronRight size={18} />
           </Link>
-          <p className="text-xs text-[#8888a0] mt-3">No credit card. No contracts. Cancel anytime.</p>
+          <p className="text-xs text-[#8888a0] mt-3">14-day free trial. No contracts. Cancel anytime.</p>
         </div>
       </section>
 
       {/* Sticky Mobile CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#12121a]/95 backdrop-blur border-t border-[#1e1e2e] p-3 flex items-center justify-between gap-3 z-50 sm:hidden">
         <div className="text-xs text-[#b0b0c8] leading-tight">
-          <span className="font-semibold text-[#e8e8f0]">14 days free</span> — no card needed
+          <span className="font-semibold text-[#e8e8f0]">14 days free</span> — cancel anytime
         </div>
         <Link href="/signup" className="px-4 py-2 rounded text-xs font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition flex-shrink-0">
           Start Free

@@ -316,7 +316,7 @@ export default function DemoPage() {
             <h2 className="text-2xl font-bold mb-2">Ready to see YOUR numbers?</h2>
             <p className="text-[#8888a0] mb-6">Connect QuickBooks and your dashboard populates in under 10 minutes.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/signup" className="px-6 py-3 bg-[#6366f1] hover:bg-[#5558e6] text-white rounded-lg font-semibold transition-colors flex items-center gap-2">Start Free — No Card Required <ArrowRight size={18} /></Link>
+              <Link href="/signup" className="px-6 py-3 bg-[#6366f1] hover:bg-[#5558e6] text-white rounded-lg font-semibold transition-colors flex items-center gap-2">Start 14-Day Free Trial <ArrowRight size={18} /></Link>
               <Link href="/#schedule" className="px-6 py-3 border border-[#6366f1] text-[#6366f1] hover:bg-[#6366f1]/10 rounded-lg font-semibold transition-colors">Book a 15-Min Demo</Link>
             </div>
           </div>
@@ -325,7 +325,7 @@ export default function DemoPage() {
 
       {/* Sticky Mobile CTA */}
       <div className="fixed bottom-0 left-0 right-0 md:hidden bg-[#0a0a0f]/95 backdrop-blur-sm border-t border-[#2a2a3d] px-4 py-3 z-40 flex items-center gap-3">
-        <Link href="/signup" className="flex-1 bg-[#6366f1] hover:bg-[#5558e6] text-white text-center py-2.5 rounded-lg text-sm font-semibold transition-colors">Start Free — No Card</Link>
+        <Link href="/signup" className="flex-1 bg-[#6366f1] hover:bg-[#5558e6] text-white text-center py-2.5 rounded-lg text-sm font-semibold transition-colors">Start Free Trial</Link>
         <Link href="/#schedule" className="flex-1 border border-[#6366f1] text-[#6366f1] hover:bg-[#6366f1]/10 text-center py-2.5 rounded-lg text-sm font-semibold transition-colors">Book Demo</Link>
       </div>
     </div>

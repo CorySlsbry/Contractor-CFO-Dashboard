@@ -81,14 +81,14 @@ let product;
 }
 
 /* ────────────────────────────────────────────────────────────────
-   2. PRICE — $2,997/mo recurring
+   2. PRICE — $1,499/mo recurring
    ──────────────────────────────────────────────────────────────── */
-const TARGET_AMOUNT_CENTS = 299700; // $2,997.00
+const TARGET_AMOUNT_CENTS = 149900; // $1,499.00
 const TARGET_CURRENCY = 'usd';
 
 let price;
 {
-  console.log('\n▶ Step 2/3: Price ($2,997.00/mo recurring)');
+  console.log('\n▶ Step 2/3: Price ($1,499.00/mo recurring)');
   const existingPrices = await stripe.prices.list({
     product: product.id,
     active: true,

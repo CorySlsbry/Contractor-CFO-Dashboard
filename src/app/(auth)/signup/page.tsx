@@ -16,20 +16,20 @@ const plans = [
   {
     key: 'pro',
     name: 'Professional',
-    price: 399,
+    price: 299,
     popular: true,
-    features: ['Everything in Starter', 'Buildertrend + HubSpot + JobNimbus', 'AI CFO advisor', 'Priority support'],
+    features: ['Everything in Starter', 'Buildertrend + HubSpot + JobNimbus', 'AI CFO advisor', 'Direct access to developer for features & fixes'],
   },
   {
     key: 'enterprise',
     name: 'Enterprise',
-    price: 599,
+    price: 399,
     features: ['Everything in Professional', 'Procore + Salesforce + ServiceTitan', 'Quarterly strategy call', 'Dedicated account manager'],
   },
   {
     key: 'whiteglove',
     name: 'White Glove',
-    price: 2997,
+    price: 1499,
     features: ['Everything in Enterprise', 'Dedicated fractional controller', 'Weekly strategy call', 'Custom board reports'],
   },
 ];
@@ -114,9 +114,28 @@ function SignupContent() {
         return;
       }
 
-      // Step 3: Redirect to dashboard (trial starts immediately, no card required)
-      setLoadingStep('Getting your dashboard ready...');
-      router.push('/dashboard');
+      // Step 3: Redirect to Stripe checkout (credit card required for 14-day free trial)
+      setLoadingStep('Setting up your free trial...');
+      const checkoutRes = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan: selectedPlan,
+          discountCode: discountCode || undefined,
+        }),
+      });
+
+      const checkoutData = await checkoutRes.json();
+
+      if (!checkoutRes.ok || !checkoutData.data?.url) {
+        // Fallback to dashboard if checkout fails (account is still created)
+        console.error('Checkout redirect failed:', checkoutData);
+        router.push('/dashboard');
+        return;
+      }
+
+      // Redirect to Stripe checkout
+      window.location.href = checkoutData.data.url;
       return;
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
@@ -142,7 +161,7 @@ function SignupContent() {
             Start Your 14-Day Free Trial
           </h2>
           <p className="text-sm text-[#b0b0c8] mt-1">
-            No charge for 14 days. Cancel anytime.
+            No charge for 14 days. Credit card required. Cancel anytime.
           </p>
         </div>
 
@@ -304,7 +323,7 @@ function SignupContent() {
           </button>
 
           <p className="text-center text-xs text-[#8888a0]">
-            You won&apos;t be charged during your 14-day trial. Cancel anytime.
+            Credit card required. You won&apos;t be charged during your 14-day trial. Cancel anytime.
           </p>
         </form>
 

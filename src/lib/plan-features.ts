@@ -11,12 +11,12 @@ export const PLAN_FEATURES = {
   },
   pro: {
     name: 'Professional',
-    price: 399,
+    price: 299,
     includesAiToolkit: true,
   },
   enterprise: {
     name: 'Enterprise',
-    price: 599,
+    price: 399,
     includesAiToolkit: true,
   },
 };

@@ -121,7 +121,7 @@ const KNOWLEDGE_BASE: KBEntry[] = [
   // ── Pricing ──
   {
     keywords: ['price', 'pricing', 'cost', 'plan', 'subscription', 'pay', 'billing', 'trial', 'fee', 'how much', 'tier', 'starter', 'professional', 'enterprise'],
-    answer: `**BuilderCFO Pricing:**\n\n**Starter — $199/mo**\n• Financial dashboard, job costing, WIP, cash flow\n• QuickBooks sync\n• Monthly AI CFO brief\n• Email support\n\n**Professional — $399/mo** (Most Popular)\n• Everything in Starter\n• Buildertrend, HubSpot, JobNimbus integrations\n• Sales pipeline dashboard\n• Unlimited AI CFO Advisor\n• AR/AP aging by job\n• Priority support\n\n**Enterprise — $599/mo**\n• Everything in Professional\n• Procore, Salesforce, ServiceTitan integrations\n• Quarterly strategy call with Salisbury Bookkeeping\n• Dedicated account manager\n\n**All plans:** 14-day free trial, 30-day money-back guarantee, no contracts, no setup fees, cancel anytime.`,
+    answer: `**BuilderCFO Pricing:**\n\n**Starter — $199/mo**\n• Financial dashboard, job costing, WIP, cash flow\n• QuickBooks sync\n• Monthly AI CFO brief\n• Email support\n\n**Professional — $299/mo** (Most Popular)\n• Everything in Starter\n• Buildertrend, HubSpot, JobNimbus integrations\n• Sales pipeline dashboard\n• Unlimited AI CFO Advisor\n• AR/AP aging by job\n• Direct access to the developer for suggestions, features & bug fixes\n• Priority support\n\n**Enterprise — $399/mo**\n• Everything in Professional\n• Procore, Salesforce, ServiceTitan integrations\n• Quarterly strategy call with Salisbury Bookkeeping\n• Dedicated account manager\n\n**White Glove — $1,499/mo**\n• Everything in Enterprise\n• Dedicated fractional controller\n• Weekly strategy call\n• Custom board reports\n\n**All plans:** 14-day free trial (credit card required), 30-day money-back guarantee, no contracts, no setup fees, cancel anytime.`,
   },
   // ── Syncing ──
   {
@@ -156,7 +156,7 @@ const KNOWLEDGE_BASE: KBEntry[] = [
   // ── What BuilderCFO is / value ──
   {
     keywords: ['what is', 'what does', 'explain', 'tell me about', 'buildercfo', 'builder cfo', 'value', 'why', 'benefit', 'roi', 'return'],
-    answer: `**What is BuilderCFO?**\n\nBuilderCFO is a real-time financial dashboard built exclusively for construction companies. It connects to QuickBooks Online and field management tools (Buildertrend, Procore, ServiceTitan) to automate:\n\n• Job costing with budget vs. actual\n• WIP schedules and over/under-billing detection\n• Cash flow forecasting (30/60/90 day)\n• AR/AP aging and retainage tracking\n• AI-powered CFO insights\n\n**Real results from contractors:**\n• $140K in over-billing caught before job close\n• $34K in forgotten retainage recovered in Q1\n• $8K in unbilled change orders found in 60 days\n• 21-day improvement in collections\n\nPlans start at **$199/mo** with a 14-day free trial. Compare that to a fractional controller at $3K–$8K/mo or a full-time CFO at $120K+/yr.`,
+    answer: `**What is BuilderCFO?**\n\nBuilderCFO is a real-time financial dashboard built exclusively for construction companies. It connects to QuickBooks Online and field management tools (Buildertrend, Procore, ServiceTitan) to automate:\n\n• Job costing with budget vs. actual\n• WIP schedules and over/under-billing detection\n• Cash flow forecasting (30/60/90 day)\n• AR/AP aging and retainage tracking\n• AI-powered CFO insights\n\n**Real results from contractors:**\n• $140K in over-billing caught before job close\n• $34K in forgotten retainage recovered in Q1\n• $8K in unbilled change orders found in 60 days\n• 21-day improvement in collections\n\nPlans start at **$199/mo** with a 14-day free trial (credit card required). Professional plans and above include direct access to the developer for feature suggestions and quick bug fixes. Compare that to a fractional controller at $3K–$8K/mo or a full-time CFO at $120K+/yr.`,
   },
   // ── Who is it for ──
   {
@@ -220,7 +220,7 @@ function findAnswer(input: string): string {
     return bestMatch.answer;
   }
 
-  return `I'm not sure I have a specific answer for that — but I can help!\n\nHere are some things I know about:\n• **Integrations** — QBO, Buildertrend, Procore, Salesforce, HubSpot, ServiceTitan, JobNimbus\n• **Features** — Job costing, WIP, cash flow, AR/AP, AI advisor, reports\n• **Pricing** — Starter ($199), Professional ($399), Enterprise ($599)\n• **Salisbury Bookkeeping** — Fractional CFO services for contractors\n\nOr use the buttons above to **email us** or **book a call** — we'll get back to you within one business day.`;
+  return `I'm not sure I have a specific answer for that — but I can help!\n\nHere are some things I know about:\n• **Integrations** — QBO, Buildertrend, Procore, Salesforce, HubSpot, ServiceTitan, JobNimbus\n• **Features** — Job costing, WIP, cash flow, AR/AP, AI advisor, reports\n• **Pricing** — Starter ($199), Professional ($299), Enterprise ($399), White Glove ($1,499)\n• **Salisbury Bookkeeping** — Fractional CFO services for contractors\n\nOr use the buttons above to **email us** or **book a call** — we'll get back to you within one business day.`;
 }
 
 /* ─────────────────────────────────────────────────────────────
