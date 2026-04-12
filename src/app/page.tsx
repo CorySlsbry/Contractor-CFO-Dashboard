@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock, Crown } from 'lucide-react';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock, Crown, MessageSquare, UserCheck, DollarSign, AlertTriangle, TrendingDown } from 'lucide-react';
 import { useState } from 'react';
 import Head from 'next/head';
 import ReferralModal from '@/components/ReferralModal';
@@ -15,6 +15,7 @@ export default function LandingPage() {
     planName: 'Professional',
   });
   const [whiteGloveOpen, setWhiteGloveOpen] = useState(false);
+  const [dashboardTab, setDashboardTab] = useState<'overview' | 'jobcosting' | 'cashflow' | 'arap' | 'wip' | 'retainage'>('overview');
 
   const openReferral = (plan: string, planName: string) => {
     setReferralPlan({ plan, planName });
@@ -55,31 +56,54 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section — GEO Quick-Answer Block */}
+      {/* Hero Section */}
       <section className="pt-24 pb-12 sm:pt-32 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#6366f1]/5 via-transparent to-transparent pointer-events-none" />
 
         <div className="max-w-4xl mx-auto relative">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8e8f0] mb-6 leading-tight">
-            Construction Financial Dashboard for Contractors &{' '}
-            <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
-              Home Builders
-            </span>
-          </h1>
-
-          {/* GEO Quick-Answer Block — primary AI extraction target */}
-          <p className="text-base sm:text-lg md:text-xl text-[#b0b0c8] mb-4 max-w-2xl leading-relaxed">
-            BuilderCFO is a real-time financial dashboard built specifically for construction companies. It syncs with QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to give contractors instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging — without hiring a $150K CFO.
-          </p>
-          <p className="text-base text-[#8888a0] mb-8 max-w-2xl">
+          {/* Social proof bar */}
+          <p className="text-xs sm:text-sm text-[#8888a0] mb-5 tracking-wide">
             Built by{' '}
             <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
               Salisbury Bookkeeping
             </a>
-            , a fractional controller firm serving construction companies nationwide. Plans start at $199/month with a 14-day free trial. Credit card required.
+            {' '}&mdash; fractional CFO and developer who&rsquo;ve managed the books for construction companies
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-12">
+          {/* Headline */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8e8f0] mb-6 leading-tight">
+            You&rsquo;re Busy Building. Who&rsquo;s Watching{' '}
+            <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
+              Your Money
+            </span>
+            ?
+          </h1>
+
+          {/* Subheadline */}
+          <p className="text-base sm:text-lg md:text-xl text-[#b0b0c8] mb-8 max-w-2xl leading-relaxed">
+            The CFO dashboard that shows construction contractors exactly where cash is leaking, which jobs actually make money, and what&rsquo;s coming next&nbsp;&mdash; before it&rsquo;s too late.
+          </p>
+
+          {/* Pain strip */}
+          <div className="mb-8 max-w-2xl">
+            <p className="text-sm font-semibold text-[#a5b4fc] mb-3">Sound familiar?</p>
+            <div className="space-y-2">
+              {[
+                'You finished a job and aren\'t sure if you actually made money on it',
+                'Your bookkeeper\'s reports are weeks late \u2014 and you still can\'t read them',
+                'You\'ve been surprised by a cash shortfall at least once this year',
+                'You\'re pricing new bids off gut feel instead of real job cost data',
+              ].map((pain) => (
+                <div key={pain} className="flex items-start gap-2">
+                  <Check size={16} className="text-[#6366f1] mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-[#b0b0c8]">{pain}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA row */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <Link
               href="/signup"
               className="px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2"
@@ -93,143 +117,354 @@ export default function LandingPage() {
               See It In Action
             </Link>
           </div>
-          <div className="text-center">
-            <Link
-              href="#schedule"
-              className="text-center text-sm text-[#6366f1] hover:text-[#818cf8] transition"
-            >
-              or Book a 15-Min Demo →
-            </Link>
+
+          {/* Trust badge row */}
+          <div className="mb-8 max-w-2xl">
+            <div className="flex flex-wrap gap-x-6 gap-y-2 mb-3">
+              <span className="flex items-center gap-1.5 text-xs text-[#b0b0c8]">
+                <Shield size={14} className="text-[#6366f1]" /> 30-Day Money-Back Guarantee
+              </span>
+              <span className="flex items-center gap-1.5 text-xs text-[#b0b0c8]">
+                <MessageSquare size={14} className="text-[#6366f1]" /> Direct Developer Access
+              </span>
+              <span className="flex items-center gap-1.5 text-xs text-[#b0b0c8]">
+                <Clock size={14} className="text-[#6366f1]" /> Live in 10 Minutes
+              </span>
+              <span className="flex items-center gap-1.5 text-xs text-[#b0b0c8]">
+                <Check size={14} className="text-[#6366f1]" /> Cancel Anytime
+              </span>
+            </div>
+            <p className="text-xs text-[#8888a0]">
+              14-day free trial + 30-day money-back guarantee = 44 days to decide risk-free.
+            </p>
           </div>
 
-          {/* Dashboard Mock — Rich Preview */}
+          {/* GEO paragraph — AI crawler target */}
+          <p className="text-sm text-[#8888a0] mb-12 max-w-2xl leading-relaxed">
+            BuilderCFO is a real-time financial dashboard built specifically for construction companies. It syncs with QuickBooks Online and field management tools like Procore, Buildertrend, and ServiceTitan to give contractors instant visibility into job costing, WIP schedules, cash flow forecasts, and AR/AP aging&nbsp;&mdash; without hiring a $150K CFO. Plans start at $299/month with a 14-day free trial. Credit card required.
+          </p>
+
+          {/* Live Dashboard Preview */}
+          <div className="text-[10px] uppercase tracking-widest text-[#8888a0] mb-2">Live Dashboard Preview</div>
           <div className="bg-gradient-to-b from-[#12121a] to-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 sm:p-6 shadow-2xl overflow-hidden">
-            {/* Tab bar */}
+            {/* Dashboard Tab bar */}
             <div className="flex gap-1 mb-4 border-b border-[#2a2a3d] pb-2 overflow-x-auto">
-              {['Overview', 'AR by Job', 'AP by Job', 'WIP', 'Retainage', 'Sales'].map((tab, i) => (
-                <div key={tab} className={`px-3 py-1.5 text-xs font-medium rounded-t whitespace-nowrap ${i === 0 ? 'bg-[#6366f1]/15 text-[#a5b4fc] border-b-2 border-[#6366f1]' : 'text-[#8888a0]'}`}>
-                  {tab}
-                </div>
+              {([
+                { key: 'overview', label: 'Overview' },
+                { key: 'jobcosting', label: 'Job Costing' },
+                { key: 'cashflow', label: 'Cash Flow' },
+                { key: 'arap', label: 'AR/AP' },
+                { key: 'wip', label: 'WIP' },
+                { key: 'retainage', label: 'Retainage' },
+              ] as const).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setDashboardTab(tab.key)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-t whitespace-nowrap transition-colors ${
+                    dashboardTab === tab.key
+                      ? 'bg-[#6366f1]/15 text-[#a5b4fc] border-b-2 border-[#6366f1]'
+                      : 'text-[#8888a0] hover:text-[#b0b0c8]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
               ))}
             </div>
 
-            {/* KPI Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
-              {[
-                { label: 'Revenue (YTD)', value: '$2.85M', change: '+12.3%', up: true },
-                { label: 'AR Outstanding', value: '$487.2K', change: '+3.1%', up: false },
-                { label: 'AP Outstanding', value: '$312.8K', change: '-8.2%', up: true },
-                { label: 'Net Cash', value: '$744.3K', change: '+26.1%', up: true },
-                { label: 'WIP Over-Billing', value: '$82.4K', change: '-12.5%', up: true },
-                { label: 'Retainage Held', value: '$196.5K', change: '+4.3%', up: false },
-              ].map((kpi) => (
-                <div key={kpi.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
-                  <div className="text-[#8888a0] text-[10px] uppercase tracking-wide mb-1">{kpi.label}</div>
-                  <div className="text-lg font-bold text-[#e8e8f0]">{kpi.value}</div>
-                  <div className={`text-[10px] font-semibold ${kpi.up ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{kpi.change}</div>
+            {/* === OVERVIEW TAB === */}
+            {dashboardTab === 'overview' && (
+              <div>
+                {/* Win & Watch */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#22c55e] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(34,197,94,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#22c55e] font-semibold">Win</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">Net cash position up 26.1% &mdash; strongest quarter in 12 months</p>
+                  </div>
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#eab308] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(234,179,8,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#eab308] font-semibold">Watch</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">AR aging over 60 days crept up 8% &mdash; follow up on 3 invoices</p>
+                  </div>
                 </div>
-              ))}
-            </div>
-
-            {/* Two Column: AR Aging + Cash Flow */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
-              {/* AR Aging */}
-              <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
-                <div className="text-sm font-semibold text-[#e8e8f0] mb-3">AR Aging Summary</div>
-                <div className="space-y-2">
+                {/* KPI Row */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   {[
-                    { range: 'Current', amount: '$310K', pct: 64, color: '#22c55e' },
-                    { range: '1-30 Days', amount: '$85K', pct: 17, color: '#eab308' },
-                    { range: '31-60 Days', amount: '$63.5K', pct: 13, color: '#ef9d44' },
-                    { range: '61-90 Days', amount: '$28.7K', pct: 6, color: '#ef4444' },
-                  ].map((item) => (
-                    <div key={item.range} className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                      <span className="text-[10px] text-[#8888a0] w-16">{item.range}</span>
-                      <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
-                        <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${item.pct}%` }} />
-                      </div>
-                      <span className="text-[10px] font-semibold text-[#e8e8f0] w-12 text-right">{item.amount}</span>
+                    { label: 'Revenue (YTD)', value: '$2.85M', change: '+12.3%', up: true },
+                    { label: 'AR Outstanding', value: '$487.2K', change: '+3.1%', up: false },
+                    { label: 'AP Outstanding', value: '$312.8K', change: '-8.2%', up: true },
+                    { label: 'Net Cash', value: '$744.3K', change: '+26.1%', up: true },
+                    { label: 'WIP Over-Billing', value: '$82.4K', change: '-12.5%', up: true },
+                    { label: 'Retainage Held', value: '$196.5K', change: '+4.3%', up: false },
+                  ].map((kpi) => (
+                    <div key={kpi.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
+                      <div className="text-[#8888a0] text-[10px] uppercase tracking-wide mb-1">{kpi.label}</div>
+                      <div className="text-lg font-bold text-[#e8e8f0]">{kpi.value}</div>
+                      <div className={`text-[10px] font-semibold ${kpi.up ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{kpi.change}</div>
                     </div>
                   ))}
                 </div>
               </div>
+            )}
 
-              {/* Cash Flow Chart Mock — Overlapping Bars */}
-              <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
-                <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Cash Flow Forecast</div>
-                <div className="flex items-end gap-3 h-28">
-                  {[
-                    { week: 'W1', inflow: 72, outflow: 55 },
-                    { week: 'W2', inflow: 68, outflow: 82 },
-                    { week: 'W3', inflow: 65, outflow: 47 },
-                    { week: 'W4', inflow: 90, outflow: 76 },
-                  ].map((w) => {
-                    const isPositive = w.inflow >= w.outflow;
-                    return (
-                      <div key={w.week} className="flex-1 flex flex-col items-center gap-1.5">
-                        <div className="w-full relative h-24 flex items-end justify-center">
-                          <div
-                            className="absolute bottom-0 left-1 right-1 rounded-t-md"
-                            style={{
-                              height: `${Math.max(w.inflow, w.outflow)}%`,
-                              backgroundColor: isPositive ? '#14532d' : '#7f1d1d',
-                              border: `1.5px solid ${isPositive ? '#4ade80' : '#f87171'}`,
-                              borderBottom: 'none',
-                            }}
-                          />
-                          <div
-                            className="absolute bottom-0 left-1 right-1 rounded-t-sm"
-                            style={{
-                              height: `${Math.min(w.inflow, w.outflow)}%`,
-                              backgroundColor: isPositive ? '#7f1d1d' : '#14532d',
-                              border: `1.5px solid ${isPositive ? '#f87171' : '#4ade80'}`,
-                              borderBottom: 'none',
-                            }}
-                          />
-                          <div className="absolute -top-3.5 left-0 right-0 text-center">
-                            <span className="text-[8px] font-bold" style={{ color: isPositive ? '#4ade80' : '#f87171' }}>
-                              {isPositive ? '+' : '-'}{Math.abs(w.inflow - w.outflow)}%
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-[9px] text-[#b0b0c8]">{w.week}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex gap-4 mt-3 justify-center">
-                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#14532d', border: '1.5px solid #4ade80' }} /><span className="text-[9px] text-[#b0b0c8]">Cash In</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#7f1d1d', border: '1.5px solid #f87171' }} /><span className="text-[9px] text-[#b0b0c8]">Cash Out</span></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Job WIP Row */}
-            <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
-              <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Active Jobs — WIP Status</div>
-              <div className="space-y-2">
-                {[
-                  { name: 'Riverside Estate Custom Home', pct: 82, contract: '$950K', billing: 'Over-Billed', billingAmt: '$69K', billingColor: '#eab308' },
-                  { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', billing: 'Over-Billed', billingAmt: '$141.5K', billingColor: '#eab308' },
-                  { name: 'Mountain View Remodel', pct: 100, contract: '$165K', billing: 'Under-Billed', billingAmt: '$39.5K', billingColor: '#6366f1' },
-                  { name: 'Cedar Heights Addition', pct: 93, contract: '$210K', billing: 'Under-Billed', billingAmt: '$55.3K', billingColor: '#6366f1' },
-                  { name: 'Oakwood Duplex', pct: 94, contract: '$380K', billing: 'Over-Billed', billingAmt: '$5.2K', billingColor: '#eab308' },
-                ].map((job) => (
-                  <div key={job.name} className="flex items-center gap-3">
-                    <span className="text-xs text-[#e8e8f0] w-24 sm:w-48 truncate">{job.name}</span>
-                    <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${job.pct >= 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
-                    </div>
-                    <span className="text-[10px] text-[#8888a0] w-10">{job.pct}%</span>
-                    <span className="hidden sm:block text-[10px] text-[#8888a0] w-14 text-right">{job.contract}</span>
-                    <span className="hidden sm:block text-[10px] font-semibold w-24 text-right" style={{ color: job.billingColor }}>
-                      {job.billing}: {job.billingAmt}
-                    </span>
+            {/* === JOB COSTING TAB === */}
+            {dashboardTab === 'jobcosting' && (
+              <div>
+                {/* Win & Watch */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#22c55e] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(34,197,94,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#22c55e] font-semibold">Win</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">Riverside Estate running 4.2% above estimated margin</p>
                   </div>
-                ))}
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#eab308] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(234,179,8,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#eab308] font-semibold">Watch</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">Heritage Park labor costs 18% over budget &mdash; review subcontractor billing</p>
+                  </div>
+                </div>
+                {/* Job Profitability Table */}
+                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4 overflow-x-auto">
+                  <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Job Profitability</div>
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-[#8888a0] text-[10px] uppercase tracking-wide border-b border-[#2a2a3d]">
+                        <th className="text-left pb-2 pr-4">Job Name</th>
+                        <th className="text-right pb-2 pr-4">Contract Value</th>
+                        <th className="text-right pb-2 pr-4">Costs to Date</th>
+                        <th className="text-right pb-2 pr-4">Gross Margin</th>
+                        <th className="text-right pb-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { name: 'Riverside Estate Custom Home', contract: '$950,000', costs: '$689,350', margin: '27.4%', status: 'On Track', statusColor: '#22c55e' },
+                        { name: 'Heritage Park Commercial', contract: '$1,450,000', costs: '$1,182,100', margin: '18.5%', status: 'Over Budget', statusColor: '#ef4444' },
+                        { name: 'Mountain View Remodel', contract: '$165,000', costs: '$127,050', margin: '23.0%', status: 'Complete', statusColor: '#8888a0' },
+                        { name: 'Cedar Heights Addition', contract: '$210,000', costs: '$155,400', margin: '26.0%', status: 'On Track', statusColor: '#22c55e' },
+                        { name: 'Oakwood Duplex', contract: '$380,000', costs: '$296,400', margin: '22.0%', status: 'On Track', statusColor: '#22c55e' },
+                      ].map((job) => (
+                        <tr key={job.name} className="border-b border-[#2a2a3d]/50">
+                          <td className="py-2 pr-4 text-[#e8e8f0] whitespace-nowrap">{job.name}</td>
+                          <td className="py-2 pr-4 text-right text-[#b0b0c8]">{job.contract}</td>
+                          <td className="py-2 pr-4 text-right text-[#b0b0c8]">{job.costs}</td>
+                          <td className="py-2 pr-4 text-right font-semibold text-[#e8e8f0]">{job.margin}</td>
+                          <td className="py-2 text-right font-semibold whitespace-nowrap" style={{ color: job.statusColor }}>{job.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* === CASH FLOW TAB === */}
+            {dashboardTab === 'cashflow' && (
+              <div>
+                {/* Win & Watch */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#22c55e] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(34,197,94,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#22c55e] font-semibold">Win</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">Positive cash flow projected for next 4 weeks</p>
+                  </div>
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#eab308] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(234,179,8,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#eab308] font-semibold">Watch</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">Week 2 outflows exceed inflows by $14K &mdash; payment due to lumber supplier</p>
+                  </div>
+                </div>
+                {/* Cash Flow Chart */}
+                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                  <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Cash Flow Forecast</div>
+                  <div className="flex items-end gap-3 h-28">
+                    {[
+                      { week: 'W1', inflow: 72, outflow: 55 },
+                      { week: 'W2', inflow: 68, outflow: 82 },
+                      { week: 'W3', inflow: 65, outflow: 47 },
+                      { week: 'W4', inflow: 90, outflow: 76 },
+                    ].map((w) => {
+                      const isPositive = w.inflow >= w.outflow;
+                      return (
+                        <div key={w.week} className="flex-1 flex flex-col items-center gap-1.5">
+                          <div className="w-full relative h-24 flex items-end justify-center">
+                            <div
+                              className="absolute bottom-0 left-1 right-1 rounded-t-md"
+                              style={{
+                                height: `${Math.max(w.inflow, w.outflow)}%`,
+                                backgroundColor: isPositive ? '#14532d' : '#7f1d1d',
+                                border: `1.5px solid ${isPositive ? '#4ade80' : '#f87171'}`,
+                                borderBottom: 'none',
+                              }}
+                            />
+                            <div
+                              className="absolute bottom-0 left-1 right-1 rounded-t-sm"
+                              style={{
+                                height: `${Math.min(w.inflow, w.outflow)}%`,
+                                backgroundColor: isPositive ? '#7f1d1d' : '#14532d',
+                                border: `1.5px solid ${isPositive ? '#f87171' : '#4ade80'}`,
+                                borderBottom: 'none',
+                              }}
+                            />
+                            <div className="absolute -top-3.5 left-0 right-0 text-center">
+                              <span className="text-[8px] font-bold" style={{ color: isPositive ? '#4ade80' : '#f87171' }}>
+                                {isPositive ? '+' : '-'}{Math.abs(w.inflow - w.outflow)}%
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[9px] text-[#b0b0c8]">{w.week}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-4 mt-3 justify-center">
+                    <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#14532d', border: '1.5px solid #4ade80' }} /><span className="text-[9px] text-[#b0b0c8]">Cash In</span></div>
+                    <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#7f1d1d', border: '1.5px solid #f87171' }} /><span className="text-[9px] text-[#b0b0c8]">Cash Out</span></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* === AR/AP TAB === */}
+            {dashboardTab === 'arap' && (
+              <div>
+                {/* Win & Watch */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#22c55e] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(34,197,94,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#22c55e] font-semibold">Win</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">87% of receivables are current or under 30 days</p>
+                  </div>
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#eab308] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(234,179,8,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#eab308] font-semibold">Watch</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">$28.7K sitting at 61-90 days &mdash; Heritage Park retainage hold</p>
+                  </div>
+                </div>
+                {/* AR Aging + AP Summary */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                    <div className="text-sm font-semibold text-[#e8e8f0] mb-3">AR Aging Summary</div>
+                    <div className="space-y-2">
+                      {[
+                        { range: 'Current', amount: '$310K', pct: 64, color: '#22c55e' },
+                        { range: '1-30 Days', amount: '$85K', pct: 17, color: '#eab308' },
+                        { range: '31-60 Days', amount: '$63.5K', pct: 13, color: '#ef9d44' },
+                        { range: '61-90 Days', amount: '$28.7K', pct: 6, color: '#ef4444' },
+                      ].map((item) => (
+                        <div key={item.range} className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                          <span className="text-[10px] text-[#8888a0] w-16">{item.range}</span>
+                          <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                            <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${item.pct}%` }} />
+                          </div>
+                          <span className="text-[10px] font-semibold text-[#e8e8f0] w-12 text-right">{item.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                    <div className="text-sm font-semibold text-[#e8e8f0] mb-3">AP Summary</div>
+                    <div className="space-y-3">
+                      {[
+                        { label: 'Total AP Outstanding', value: '$312.8K' },
+                        { label: 'Due This Week', value: '$47.2K' },
+                        { label: 'Overdue', value: '$18.9K' },
+                        { label: 'Top Vendor (Pacific Lumber)', value: '$68.4K' },
+                      ].map((item) => (
+                        <div key={item.label} className="flex justify-between items-center">
+                          <span className="text-[10px] text-[#8888a0]">{item.label}</span>
+                          <span className="text-xs font-semibold text-[#e8e8f0]">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* === WIP TAB === */}
+            {dashboardTab === 'wip' && (
+              <div>
+                {/* Win & Watch */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#22c55e] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(34,197,94,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#22c55e] font-semibold">Win</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">Overall WIP variance within 3% &mdash; solid cost control</p>
+                  </div>
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#eab308] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(234,179,8,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#eab308] font-semibold">Watch</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">Mountain View Remodel is 100% complete but $39.5K under-billed</p>
+                  </div>
+                </div>
+                {/* Active Jobs WIP Table */}
+                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4">
+                  <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Active Jobs &mdash; WIP Status</div>
+                  <div className="space-y-2">
+                    {[
+                      { name: 'Riverside Estate Custom Home', pct: 82, contract: '$950K', billing: 'Over-Billed', billingAmt: '$69K', billingColor: '#eab308' },
+                      { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', billing: 'Over-Billed', billingAmt: '$141.5K', billingColor: '#eab308' },
+                      { name: 'Mountain View Remodel', pct: 100, contract: '$165K', billing: 'Under-Billed', billingAmt: '$39.5K', billingColor: '#6366f1' },
+                      { name: 'Cedar Heights Addition', pct: 93, contract: '$210K', billing: 'Under-Billed', billingAmt: '$55.3K', billingColor: '#6366f1' },
+                      { name: 'Oakwood Duplex', pct: 94, contract: '$380K', billing: 'Over-Billed', billingAmt: '$5.2K', billingColor: '#eab308' },
+                    ].map((job) => (
+                      <div key={job.name} className="flex items-center gap-3">
+                        <span className="text-xs text-[#e8e8f0] w-24 sm:w-48 truncate">{job.name}</span>
+                        <div className="flex-1 h-1.5 bg-[#2a2a3d] rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${job.pct >= 100 ? 'bg-[#ef4444]' : 'bg-[#6366f1]'}`} style={{ width: `${Math.min(job.pct, 100)}%` }} />
+                        </div>
+                        <span className="text-[10px] text-[#8888a0] w-10">{job.pct}%</span>
+                        <span className="hidden sm:block text-[10px] text-[#8888a0] w-14 text-right">{job.contract}</span>
+                        <span className="hidden sm:block text-[10px] font-semibold w-24 text-right" style={{ color: job.billingColor }}>
+                          {job.billing}: {job.billingAmt}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* === RETAINAGE TAB === */}
+            {dashboardTab === 'retainage' && (
+              <div>
+                {/* Win & Watch */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#22c55e] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(34,197,94,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#22c55e] font-semibold">Win</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">$82K in retainage eligible for release this month</p>
+                  </div>
+                  <div className="bg-[#0a0a0f] border-l-2 border-[#eab308] rounded-r-lg px-3 py-2" style={{ backgroundColor: 'rgba(234,179,8,0.05)' }}>
+                    <span className="text-[10px] uppercase tracking-wide text-[#eab308] font-semibold">Watch</span>
+                    <p className="text-xs text-[#e8e8f0] mt-0.5">2 GCs holding retainage past contractual release date</p>
+                  </div>
+                </div>
+                {/* Retainage Tracking Table */}
+                <div className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-4 overflow-x-auto">
+                  <div className="text-sm font-semibold text-[#e8e8f0] mb-3">Retainage Tracking</div>
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-[#8888a0] text-[10px] uppercase tracking-wide border-b border-[#2a2a3d]">
+                        <th className="text-left pb-2 pr-4">Job Name</th>
+                        <th className="text-right pb-2 pr-4">Retainage Held</th>
+                        <th className="text-right pb-2 pr-4">% of Contract</th>
+                        <th className="text-right pb-2 pr-4">Eligible Date</th>
+                        <th className="text-right pb-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { name: 'Riverside Estate Custom Home', held: '$47,500', pctContract: '5.0%', eligible: 'May 2026', status: 'Eligible', statusColor: '#22c55e' },
+                        { name: 'Heritage Park Commercial', held: '$72,500', pctContract: '5.0%', eligible: 'Jul 2026', status: 'Pending', statusColor: '#eab308' },
+                        { name: 'Mountain View Remodel', held: '$8,250', pctContract: '5.0%', eligible: 'Apr 2026', status: 'Overdue', statusColor: '#ef4444' },
+                        { name: 'Cedar Heights Addition', held: '$31,500', pctContract: '15.0%', eligible: 'Jun 2026', status: 'Eligible', statusColor: '#22c55e' },
+                        { name: 'Oakwood Duplex', held: '$36,750', pctContract: '9.7%', eligible: 'Apr 2026', status: 'Overdue', statusColor: '#ef4444' },
+                      ].map((job) => (
+                        <tr key={job.name} className="border-b border-[#2a2a3d]/50">
+                          <td className="py-2 pr-4 text-[#e8e8f0] whitespace-nowrap">{job.name}</td>
+                          <td className="py-2 pr-4 text-right text-[#b0b0c8]">{job.held}</td>
+                          <td className="py-2 pr-4 text-right text-[#b0b0c8]">{job.pctContract}</td>
+                          <td className="py-2 pr-4 text-right text-[#b0b0c8]">{job.eligible}</td>
+                          <td className="py-2 text-right font-semibold whitespace-nowrap" style={{ color: job.statusColor }}>{job.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
