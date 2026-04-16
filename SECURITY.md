@@ -25,7 +25,10 @@ do not open public GitHub issues for security problems.
 | Audit log                        | `public.security_audit_log` table              | Login success/fail, signup, MFA enrol/remove, password change, account delete. Writes via service role only; RLS blocks client writes. |
 | Idle session timeout             | `src/components/security/idle-timeout.tsx`     | 30-minute inactivity → auto sign-out, 60s warning. Cross-tab via localStorage. |
 | AAL2 enforcement                 | `src/middleware.ts`                            | If user has a verified MFA factor but session is only AAL1, middleware redirects to `/mfa` before `/dashboard`, `/admin`, `/api/stripe/*`, `/api/integrations/*`, `/api/auth/delete-account`, `/api/auth/password`. |
-| RLS on every tenant table        | Supabase                                       | `organizations`, `profiles`, `security_audit_log` etc. Service role used only in server handlers. |
+| RLS on every tenant table        | Supabase                                       | `organizations`, `profiles`, `security_audit_log`, `crm_email_sends`, `crm_bookings` etc. Service role used only in server handlers. |
+| Platform-admin gating            | `public.is_platform_admin()` helper            | CRM + content-ops + `contractor_universe` tables require `profiles.platform_role IN ('admin','superadmin')`. Replaces old `USING (true)` policies that accepted any authenticated user. |
+| Views run as caller              | `security_invoker = true`                      | `login_attempts_recent`, `organization_members`, `organizations_with_latest_snapshot` — the last one contains QBO access tokens; with SECURITY INVOKER, users only see their own org's tokens, not everyone's. |
+| Function search_path locked      | 17 functions `SET search_path = public, pg_temp` | Blocks search-path injection on SECURITY DEFINER helpers like `is_platform_admin`, `log_security_event`, `get_user_org_id`. |
 
 ## Two-factor authentication (2FA)
 
@@ -216,6 +219,22 @@ order by created_at desc;
 4. **Check the audit log** for the attacker's IP and correlate.
 5. **Email affected users** within 72h per standard breach-notification
    practice (some US states require this by law).
+
+---
+
+## Accepted advisor warnings
+
+The Supabase security advisor flags these three items. Each is intentional
+and the compensating control is noted:
+
+| Advisor finding | Why it's accepted |
+| --- | --- |
+| `feedback.Allow authenticated inserts on feedback` — INSERT with `WITH CHECK (true)` | Public feedback form; no user identity to constrain against. Compensating control: per-IP rate limit at `/api/feedback` (API_WRITE preset, 60/min). |
+| `page_analytics.Allow anonymous inserts on page_analytics` — INSERT with `WITH CHECK (true)` | Anonymous analytics beacon; public by design. Compensating controls: rate limit at API, row size cap via column constraints, rollup job purges raw rows after 30 days. |
+| `auth_leaked_password_protection` — HIBP disabled | Requires Supabase dashboard toggle (see §5 above). Defense-in-depth only; the app already calls `checkPassword()` on signup + password change with its own common-password list. |
+
+Anything else flagged by `get_advisors(type=security)` is a new regression
+and should be investigated.
 
 ---
 
