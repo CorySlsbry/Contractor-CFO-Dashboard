@@ -3,7 +3,12 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
+// Supabase/PostgREST caps each request at 1000 rows (db-max-rows default),
+// so we page in 1000-row chunks. Total safety cap is 1M rows, which is
+// effectively unlimited for analytics — 30 days of page views would have
+// to exceed ~33K/day to hit it.
 const PAGE_SIZE = 1000;
+const MAX_ROWS = 1000000;
 
 function getSupabase() {
   return createClient(
@@ -13,8 +18,8 @@ function getSupabase() {
 }
 
 /**
- * Fetches ALL rows from a Supabase table matching the query,
- * paginating past the default 1000-row limit.
+ * Fetches rows from a Supabase table matching the query,
+ * paginating past the default row limit up to MAX_ROWS total.
  */
 async function fetchAllRows(
   table: string,
@@ -24,29 +29,33 @@ async function fetchAllRows(
   const supabase = getSupabase();
   const allRows: any[] = [];
   let offset = 0;
-  let hasMore = true;
 
-  while (hasMore) {
+  while (allRows.length < MAX_ROWS) {
+    // Don't overshoot MAX_ROWS on the last page
+    const remaining = MAX_ROWS - allRows.length;
+    const pageSize = Math.min(PAGE_SIZE, remaining);
+
     const { data, error } = await supabase
       .from(table)
       .select(columns)
       .gte('created_at', sinceISO)
       .order('created_at', { ascending: true })
-      .range(offset, offset + PAGE_SIZE - 1);
+      .range(offset, offset + pageSize - 1);
 
     if (error) {
       console.error(`Error fetching ${table} at offset ${offset}:`, error);
       break;
     }
 
-    if (data && data.length > 0) {
-      allRows.push(...data);
-      offset += data.length;
-      // If we got fewer rows than the page size, we've reached the end
-      hasMore = data.length === PAGE_SIZE;
-    } else {
-      hasMore = false;
-    }
+    if (!data || data.length === 0) break;
+
+    allRows.push(...data);
+    offset += data.length;
+
+    // Only stop when the server returned fewer rows than its own page size
+    // (i.e. we've actually drained the table). Requesting larger than the
+    // PostgREST cap would trigger a false-positive "end of data" here.
+    if (data.length < PAGE_SIZE) break;
   }
 
   return allRows;

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock, Crown, MessageSquare, UserCheck, DollarSign, AlertTriangle, TrendingDown } from 'lucide-react';
+import { ChevronRight, Zap, Eye, TrendingUp, Brain, Check, Plug, Shield, Clock, Crown, MessageSquare, UserCheck, DollarSign, AlertTriangle, TrendingDown, Gift } from 'lucide-react';
 import { useState } from 'react';
 import Head from 'next/head';
 import ReferralModal from '@/components/ReferralModal';
@@ -46,12 +46,12 @@ export default function LandingPage() {
             >
               Sign In
             </Link>
-            <Link
-              href="/signup"
+            <button
+              onClick={() => openReferral('pro', 'Professional')}
               className="text-sm sm:text-base px-3 py-1.5 sm:px-4 sm:py-2 rounded bg-[#6366f1] text-white hover:bg-[#5558d9] transition"
             >
               Start Free
-            </Link>
+            </button>
           </div>
         </div>
       </nav>
@@ -62,13 +62,16 @@ export default function LandingPage() {
 
         <div className="max-w-4xl mx-auto relative">
           {/* Social proof bar */}
-          <p className="text-xs sm:text-sm text-[#8888a0] mb-5 tracking-wide">
-            Built by{' '}
-            <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#6366f1] hover:text-[#818cf8] transition">
-              Salisbury Bookkeeping
-            </a>
-            {' '}&mdash; fractional CFO and developer who&rsquo;ve managed the books for construction companies
-          </p>
+          <div className="inline-flex items-center gap-2 bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-full px-4 py-1.5 mb-6">
+            <div className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse" />
+            <p className="text-xs sm:text-sm text-[#d0d0e0] tracking-wide">
+              Built by{' '}
+              <a href="https://salisburybookkeeping.com" target="_blank" rel="noopener noreferrer" className="text-[#a5b4fc] hover:text-[#c7d2fe] font-semibold transition">
+                Salisbury Bookkeeping
+              </a>
+              {' '}&mdash; fractional CFO &amp; developer who&rsquo;ve managed the books for construction companies
+            </p>
+          </div>
 
           {/* Headline */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8e8f0] mb-6 leading-tight">
@@ -80,23 +83,25 @@ export default function LandingPage() {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-base sm:text-lg md:text-xl text-[#b0b0c8] mb-8 max-w-2xl leading-relaxed">
-            The CFO dashboard that shows construction contractors exactly where cash is leaking, which jobs actually make money, and what&rsquo;s coming next&nbsp;&mdash; before it&rsquo;s too late.
+          <p className="text-base sm:text-lg md:text-xl text-[#d0d0e0] mb-8 max-w-2xl leading-relaxed">
+            The CFO dashboard that shows construction contractors exactly{' '}
+            <span className="text-[#f87171] font-medium">where cash is leaking</span>, which jobs{' '}
+            <span className="text-[#4ade80] font-medium">actually make money</span>, and what&rsquo;s coming next&nbsp;&mdash; before it&rsquo;s too late.
           </p>
 
           {/* Pain strip */}
-          <div className="mb-8 max-w-2xl">
-            <p className="text-sm font-semibold text-[#a5b4fc] mb-3">Sound familiar?</p>
-            <div className="space-y-2">
+          <div className="mb-8 max-w-2xl bg-[#f87171]/5 border border-[#f87171]/20 rounded-lg p-4">
+            <p className="text-sm font-semibold text-[#f87171] mb-3">Sound familiar?</p>
+            <div className="space-y-2.5">
               {[
                 'You finished a job and aren\'t sure if you actually made money on it',
                 'Your bookkeeper\'s reports are weeks late \u2014 and you still can\'t read them',
                 'You\'ve been surprised by a cash shortfall at least once this year',
                 'You\'re pricing new bids off gut feel instead of real job cost data',
               ].map((pain) => (
-                <div key={pain} className="flex items-start gap-2">
-                  <Check size={16} className="text-[#6366f1] mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-[#b0b0c8]">{pain}</span>
+                <div key={pain} className="flex items-start gap-2.5">
+                  <AlertTriangle size={15} className="text-[#f87171] mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-[#e8e8f0]">{pain}</span>
                 </div>
               ))}
             </div>
@@ -104,39 +109,53 @@ export default function LandingPage() {
 
           {/* CTA row */}
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
-            <Link
-              href="/signup"
-              className="px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2"
+            <button
+              onClick={() => openReferral('pro', 'Professional')}
+              className="px-8 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition inline-flex items-center justify-center gap-2 shadow-lg shadow-[#6366f1]/25"
             >
               Start 14-Day Free Trial <ChevronRight size={18} />
-            </Link>
+            </button>
             <Link
               href="/demo"
-              className="px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center"
+              className="px-8 py-3 rounded-lg font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition inline-flex items-center justify-center"
             >
               See It In Action
             </Link>
           </div>
 
           {/* Trust badge row */}
-          <div className="mb-8 max-w-2xl">
-            <div className="flex flex-wrap gap-x-6 gap-y-2 mb-3">
-              <span className="flex items-center gap-1.5 text-xs text-[#b0b0c8]">
-                <Shield size={14} className="text-[#6366f1]" /> 30-Day Money-Back Guarantee
+          <div className="mb-8 max-w-2xl bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg p-4">
+            <div className="flex flex-wrap gap-x-6 gap-y-2.5 mb-3">
+              <span className="flex items-center gap-1.5 text-xs text-[#e8e8f0] font-medium">
+                <Shield size={14} className="text-[#22c55e]" /> 30-Day Money-Back Guarantee
               </span>
-              <span className="flex items-center gap-1.5 text-xs text-[#b0b0c8]">
-                <MessageSquare size={14} className="text-[#6366f1]" /> Direct Developer Access
+              <span className="flex items-center gap-1.5 text-xs text-[#e8e8f0] font-medium">
+                <MessageSquare size={14} className="text-[#22c55e]" /> Direct Developer Access
               </span>
-              <span className="flex items-center gap-1.5 text-xs text-[#b0b0c8]">
-                <Clock size={14} className="text-[#6366f1]" /> Live in 10 Minutes
+              <span className="flex items-center gap-1.5 text-xs text-[#e8e8f0] font-medium">
+                <Clock size={14} className="text-[#22c55e]" /> Live in 10 Minutes
               </span>
-              <span className="flex items-center gap-1.5 text-xs text-[#b0b0c8]">
-                <Check size={14} className="text-[#6366f1]" /> Cancel Anytime
+              <span className="flex items-center gap-1.5 text-xs text-[#e8e8f0] font-medium">
+                <Check size={14} className="text-[#22c55e]" /> Cancel Anytime
               </span>
             </div>
-            <p className="text-xs text-[#8888a0]">
+            <p className="text-sm text-[#4ade80] font-semibold">
               14-day free trial + 30-day money-back guarantee = 44 days to decide risk-free.
             </p>
+            {/* Referral offer callout */}
+            <button
+              onClick={() => openReferral('pro', 'Professional')}
+              className="mt-3 flex items-center gap-2 bg-gradient-to-r from-[#6366f1]/10 to-[#a78bfa]/10 border border-[#6366f1]/30 rounded-lg px-4 py-2.5 hover:border-[#6366f1]/60 transition group cursor-pointer"
+            >
+              <div className="w-7 h-7 rounded-full bg-[#6366f1]/20 border border-[#6366f1]/40 flex items-center justify-center flex-shrink-0">
+                <Gift size={14} className="text-[#a5b4fc]" />
+              </div>
+              <span className="text-xs text-[#b0b0c8] group-hover:text-[#e8e8f0] transition">
+                <span className="font-semibold text-[#a5b4fc]">Refer 2 friends → get 20% off.</span>{' '}
+                They get 20% off too. Click to unlock.
+              </span>
+              <ChevronRight size={14} className="text-[#6366f1] flex-shrink-0" />
+            </button>
           </div>
 
           {/* GEO paragraph — AI crawler target */}
@@ -195,10 +214,10 @@ export default function LandingPage() {
                     { label: 'WIP Over-Billing', value: '$82.4K', change: '-12.5%', up: true },
                     { label: 'Retainage Held', value: '$196.5K', change: '+4.3%', up: false },
                   ].map((kpi) => (
-                    <div key={kpi.label} className="bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3">
-                      <div className="text-[#8888a0] text-[10px] uppercase tracking-wide mb-1">{kpi.label}</div>
-                      <div className="text-lg font-bold text-[#e8e8f0]">{kpi.value}</div>
-                      <div className={`text-[10px] font-semibold ${kpi.up ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{kpi.change}</div>
+                    <div key={kpi.label} className={`bg-[#0a0a0f] rounded-lg p-3 border-l-2 ${kpi.up ? 'border-[#22c55e]' : 'border-[#ef4444]'}`} style={{ borderTop: '1px solid #2a2a3d', borderRight: '1px solid #2a2a3d', borderBottom: '1px solid #2a2a3d' }}>
+                      <div className="text-[#b0b0c8] text-[10px] uppercase tracking-wide mb-1">{kpi.label}</div>
+                      <div className="text-lg font-bold text-white">{kpi.value}</div>
+                      <div className={`text-xs font-bold ${kpi.up ? 'text-[#4ade80]' : 'text-[#f87171]'}`}>{kpi.change}</div>
                     </div>
                   ))}
                 </div>
@@ -234,17 +253,17 @@ export default function LandingPage() {
                     </thead>
                     <tbody>
                       {[
-                        { name: 'Riverside Estate Custom Home', contract: '$950,000', costs: '$689,350', margin: '27.4%', status: 'On Track', statusColor: '#22c55e' },
-                        { name: 'Heritage Park Commercial', contract: '$1,450,000', costs: '$1,182,100', margin: '18.5%', status: 'Over Budget', statusColor: '#ef4444' },
-                        { name: 'Mountain View Remodel', contract: '$165,000', costs: '$127,050', margin: '23.0%', status: 'Complete', statusColor: '#8888a0' },
-                        { name: 'Cedar Heights Addition', contract: '$210,000', costs: '$155,400', margin: '26.0%', status: 'On Track', statusColor: '#22c55e' },
-                        { name: 'Oakwood Duplex', contract: '$380,000', costs: '$296,400', margin: '22.0%', status: 'On Track', statusColor: '#22c55e' },
+                        { name: 'Riverside Estate Custom Home', contract: '$950,000', costs: '$689,350', margin: '27.4%', marginGood: true, status: 'On Track', statusColor: '#22c55e' },
+                        { name: 'Heritage Park Commercial', contract: '$1,450,000', costs: '$1,182,100', margin: '18.5%', marginGood: false, status: 'Over Budget', statusColor: '#ef4444' },
+                        { name: 'Mountain View Remodel', contract: '$165,000', costs: '$127,050', margin: '23.0%', marginGood: true, status: 'Complete', statusColor: '#8888a0' },
+                        { name: 'Cedar Heights Addition', contract: '$210,000', costs: '$155,400', margin: '26.0%', marginGood: true, status: 'On Track', statusColor: '#22c55e' },
+                        { name: 'Oakwood Duplex', contract: '$380,000', costs: '$296,400', margin: '22.0%', marginGood: true, status: 'On Track', statusColor: '#22c55e' },
                       ].map((job) => (
                         <tr key={job.name} className="border-b border-[#2a2a3d]/50">
                           <td className="py-2 pr-4 text-[#e8e8f0] whitespace-nowrap">{job.name}</td>
                           <td className="py-2 pr-4 text-right text-[#b0b0c8]">{job.contract}</td>
                           <td className="py-2 pr-4 text-right text-[#b0b0c8]">{job.costs}</td>
-                          <td className="py-2 pr-4 text-right font-semibold text-[#e8e8f0]">{job.margin}</td>
+                          <td className={`py-2 pr-4 text-right font-bold ${job.marginGood ? 'text-[#4ade80]' : 'text-[#f87171]'}`}>{job.margin}</td>
                           <td className="py-2 text-right font-semibold whitespace-nowrap" style={{ color: job.statusColor }}>{job.status}</td>
                         </tr>
                       ))}
@@ -359,14 +378,14 @@ export default function LandingPage() {
                     <div className="text-sm font-semibold text-[#e8e8f0] mb-3">AP Summary</div>
                     <div className="space-y-3">
                       {[
-                        { label: 'Total AP Outstanding', value: '$312.8K' },
-                        { label: 'Due This Week', value: '$47.2K' },
-                        { label: 'Overdue', value: '$18.9K' },
-                        { label: 'Top Vendor (Pacific Lumber)', value: '$68.4K' },
+                        { label: 'Total AP Outstanding', value: '$312.8K', warn: false },
+                        { label: 'Due This Week', value: '$47.2K', warn: false },
+                        { label: 'Overdue', value: '$18.9K', warn: true },
+                        { label: 'Top Vendor (Pacific Lumber)', value: '$68.4K', warn: false },
                       ].map((item) => (
                         <div key={item.label} className="flex justify-between items-center">
-                          <span className="text-[10px] text-[#8888a0]">{item.label}</span>
-                          <span className="text-xs font-semibold text-[#e8e8f0]">{item.value}</span>
+                          <span className="text-[10px] text-[#b0b0c8]">{item.label}</span>
+                          <span className={`text-xs font-bold ${item.warn ? 'text-[#f87171]' : 'text-[#e8e8f0]'}`}>{item.value}</span>
                         </div>
                       ))}
                     </div>
@@ -395,10 +414,10 @@ export default function LandingPage() {
                   <div className="space-y-2">
                     {[
                       { name: 'Riverside Estate Custom Home', pct: 82, contract: '$950K', billing: 'Over-Billed', billingAmt: '$69K', billingColor: '#eab308' },
-                      { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', billing: 'Over-Billed', billingAmt: '$141.5K', billingColor: '#eab308' },
-                      { name: 'Mountain View Remodel', pct: 100, contract: '$165K', billing: 'Under-Billed', billingAmt: '$39.5K', billingColor: '#6366f1' },
-                      { name: 'Cedar Heights Addition', pct: 93, contract: '$210K', billing: 'Under-Billed', billingAmt: '$55.3K', billingColor: '#6366f1' },
-                      { name: 'Oakwood Duplex', pct: 94, contract: '$380K', billing: 'Over-Billed', billingAmt: '$5.2K', billingColor: '#eab308' },
+                      { name: 'Heritage Park Commercial', pct: 77, contract: '$1.45M', billing: 'Over-Billed', billingAmt: '$141.5K', billingColor: '#f87171' },
+                      { name: 'Mountain View Remodel', pct: 100, contract: '$165K', billing: 'Under-Billed', billingAmt: '$39.5K', billingColor: '#f87171' },
+                      { name: 'Cedar Heights Addition', pct: 93, contract: '$210K', billing: 'Under-Billed', billingAmt: '$55.3K', billingColor: '#f87171' },
+                      { name: 'Oakwood Duplex', pct: 94, contract: '$380K', billing: 'Over-Billed', billingAmt: '$5.2K', billingColor: '#4ade80' },
                     ].map((job) => (
                       <div key={job.name} className="flex items-center gap-3">
                         <span className="text-xs text-[#e8e8f0] w-24 sm:w-48 truncate">{job.name}</span>
@@ -484,28 +503,36 @@ export default function LandingPage() {
               {
                 title: 'You check your bank balance to gauge financial health',
                 fix: 'BuilderCFO shows net cash, AR/AP, and WIP in one screen — updated in real time from QuickBooks.',
-                icon: '💳',
+                icon: DollarSign,
               },
               {
                 title: "You don't know if a job is profitable until it's done",
                 fix: 'Per-job P&L with budget vs. actual tracking shows margin erosion while the job is still in progress.',
-                icon: '📊',
+                icon: TrendingDown,
               },
               {
                 title: 'Month-end close takes weeks, not days',
                 fix: 'Automated WIP schedules and pre-built reports cut close time from weeks to 2–3 days.',
-                icon: '📅',
+                icon: Clock,
               },
-            ].map((pain, idx) => (
-              <div
-                key={idx}
-                className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6 hover:border-[#6366f1]/50 transition"
-              >
-                <div className="text-4xl mb-4">{pain.icon}</div>
-                <p className="text-[#e8e8f0] font-medium mb-3">{pain.title}</p>
-                <p className="text-sm text-[#b0b0c8]">{pain.fix}</p>
-              </div>
-            ))}
+            ].map((pain, idx) => {
+              const PainIcon = pain.icon;
+              return (
+                <div
+                  key={idx}
+                  className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-6 hover:border-[#6366f1]/50 transition"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-[#f87171]/10 border border-[#f87171]/30 flex items-center justify-center mb-4">
+                    <PainIcon size={20} className="text-[#f87171]" />
+                  </div>
+                  <p className="text-[#f87171] font-semibold mb-3">{pain.title}</p>
+                  <div className="flex items-start gap-2">
+                    <Check size={14} className="text-[#22c55e] flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-[#4ade80]">{pain.fix}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -672,18 +699,18 @@ export default function LandingPage() {
               </div>
             </div>
             {[
-              { label: 'Annual Cost', builder: '$3,588–$8,388', cfo: '$120,000–$200,000+' },
-              { label: 'Setup Time', builder: '15 minutes', cfo: '2–3 months' },
-              { label: 'Real-Time Data', builder: 'Yes — auto-synced', cfo: 'Monthly reports' },
-              { label: 'Construction Specific', builder: 'Job costing, WIP, retainage', cfo: 'Depends on hire' },
-              { label: 'Integrations', builder: '7+ tools built in', cfo: 'Manual data entry' },
-              { label: 'AI Analysis', builder: 'Included', cfo: 'Not available' },
-              { label: 'Contract Required', builder: 'No — cancel anytime', cfo: 'Employment contract' },
+              { label: 'Annual Cost', builder: '$3,588–$8,388', cfo: '$120,000–$200,000+', cfoRed: true },
+              { label: 'Setup Time', builder: '15 minutes', cfo: '2–3 months', cfoRed: true },
+              { label: 'Real-Time Data', builder: 'Yes — auto-synced', cfo: 'Monthly reports', cfoRed: true },
+              { label: 'Construction Specific', builder: 'Job costing, WIP, retainage', cfo: 'Depends on hire', cfoRed: false },
+              { label: 'Integrations', builder: '7+ tools built in', cfo: 'Manual data entry', cfoRed: true },
+              { label: 'AI Analysis', builder: 'Included', cfo: 'Not available', cfoRed: true },
+              { label: 'Contract Required', builder: 'No — cancel anytime', cfo: 'Employment contract', cfoRed: true },
             ].map((row, idx) => (
               <div key={idx} className="grid grid-cols-3 text-center">
-                <div className="p-2 sm:p-3 border-b border-r border-[#1e1e2e] text-xs sm:text-sm text-[#b0b0c8] text-left pl-3 sm:pl-6">{row.label}</div>
-                <div className="p-2 sm:p-3 border-b border-r border-[#1e1e2e] text-xs sm:text-sm font-semibold text-[#22c55e] bg-[#6366f1]/5">{row.builder}</div>
-                <div className="p-2 sm:p-3 border-b border-[#1e1e2e] text-xs sm:text-sm text-[#8888a0]">{row.cfo}</div>
+                <div className="p-2 sm:p-3 border-b border-r border-[#1e1e2e] text-xs sm:text-sm text-[#e8e8f0] text-left pl-3 sm:pl-6 font-medium">{row.label}</div>
+                <div className="p-2 sm:p-3 border-b border-r border-[#1e1e2e] text-xs sm:text-sm font-semibold text-[#4ade80] bg-[#22c55e]/5">{row.builder}</div>
+                <div className={`p-2 sm:p-3 border-b border-[#1e1e2e] text-xs sm:text-sm ${row.cfoRed ? 'text-[#f87171] font-medium' : 'text-[#8888a0]'}`}>{row.cfo}</div>
               </div>
             ))}
           </div>
@@ -1033,15 +1060,15 @@ export default function LandingPage() {
             Join contractors nationwide who use BuilderCFO to track job costs, forecast cash flow, and make smarter financial decisions — starting with a free 14-day trial.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-2 px-8 py-3 rounded font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition"
+            <button
+              onClick={() => openReferral('pro', 'Professional')}
+              className="inline-flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-white bg-[#6366f1] hover:bg-[#5558d9] transition shadow-lg shadow-[#6366f1]/25"
             >
               Start 14-Day Free Trial <ChevronRight size={18} />
-            </Link>
+            </button>
             <Link
               href="#schedule"
-              className="inline-flex items-center gap-2 px-8 py-3 rounded font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition"
+              className="inline-flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1]/10 transition"
             >
               Book a Demo →
             </Link>

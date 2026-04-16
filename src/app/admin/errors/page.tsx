@@ -161,13 +161,39 @@ export default function ErrorLogPage() {
                   <p className="mt-2 text-sm">{selectedError.error_type}</p>
                 </div>
                 <div>
+                  <p className="text-[#8888a0] text-sm font-medium">Title</p>
+                  <p className="mt-2 text-sm break-words">{selectedError.title}</p>
+                </div>
+                {selectedError.message && (
+                  <div>
+                    <p className="text-[#8888a0] text-sm font-medium">Message</p>
+                    <p className="mt-2 text-sm whitespace-pre-wrap break-words">
+                      {selectedError.message}
+                    </p>
+                  </div>
+                )}
+                <div>
                   <p className="text-[#8888a0] text-sm font-medium">Organization</p>
                   <p className="mt-2 text-sm">{selectedError.organization_name || 'Unknown'}</p>
+                </div>
+                <div>
+                  <p className="text-[#8888a0] text-sm font-medium">Organization ID</p>
+                  <p className="mt-2 text-xs font-mono text-[#8888a0] break-all">
+                    {selectedError.organization_id || '—'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-[#8888a0] text-sm font-medium">Created</p>
                   <p className="mt-2 text-sm">{new Date(selectedError.created_at).toLocaleString()}</p>
                 </div>
+                {selectedError.metadata && Object.keys(selectedError.metadata).length > 0 && (
+                  <div>
+                    <p className="text-[#8888a0] text-sm font-medium">Metadata</p>
+                    <pre className="mt-2 text-xs font-mono bg-[#0a0a0f] border border-[#2a2a3d] rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words">
+                      {JSON.stringify(selectedError.metadata, null, 2)}
+                    </pre>
+                  </div>
+                )}
                 {selectedError.resolved_at && (
                   <div>
                     <p className="text-[#8888a0] text-sm font-medium">Resolved</p>

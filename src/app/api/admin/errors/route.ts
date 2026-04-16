@@ -90,8 +90,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Flatten nested organization relation so the frontend can display org name
+    // directly instead of showing "Unknown".
+    const flattened = (errorLogs || []).map((row: any) => ({
+      ...row,
+      organization_name: row.organization?.name ?? null,
+      organization_slug: row.organization?.slug ?? null,
+    }));
+
     return NextResponse.json({
-      errors: errorLogs || [],
+      errors: flattened,
       pagination: {
         page,
         limit,
