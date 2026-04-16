@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserClient } from '@/lib/supabase/client';
 
@@ -10,8 +10,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createBrowserClient();
+
+  useEffect(() => {
+    const reason = searchParams?.get('reason');
+    if (reason === 'idle') {
+      setNotice('You were signed out due to inactivity. Please sign in again.');
+    }
+  }, [searchParams]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,9 +34,30 @@ export default function LoginPage() {
       });
 
       if (signInError) {
+        // Fire an audit event server-side so we can detect credential-stuffing.
+        fetch('/api/auth/login-failed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        }).catch(() => {});
         setError(signInError.message);
         setLoading(false);
         return;
+      }
+
+      // Password OK — decide whether MFA challenge is required.
+      // `getAuthenticatorAssuranceLevel` tells us: if nextLevel > currentLevel,
+      // the user has a verified factor and needs to hit it before we let them
+      // into /dashboard.
+      try {
+        const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+          window.location.href = '/mfa';
+          return;
+        }
+      } catch {
+        // If the AAL call fails we fall through to the normal redirect —
+        // the middleware will still re-check and bounce if necessary.
       }
 
       window.location.href = '/dashboard';
@@ -50,6 +80,13 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {/* Notice (e.g. idle logout) */}
+        {notice && (
+          <div className="mb-4 bg-yellow-900/20 border border-yellow-700/50 rounded px-4 py-2 text-sm text-yellow-300">
+            {notice}
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSignIn} className="space-y-4">
           {/* Email Field */}
@@ -67,6 +104,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
               required
+              autoComplete="email"
               className="w-full px-4 py-2 rounded bg-[#0a0a0f] border border-[#1e1e2e] text-[#e8e8f0] placeholder-[#8888a0] focus:outline-none focus:border-[#6366f1] transition"
             />
           </div>
@@ -86,6 +124,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
+              autoComplete="current-password"
               className="w-full px-4 py-2 rounded bg-[#0a0a0f] border border-[#1e1e2e] text-[#e8e8f0] placeholder-[#8888a0] focus:outline-none focus:border-[#6366f1] transition"
             />
           </div>

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import LocationSelector from '@/components/location-selector';
 import SupportChat from '@/components/support-chat';
+import IdleTimeout from '@/components/security/idle-timeout';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
@@ -253,6 +254,8 @@ export default function DashboardLayoutClient({
 
   return (
     <div style={inter.style} className="bg-[#0a0a0f] text-[#e8e8f0] min-h-screen flex">
+      {/* Auto sign-out on 30 min idle */}
+      <IdleTimeout />
       {/* Desktop Sidebar — hidden on mobile */}
       <div
         className={`hidden lg:flex fixed inset-y-0 left-0 z-40 transition-all duration-300 flex-col ${

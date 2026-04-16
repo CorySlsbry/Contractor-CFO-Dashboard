@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plug, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Plug, ArrowRight, AlertTriangle, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -184,6 +184,24 @@ export default function SettingsPage() {
             </div>
           )}
         </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Shield size={18} className="text-[#6366f1]" />
+            <h2 className="text-lg font-semibold">Security &amp; 2FA</h2>
+          </div>
+          <Link href="/dashboard/settings/security">
+            <Button variant="primary" size="sm" className="flex items-center gap-2">
+              Manage security
+              <ArrowRight size={14} />
+            </Button>
+          </Link>
+        </div>
+        <p className="text-sm text-[#8888a0]">
+          Protect your account with two-factor authentication (authenticator app or SMS) and change your password.
+        </p>
       </Card>
 
       <Card className="p-6">

@@ -7,9 +7,32 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkPassword } from "@/lib/security/password";
+import {
+  rateLimit,
+  RateLimits,
+  getClientIp,
+  rateLimitHeaders,
+} from "@/lib/security/rate-limit";
+import { logSecurityEvent, requestContext } from "@/lib/security/audit-log";
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit by IP — stop drive-by signup floods.
+    const ip = getClientIp(request);
+    const limit = rateLimit(`signup:${ip}`, RateLimits.SIGNUP);
+    if (!limit.allowed) {
+      await logSecurityEvent({
+        event: "signup_rate_limited",
+        ip,
+        userAgent: request.headers.get("user-agent") || "unknown",
+      });
+      return NextResponse.json(
+        { error: "Too many signup attempts. Try again later." },
+        { status: 429, headers: rateLimitHeaders(limit) }
+      );
+    }
+
     const { email, password, fullName, companyName } = await request.json();
 
     // Validate inputs
@@ -20,9 +43,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (password.length < 6) {
+    // Enforce policy: 12+ chars, 3 of 4 classes, not a known-common password,
+    // not equal to email local-part. See src/lib/security/password.ts.
+    const pw = checkPassword(password, email);
+    if (!pw.ok) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters" },
+        { error: pw.error || "Password does not meet requirements" },
         { status: 400 }
       );
     }
@@ -118,6 +144,15 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    const { ip: auditIp, userAgent } = requestContext(request);
+    await logSecurityEvent({
+      event: "signup_success",
+      userId,
+      organizationId: orgData.id,
+      ip: auditIp,
+      userAgent,
+    });
 
     return NextResponse.json({
       success: true,
