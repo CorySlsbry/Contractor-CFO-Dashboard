@@ -1149,10 +1149,10 @@ export default function LandingPage() {
               <ul className="space-y-2">
                 <li>
                   <a
-                    href="mailto:support@topbuildercfo.com"
+                    href="mailto:cory@salisburybookkeeping.com"
                     className="text-[#e8e8f0] hover:text-[#6366f1]"
                   >
-                    support@topbuildercfo.com
+                    cory@salisburybookkeeping.com
                   </a>
                 </li>
                 <li>
