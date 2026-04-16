@@ -13,13 +13,15 @@ export class StripeService {
   private proPriceId: string;
   private enterprisePriceId: string;
   private whiteglovePriceId: string;
+  private whitegloveSetupPriceId: string;
 
   constructor(
     apiKey: string = process.env.STRIPE_SECRET_KEY || "",
     basicPriceId: string = process.env.STRIPE_PRICE_ID_ESSENTIAL || "",
     proPriceId: string = process.env.STRIPE_PRICE_ID_PRO || "",
     enterprisePriceId: string = process.env.STRIPE_PRICE_ID_ENTERPRISE || "",
-    whiteglovePriceId: string = process.env.STRIPE_PRICE_ID_WHITEGLOVE || ""
+    whiteglovePriceId: string = process.env.STRIPE_PRICE_ID_WHITEGLOVE || "",
+    whitegloveSetupPriceId: string = process.env.STRIPE_PRICE_ID_WHITEGLOVE_SETUP || ""
   ) {
     this.stripe = new Stripe(apiKey, {
       apiVersion: "2026-02-25.clover",
@@ -28,6 +30,15 @@ export class StripeService {
     this.proPriceId = proPriceId;
     this.enterprisePriceId = enterprisePriceId;
     this.whiteglovePriceId = whiteglovePriceId;
+    this.whitegloveSetupPriceId = whitegloveSetupPriceId;
+  }
+
+  /**
+   * Stripe price ID for the one-time White Glove setup add-on ($999).
+   * Exposed so callers/scripts can verify setup.
+   */
+  getWhiteGloveSetupPriceId(): string {
+    return this.whitegloveSetupPriceId;
   }
 
   /**
@@ -98,7 +109,13 @@ export class StripeService {
     customerId: string,
     plan: StripePlan,
     orgId: string,
-    options: { couponId?: string; promotionCodeId?: string; discountCode?: string } = {}
+    options: {
+      couponId?: string;
+      promotionCodeId?: string;
+      discountCode?: string;
+      /** Adds the $999 one-time White Glove setup fee as a second line item */
+      whiteGloveAddon?: boolean;
+    } = {}
   ): Promise<Stripe.Checkout.Session> {
     const priceId = this.getPriceId(plan);
 
@@ -110,28 +127,41 @@ export class StripeService {
       discounts.push({ promotion_code: options.promotionCodeId });
     }
 
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      { price: priceId, quantity: 1 },
+    ];
+
+    // White Glove add-on: one-time setup fee charged alongside the subscription.
+    // Stripe requires mode:"subscription" line items to be either recurring prices
+    // or one-time prices — both are allowed in the same session.
+    if (options.whiteGloveAddon) {
+      if (!this.whitegloveSetupPriceId) {
+        throw new Error(
+          "White Glove add-on selected but STRIPE_PRICE_ID_WHITEGLOVE_SETUP is not configured. Run scripts/setup-stripe-whiteglove.mjs."
+        );
+      }
+      lineItems.push({ price: this.whitegloveSetupPriceId, quantity: 1 });
+    }
+
     const params: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       mode: "subscription",
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/signup`,
       metadata: {
         org_id: orgId,
         plan,
         discount_code: options.discountCode || "",
+        white_glove_addon: options.whiteGloveAddon ? "true" : "false",
       },
       subscription_data: {
         trial_period_days: 14,
         metadata: {
           org_id: orgId,
           discount_code: options.discountCode || "",
+          white_glove_addon: options.whiteGloveAddon ? "true" : "false",
         },
       },
     };

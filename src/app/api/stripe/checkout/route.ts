@@ -14,6 +14,7 @@ import type { ApiResponse } from "@/types";
 interface CheckoutRequest {
   plan: StripePlan;
   discountCode?: string; // e.g. "REFER20"
+  whiteGloveAddon?: boolean; // $999 one-time setup add-on
 }
 
 interface CheckoutResponse {
@@ -138,6 +139,7 @@ export async function POST(request: NextRequest) {
         orgId: (org as any).id,
         discountCode: body.discountCode,
         couponId,
+        whiteGloveAddon: body.whiteGloveAddon,
       });
       const session = await stripeService.createCheckoutSession(
         customerId,
@@ -146,6 +148,7 @@ export async function POST(request: NextRequest) {
         {
           couponId,
           discountCode: body.discountCode,
+          whiteGloveAddon: body.whiteGloveAddon,
         }
       );
 

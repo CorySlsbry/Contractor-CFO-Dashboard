@@ -2,25 +2,27 @@
 /**
  * setup-stripe-whiteglove.mjs
  * ──────────────────────────────────────────────────────────────────────────
- * One-shot Stripe setup script for the BuilderCFO White Glove tier +
- * REFER20 referral coupon.
+ * One-shot Stripe setup script for BuilderCFO:
+ *   • White Glove tier ($1,499/mo recurring) — legacy, kept for back-compat
+ *   • White Glove Custom Setup ($999 one-time add-on) — NEW
+ *   • REFER20 coupon (20% off forever, applies to both subs AND one-time)
  *
  * What it does (idempotent):
- *   1. Creates / reuses a Stripe Product  "BuilderCFO White Glove"
- *   2. Creates a $2,997.00 USD monthly recurring Price on that product
- *      (skipped if an identical active price already exists)
- *   3. Creates the REFER20 coupon (20% off, forever duration)
- *      (skipped if it already exists)
- *   4. Prints the IDs you need to paste into Vercel environment variables.
+ *   1. Creates / reuses Stripe Product "BuilderCFO White Glove" (monthly)
+ *   2. Creates $1,499.00 USD monthly recurring price on that product
+ *   3. Creates / reuses Stripe Product "BuilderCFO White Glove Setup" (one-time)
+ *   4. Creates $999.00 USD one-time price on that product
+ *   5. Creates / verifies REFER20 coupon (20% off, forever, applies_to=all)
+ *   6. Prints env var values to paste into Vercel
  *
  * Usage:
  *   STRIPE_SECRET_KEY=sk_live_xxx node scripts/setup-stripe-whiteglove.mjs
  *   STRIPE_SECRET_KEY=sk_test_xxx node scripts/setup-stripe-whiteglove.mjs
  *
- * After running, paste the output IDs into Vercel → Project Settings →
- * Environment Variables:
- *   STRIPE_PRICE_ID_WHITEGLOVE=price_xxx
- *   STRIPE_COUPON_REFER20=REFER20      (already matches, no need to change)
+ * Env vars to paste into Vercel → Settings → Environment Variables:
+ *   STRIPE_PRICE_ID_WHITEGLOVE=price_xxx          (recurring $1,499/mo)
+ *   STRIPE_PRICE_ID_WHITEGLOVE_SETUP=price_xxx    (one-time $999)
+ *   STRIPE_COUPON_REFER20=REFER20                 (already matches, no need to change)
  *
  * Requirements:
  *   npm install stripe
@@ -49,85 +51,162 @@ console.log(' Mode:', isLive ? 'LIVE 🔴' : 'TEST 🧪');
 console.log('─────────────────────────────────────────────\n');
 
 /* ────────────────────────────────────────────────────────────────
-   1. PRODUCT
+   1. PRODUCT — White Glove (recurring, legacy)
    ──────────────────────────────────────────────────────────────── */
-const PRODUCT_NAME = 'BuilderCFO White Glove';
-const PRODUCT_DESCRIPTION =
+const WG_PRODUCT_NAME = 'BuilderCFO White Glove';
+const WG_PRODUCT_DESCRIPTION =
   'Done-for-you fractional controller for $10M+ construction builders. ' +
   'Includes dedicated controller, weekly strategy calls, monthly CFO review, ' +
   'custom board reports, priority integration setup, and direct Slack line.';
 
-let product;
+let wgProduct;
 {
-  console.log('▶ Step 1/3: Product');
+  console.log('▶ Step 1/5: Product — White Glove (recurring)');
   const existing = await stripe.products.search({
-    query: `name:'${PRODUCT_NAME}' AND active:'true'`,
+    query: `name:'${WG_PRODUCT_NAME}' AND active:'true'`,
     limit: 1,
   });
   if (existing.data.length > 0) {
-    product = existing.data[0];
-    ok(`Found existing product: ${product.id}`);
+    wgProduct = existing.data[0];
+    ok(`Found existing product: ${wgProduct.id}`);
   } else {
-    product = await stripe.products.create({
-      name: PRODUCT_NAME,
-      description: PRODUCT_DESCRIPTION,
+    wgProduct = await stripe.products.create({
+      name: WG_PRODUCT_NAME,
+      description: WG_PRODUCT_DESCRIPTION,
       metadata: {
         tier: 'whiteglove',
         source: 'setup-stripe-whiteglove.mjs',
       },
     });
-    ok(`Created new product: ${product.id}`);
+    ok(`Created new product: ${wgProduct.id}`);
   }
 }
 
 /* ────────────────────────────────────────────────────────────────
-   2. PRICE — $1,499/mo recurring
+   2. PRICE — $1,499/mo recurring (legacy whiteglove tier)
    ──────────────────────────────────────────────────────────────── */
-const TARGET_AMOUNT_CENTS = 149900; // $1,499.00
-const TARGET_CURRENCY = 'usd';
+const WG_AMOUNT_CENTS = 149900; // $1,499.00
+const CURRENCY = 'usd';
 
-let price;
+let wgPrice;
 {
-  console.log('\n▶ Step 2/3: Price ($1,499.00/mo recurring)');
+  console.log('\n▶ Step 2/5: Price — $1,499.00/mo recurring');
   const existingPrices = await stripe.prices.list({
-    product: product.id,
+    product: wgProduct.id,
     active: true,
     limit: 50,
   });
   const match = existingPrices.data.find((p) =>
-    p.unit_amount === TARGET_AMOUNT_CENTS &&
-    p.currency === TARGET_CURRENCY &&
+    p.unit_amount === WG_AMOUNT_CENTS &&
+    p.currency === CURRENCY &&
     p.recurring?.interval === 'month'
   );
 
   if (match) {
-    price = match;
-    ok(`Found existing price: ${price.id}`);
+    wgPrice = match;
+    ok(`Found existing price: ${wgPrice.id}`);
   } else {
-    price = await stripe.prices.create({
-      product: product.id,
-      unit_amount: TARGET_AMOUNT_CENTS,
-      currency: TARGET_CURRENCY,
+    wgPrice = await stripe.prices.create({
+      product: wgProduct.id,
+      unit_amount: WG_AMOUNT_CENTS,
+      currency: CURRENCY,
       recurring: { interval: 'month' },
       nickname: 'White Glove Monthly',
       metadata: { tier: 'whiteglove' },
     });
-    ok(`Created new price: ${price.id}`);
+    ok(`Created new price: ${wgPrice.id}`);
   }
 }
 
 /* ────────────────────────────────────────────────────────────────
-   3. COUPON — REFER20 (20% off forever)
+   3. PRODUCT — White Glove Custom Setup (one-time add-on)
+   ──────────────────────────────────────────────────────────────── */
+const WG_SETUP_PRODUCT_NAME = 'BuilderCFO White Glove Setup';
+const WG_SETUP_PRODUCT_DESCRIPTION =
+  'One-time setup add-on: our team handles every integration, builds your ' +
+  'chart of accounts, reconciles historical data, and trains your team 1:1. ' +
+  'Billed once at checkout alongside your BuilderCFO subscription.';
+
+let wgSetupProduct;
+{
+  console.log('\n▶ Step 3/5: Product — White Glove Setup (one-time)');
+  const existing = await stripe.products.search({
+    query: `name:'${WG_SETUP_PRODUCT_NAME}' AND active:'true'`,
+    limit: 1,
+  });
+  if (existing.data.length > 0) {
+    wgSetupProduct = existing.data[0];
+    ok(`Found existing product: ${wgSetupProduct.id}`);
+  } else {
+    wgSetupProduct = await stripe.products.create({
+      name: WG_SETUP_PRODUCT_NAME,
+      description: WG_SETUP_PRODUCT_DESCRIPTION,
+      metadata: {
+        tier: 'whiteglove-setup',
+        billing_type: 'one_time',
+        source: 'setup-stripe-whiteglove.mjs',
+      },
+    });
+    ok(`Created new product: ${wgSetupProduct.id}`);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────
+   4. PRICE — $999 one-time (whiteglove setup add-on)
+   ──────────────────────────────────────────────────────────────── */
+const WG_SETUP_AMOUNT_CENTS = 99900; // $999.00
+
+let wgSetupPrice;
+{
+  console.log('\n▶ Step 4/5: Price — $999.00 one-time');
+  const existingPrices = await stripe.prices.list({
+    product: wgSetupProduct.id,
+    active: true,
+    limit: 50,
+  });
+  // One-time price = no `recurring` field
+  const match = existingPrices.data.find((p) =>
+    p.unit_amount === WG_SETUP_AMOUNT_CENTS &&
+    p.currency === CURRENCY &&
+    !p.recurring
+  );
+
+  if (match) {
+    wgSetupPrice = match;
+    ok(`Found existing price: ${wgSetupPrice.id}`);
+  } else {
+    wgSetupPrice = await stripe.prices.create({
+      product: wgSetupProduct.id,
+      unit_amount: WG_SETUP_AMOUNT_CENTS,
+      currency: CURRENCY,
+      // No recurring = one-time payment
+      nickname: 'White Glove Setup (one-time)',
+      metadata: { tier: 'whiteglove-setup', billing_type: 'one_time' },
+    });
+    ok(`Created new price: ${wgSetupPrice.id}`);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────
+   5. COUPON — REFER20 (20% off forever, applies to ALL products)
    ──────────────────────────────────────────────────────────────── */
 const COUPON_ID = 'REFER20';
 const COUPON_NAME = 'Friend Referral (20% off)';
 
 let coupon;
 {
-  console.log('\n▶ Step 3/3: Coupon REFER20 (20% off, forever)');
+  console.log('\n▶ Step 5/5: Coupon REFER20 (20% off, forever, all products)');
   try {
     coupon = await stripe.coupons.retrieve(COUPON_ID);
     ok(`Found existing coupon: ${coupon.id}`);
+    // Verify it isn't restricted to a subset of products — if it is, warn.
+    if (coupon.applies_to && Array.isArray(coupon.applies_to.products) && coupon.applies_to.products.length > 0) {
+      warn(
+        `Coupon ${coupon.id} is restricted to specific products:`,
+        coupon.applies_to.products.join(', ')
+      );
+      warn('For the add-on to get 20% off too, the coupon must apply to ALL products OR include the setup product.');
+    }
   } catch (err) {
     if (err?.code === 'resource_missing') {
       coupon = await stripe.coupons.create({
@@ -135,9 +214,10 @@ let coupon;
         name: COUPON_NAME,
         percent_off: 20,
         duration: 'forever',
+        // No applies_to → applies to every line item in checkout (subs + one-time)
         metadata: {
           source: 'referral-viral-loop',
-          description: 'Prospect referred 2 friends → everyone gets 20% off',
+          description: 'Prospect referred 2 friends → everyone gets 20% off on subscription AND White Glove setup',
         },
       });
       ok(`Created new coupon: ${coupon.id}`);
@@ -148,24 +228,28 @@ let coupon;
 }
 
 /* ────────────────────────────────────────────────────────────────
-   4. OUTPUT — env vars to paste into Vercel
+   OUTPUT — env vars to paste into Vercel
    ──────────────────────────────────────────────────────────────── */
 console.log('\n─────────────────────────────────────────────');
 console.log(' ✅ DONE');
 console.log('─────────────────────────────────────────────\n');
 
 console.log('Paste these into Vercel → Project Settings → Environment Variables:\n');
-console.log(`  STRIPE_PRICE_ID_WHITEGLOVE=${price.id}`);
+console.log(`  STRIPE_PRICE_ID_WHITEGLOVE=${wgPrice.id}`);
+console.log(`  STRIPE_PRICE_ID_WHITEGLOVE_SETUP=${wgSetupPrice.id}`);
 console.log(`  STRIPE_COUPON_REFER20=${coupon.id}`);
 
 console.log('\nOr add them locally:\n');
-console.log('  echo "STRIPE_PRICE_ID_WHITEGLOVE=' + price.id + '" >> .env.local');
+console.log('  echo "STRIPE_PRICE_ID_WHITEGLOVE=' + wgPrice.id + '" >> .env.local');
+console.log('  echo "STRIPE_PRICE_ID_WHITEGLOVE_SETUP=' + wgSetupPrice.id + '" >> .env.local');
 console.log('  echo "STRIPE_COUPON_REFER20=' + coupon.id + '" >> .env.local');
 
 console.log('\nQuick verification:');
-console.log(`  Product:  ${product.id}  (${PRODUCT_NAME})`);
-console.log(`  Price:    ${price.id}  ($${(TARGET_AMOUNT_CENTS / 100).toFixed(2)} / month)`);
-console.log(`  Coupon:   ${coupon.id}  (${coupon.percent_off}% off ${coupon.duration})`);
+console.log(`  WG Product:        ${wgProduct.id}  (${WG_PRODUCT_NAME})`);
+console.log(`  WG Price:          ${wgPrice.id}  ($${(WG_AMOUNT_CENTS / 100).toFixed(2)} / month)`);
+console.log(`  WG Setup Product:  ${wgSetupProduct.id}  (${WG_SETUP_PRODUCT_NAME})`);
+console.log(`  WG Setup Price:    ${wgSetupPrice.id}  ($${(WG_SETUP_AMOUNT_CENTS / 100).toFixed(2)} one-time)`);
+console.log(`  Coupon:            ${coupon.id}  (${coupon.percent_off}% off ${coupon.duration})`);
 
 if (isLive) {
   console.log('\n🔴 These IDs are LIVE. Make sure you ran this on the right account.');
