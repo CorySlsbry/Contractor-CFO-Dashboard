@@ -266,6 +266,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           }}
         />
         {/* End Google Tag Manager */}
+        {/* Google tag (gtag.js) — GA4 property G-9JRWPTKS9K */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-9JRWPTKS9K" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-9JRWPTKS9K');`,
+          }}
+        />
+        {/* End Google tag (gtag.js) */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="BuilderCFO" />

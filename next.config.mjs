@@ -11,12 +11,15 @@
  */
 const ContentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.vercel.app https://vercel.live",
+  // googletagmanager.com covers both GTM (gtm.js) and GA4 (gtag/js).
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.vercel.app https://vercel.live https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  // GA4 tracking pixels are served from google-analytics.com / analytics.google.com.
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https://fonts.gstatic.com",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://api.anthropic.com https://*.ingest.sentry.io https://*.vercel.app https://vercel.live wss://ws-us3.pusher.com",
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vercel.live",
+  // GA4 beacons post to www.google-analytics.com and region1.google-analytics.com.
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://api.anthropic.com https://*.ingest.sentry.io https://*.vercel.app https://vercel.live wss://ws-us3.pusher.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://*.analytics.google.com",
+  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vercel.live https://www.googletagmanager.com",
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",
