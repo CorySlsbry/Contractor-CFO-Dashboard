@@ -7,6 +7,7 @@ import Head from 'next/head';
 import ReferralModal from '@/components/ReferralModal';
 import WhiteGloveBookingModal from '@/components/WhiteGloveBookingModal';
 import TopAnnouncementBanner from '@/components/marketing/top-announcement-banner';
+import SecurityTrustBar from '@/components/marketing/security-trust-bar';
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<'starter' | 'professional' | 'enterprise'>('professional');
@@ -76,14 +77,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Security trust bar — visible above the fold */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-[#22c55e]/5 border border-[#22c55e]/25 rounded-full pl-3 pr-4 py-1.5 mb-6 max-w-fit">
-            <Shield size={14} className="text-[#22c55e] flex-shrink-0" />
-            <p className="text-[11px] sm:text-xs text-[#d0d0e0] leading-tight">
-              <span className="font-semibold text-[#4ade80]">Secure by design</span>
-              <span className="text-[#8888a0]"> &mdash; two-factor authentication (authenticator app + SMS), bank-level encryption, read-only QuickBooks sync</span>
-            </p>
-          </div>
+          <SecurityTrustBar />
 
           {/* Headline */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8e8f0] mb-6 leading-tight">

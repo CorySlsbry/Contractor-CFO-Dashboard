@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ChevronRight, Check, Paintbrush, DollarSign, TrendingUp, FileText, BarChart3 } from 'lucide-react';
 import TopAnnouncementBanner from '@/components/marketing/top-announcement-banner';
+import SecurityTrustBar from '@/components/marketing/security-trust-bar';
 
 const painPoints = [
   { icon: DollarSign, title: 'Scope Creep Kills Margins', desc: 'Homeowners add "just one more thing" every week. Without real-time tracking, those extras add up to thousands in unrecovered costs.' },
@@ -43,10 +44,12 @@ export default function RemodelersPage() {
       <section className="pt-28 pb-12 sm:pt-36 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#6366f1]/5 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-4xl mx-auto relative">
-          <div className="inline-flex items-center gap-2 bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-full px-4 py-1.5 mb-6">
+          <div className="inline-flex items-center gap-2 bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-full px-4 py-1.5 mb-3">
             <Paintbrush size={14} className="text-[#6366f1]" />
             <span className="text-xs font-medium text-[#a5b4fc]">Built for Remodelers</span>
           </div>
+
+          <SecurityTrustBar />
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-tight">
             Financial Dashboard for{' '}
