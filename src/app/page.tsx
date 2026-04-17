@@ -24,8 +24,25 @@ export default function LandingPage() {
 
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0]">
+      {/* Top announcement banner */}
+      <div className="fixed top-0 w-full bg-[#0a0a0f] border-b border-[#1e1e2e] z-[60]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-center gap-2 sm:gap-3 text-center">
+          <p className="text-[11px] sm:text-xs text-[#d0d0e0] leading-tight">
+            <span className="text-[#fbbf24] font-semibold">
+              <span aria-hidden="true">★ </span>5-Star Service Guarantee
+            </span>
+            <span className="text-[#8888a0]"> &mdash; if we haven&rsquo;t earned it yet, we&rsquo;ll keep working until we do.</span>
+            <span className="hidden sm:inline">
+              <span className="mx-2 text-[#6366f1]">•</span>
+              <span className="text-[#e8e8f0] font-medium">Direct access to the developer</span>
+              <span className="text-[#8888a0]"> &mdash; if our platform is missing something, we can make it so.</span>
+            </span>
+          </p>
+        </div>
+      </div>
+
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-[#0a0a0f]/80 backdrop-blur border-b border-[#1e1e2e] z-50">
+      <nav className="fixed top-[32px] sm:top-[36px] w-full bg-[#0a0a0f]/80 backdrop-blur border-b border-[#1e1e2e] z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
             <div className="font-bold text-lg tracking-tight">
@@ -57,7 +74,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-12 sm:pt-32 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <section className="pt-28 pb-12 sm:pt-36 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#6366f1]/5 via-transparent to-transparent pointer-events-none" />
 
         <div className="max-w-4xl mx-auto relative">
