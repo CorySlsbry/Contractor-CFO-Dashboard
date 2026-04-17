@@ -65,7 +65,7 @@ export default function LandingPage() {
 
         <div className="max-w-4xl mx-auto relative">
           {/* Social proof bar */}
-          <div className="inline-flex items-center gap-2 bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-full px-4 py-1.5 mb-6">
+          <div className="inline-flex items-center gap-2 bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-full px-4 py-1.5 mb-3">
             <div className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse" />
             <p className="text-xs sm:text-sm text-[#d0d0e0] tracking-wide">
               Built by{' '}
@@ -73,6 +73,15 @@ export default function LandingPage() {
                 Salisbury Bookkeeping
               </a>
               {' '}&mdash; fractional CFO &amp; developer who&rsquo;ve managed the books for construction companies
+            </p>
+          </div>
+
+          {/* Security trust bar — visible above the fold */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-[#22c55e]/5 border border-[#22c55e]/25 rounded-full pl-3 pr-4 py-1.5 mb-6 max-w-fit">
+            <Shield size={14} className="text-[#22c55e] flex-shrink-0" />
+            <p className="text-[11px] sm:text-xs text-[#d0d0e0] leading-tight">
+              <span className="font-semibold text-[#4ade80]">Secure by design</span>
+              <span className="text-[#8888a0]"> &mdash; two-factor authentication (authenticator app + SMS), bank-level encryption, read-only QuickBooks sync</span>
             </p>
           </div>
 
