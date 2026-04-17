@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ChevronRight, Check, HardHat, DollarSign, TrendingUp, FileText, BarChart3 } from 'lucide-react';
+import TopAnnouncementBanner from '@/components/marketing/top-announcement-banner';
 
 const painPoints = [
   { icon: DollarSign, title: 'Subcontractor Cost Overruns', desc: 'When sub invoices come in higher than bids and you don\'t catch it until month-end close, the job margin is already gone.' },
@@ -24,7 +25,10 @@ const features = [
 export default function GeneralContractorsPage() {
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0] min-h-screen">
-      <nav className="fixed top-0 w-full bg-[#0a0a0f]/80 backdrop-blur border-b border-[#1e1e2e] z-50">
+      <TopAnnouncementBanner />
+
+      {/* Nav */}
+      <nav className="fixed top-[32px] sm:top-[36px] w-full bg-[#0a0a0f]/80 backdrop-blur border-b border-[#1e1e2e] z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <Link href="/" className="font-bold text-lg tracking-tight">
             <span className="text-[#6366f1]">Builder</span><span className="text-[#e8e8f0]">CFO</span>
@@ -36,7 +40,7 @@ export default function GeneralContractorsPage() {
         </div>
       </nav>
 
-      <section className="pt-24 pb-12 sm:pt-32 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <section className="pt-28 pb-12 sm:pt-36 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#6366f1]/5 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-4xl mx-auto relative">
           <div className="inline-flex items-center gap-2 bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-full px-4 py-1.5 mb-6">
