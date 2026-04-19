@@ -21,6 +21,9 @@ substitutions:
   _REGION: us-central1
   _SERVICE: contractor-cfo-dashboard
   _AR_REPO: cloud-run-source-deploy
+  # Triggers should set _TAG=$COMMIT_SHA via substitution; manual
+  # `gcloud builds submit` defaults to the build id.
+  _TAG: '${BUILD_ID}'
   _NEXT_PUBLIC_SUPABASE_URL: ''
   _NEXT_PUBLIC_SUPABASE_ANON_KEY: ''
   _NEXT_PUBLIC_APP_URL: 'https://topbuildercfo.com'
@@ -32,7 +35,7 @@ options:
   substitutionOption: ALLOW_LOOSE
 
 images:
-  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE}/${_SERVICE}:${COMMIT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE}/${_SERVICE}:${_TAG}'
   - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE}/${_SERVICE}:latest'
 
 steps:
@@ -50,7 +53,7 @@ steps:
       - '--build-arg'
       - 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${_NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE}/${_SERVICE}:${COMMIT_SHA}'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE}/${_SERVICE}:${_TAG}'
       - '-t'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE}/${_SERVICE}:latest'
       - '-f'
@@ -73,7 +76,7 @@ steps:
       - update
       - ${_SERVICE}
       - --platform=managed
-      - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE}/${_SERVICE}:${COMMIT_SHA}
-      - --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=${COMMIT_SHA},gcb-build-id=${BUILD_ID}
+      - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE}/${_SERVICE}:${_TAG}
+      - --labels=managed-by=gcp-cloud-build-deploy-cloud-run,gcb-build-id=${BUILD_ID}
       - --region=${_REGION}
       - --quiet
