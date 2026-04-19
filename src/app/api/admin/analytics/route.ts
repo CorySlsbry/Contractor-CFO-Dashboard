@@ -1,7 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createClient as createServerSupabase } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * Defense-in-depth admin gate.
+ *
+ * Middleware already protects `/api/admin/*` with login + AAL2, but we
+ * re-verify here so this route keeps behaving correctly even if the
+ * matcher ever changes. Uses the user's own session (RLS-aware) and the
+ * `is_platform_admin()` SECURITY DEFINER RPC.
+ */
+async function assertAdmin(): Promise<NextResponse | null> {
+  const supabase = await createServerSupabase();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { data: isAdmin, error } = await supabase.rpc('is_platform_admin');
+  if (error || !isAdmin) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  return null;
+}
 
 // Supabase/PostgREST caps each request at 1000 rows (db-max-rows default),
 // so we page in 1000-row chunks. Total safety cap is 1M rows, which is
@@ -63,6 +90,9 @@ async function fetchAllRows(
 
 export async function GET(request: NextRequest) {
   try {
+    const gate = await assertAdmin();
+    if (gate) return gate;
+
     const url = new URL(request.url);
     const days = parseInt(url.searchParams.get('days') || '30');
     const since = new Date();

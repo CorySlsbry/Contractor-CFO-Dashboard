@@ -1,9 +1,71 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight, Check, Paintbrush, DollarSign, TrendingUp, FileText, BarChart3 } from 'lucide-react';
 import TopAnnouncementBanner from '@/components/marketing/top-announcement-banner';
 import SecurityTrustBar from '@/components/marketing/security-trust-bar';
+
+const CANONICAL = 'https://topbuildercfo.com/trades/remodelers';
+
+export const metadata: Metadata = {
+  title: 'Financial Dashboard for Remodeling Contractors | BuilderCFO',
+  description:
+    'Real-time job costing, scope creep alerts, cash flow forecasts, and margin tracking for remodelers. QuickBooks + Buildertrend + JobNimbus sync. 14-day free trial.',
+  keywords:
+    'remodeling contractor software, remodeler financial dashboard, scope creep tracking, job costing for remodelers, kitchen remodel margins, bathroom remodel job costing, remodeling cash flow forecast',
+  alternates: { canonical: CANONICAL },
+  openGraph: {
+    title: 'BuilderCFO for Remodeling Contractors — Real-Time Job Margins',
+    description:
+      'Stop finding out a remodel lost money after it is done. Scope creep alerts, live job margins, and cash flow forecasts synced from QuickBooks and Buildertrend.',
+    url: CANONICAL,
+    siteName: 'BuilderCFO',
+    type: 'website',
+    images: [
+      {
+        url: 'https://topbuildercfo.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'BuilderCFO — Financial Dashboard for Remodelers',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BuilderCFO for Remodeling Contractors',
+    description:
+      'Scope creep alerts, live job margins, and cash flow forecasts synced from QuickBooks and Buildertrend.',
+    images: ['https://topbuildercfo.com/og-image.png'],
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      '@id': `${CANONICAL}#webpage`,
+      url: CANONICAL,
+      name: 'Financial Dashboard for Remodeling Contractors | BuilderCFO',
+      description:
+        'Real-time job costing, scope creep alerts, and cash flow forecasting for remodeling contractors. QuickBooks-synced.',
+      isPartOf: { '@id': 'https://topbuildercfo.com/#website' },
+      about: { '@id': 'https://topbuildercfo.com/#software' },
+      audience: {
+        '@type': 'BusinessAudience',
+        audienceType: 'Remodeling Contractors',
+      },
+      breadcrumb: { '@id': `${CANONICAL}#breadcrumb` },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${CANONICAL}#breadcrumb`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'BuilderCFO', item: 'https://topbuildercfo.com' },
+        { '@type': 'ListItem', position: 2, name: 'Remodeling Contractors', item: CANONICAL },
+      ],
+    },
+  ],
+};
 
 const painPoints = [
   { icon: DollarSign, title: 'Scope Creep Kills Margins', desc: 'Homeowners add "just one more thing" every week. Without real-time tracking, those extras add up to thousands in unrecovered costs.' },
@@ -26,6 +88,10 @@ const features = [
 export default function RemodelersPage() {
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0] min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <TopAnnouncementBanner />
 
       {/* Nav */}

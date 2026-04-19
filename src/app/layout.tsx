@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { PWARegister } from '@/components/pwa-register';
+import { LandingTracker } from '@/components/landing-tracker';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -315,6 +316,7 @@ gtag('config', 'G-9JRWPTKS9K');`,
         </noscript>
         {/* End Google Tag Manager (noscript) */}
         <PWARegister />
+        <LandingTracker />
         {children}
 
       </body>

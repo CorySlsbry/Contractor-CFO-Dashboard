@@ -1,9 +1,71 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight, Check, Building2, DollarSign, TrendingUp, FileText, BarChart3 } from 'lucide-react';
 import TopAnnouncementBanner from '@/components/marketing/top-announcement-banner';
 import SecurityTrustBar from '@/components/marketing/security-trust-bar';
+
+const CANONICAL = 'https://topbuildercfo.com/trades/spec-builders';
+
+export const metadata: Metadata = {
+  title: 'Financial Dashboard for Spec Home Builders | BuilderCFO',
+  description:
+    'Track carrying costs, construction loan interest, draw schedules, and multi-lot cash flow for spec home builders. QuickBooks-synced. 14-day free trial.',
+  keywords:
+    'spec home builder software, spec builder financial dashboard, carrying cost tracking, construction loan interest tracking, multi-lot cash flow, spec home job costing',
+  alternates: { canonical: CANONICAL },
+  openGraph: {
+    title: 'BuilderCFO for Spec Home Builders — Carrying Cost Visibility',
+    description:
+      'Track true carrying cost per spec, construction loan interest, and multi-lot cash flow in real time. Synced from QuickBooks.',
+    url: CANONICAL,
+    siteName: 'BuilderCFO',
+    type: 'website',
+    images: [
+      {
+        url: 'https://topbuildercfo.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'BuilderCFO — Financial Dashboard for Spec Home Builders',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BuilderCFO for Spec Home Builders',
+    description:
+      'Carrying cost tracking, loan interest visibility, and multi-lot cash flow forecasting for spec builders.',
+    images: ['https://topbuildercfo.com/og-image.png'],
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      '@id': `${CANONICAL}#webpage`,
+      url: CANONICAL,
+      name: 'Financial Dashboard for Spec Home Builders | BuilderCFO',
+      description:
+        'Carrying cost, draw schedule, and multi-lot cash flow tracking for spec home builders. QuickBooks-synced.',
+      isPartOf: { '@id': 'https://topbuildercfo.com/#website' },
+      about: { '@id': 'https://topbuildercfo.com/#software' },
+      audience: {
+        '@type': 'BusinessAudience',
+        audienceType: 'Spec Home Builders',
+      },
+      breadcrumb: { '@id': `${CANONICAL}#breadcrumb` },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${CANONICAL}#breadcrumb`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'BuilderCFO', item: 'https://topbuildercfo.com' },
+        { '@type': 'ListItem', position: 2, name: 'Spec Home Builders', item: CANONICAL },
+      ],
+    },
+  ],
+};
 
 const painPoints = [
   { icon: DollarSign, title: 'Carrying Cost Blindness', desc: 'Every month a spec home sits unsold, you\'re burning interest, insurance, HOA, and utilities. Most builders don\'t track true carrying cost per unit.' },
@@ -26,6 +88,10 @@ const features = [
 export default function SpecBuildersPage() {
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0] min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <TopAnnouncementBanner />
 
       {/* Nav */}

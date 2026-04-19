@@ -1,9 +1,71 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight, Check, HardHat, DollarSign, TrendingUp, FileText, BarChart3 } from 'lucide-react';
 import TopAnnouncementBanner from '@/components/marketing/top-announcement-banner';
 import SecurityTrustBar from '@/components/marketing/security-trust-bar';
+
+const CANONICAL = 'https://topbuildercfo.com/trades/general-contractors';
+
+export const metadata: Metadata = {
+  title: 'Financial Dashboard for General Contractors | BuilderCFO',
+  description:
+    'Multi-job P&L, subcontractor cost tracking, automated WIP schedules, retainage tracking, and cash flow forecasting for general contractors. QuickBooks + Procore + Buildertrend sync. 14-day free trial.',
+  keywords:
+    'general contractor software, GC financial dashboard, WIP tracking for contractors, subcontractor cost tracking, retainage tracking, multi-job P&L, Procore QuickBooks integration',
+  alternates: { canonical: CANONICAL },
+  openGraph: {
+    title: 'BuilderCFO for General Contractors — See Every Job, Every Margin',
+    description:
+      'Multi-job dashboard, automated WIP, retainage forecasting, and subcontractor cost tracking. Synced from QuickBooks and Procore.',
+    url: CANONICAL,
+    siteName: 'BuilderCFO',
+    type: 'website',
+    images: [
+      {
+        url: 'https://topbuildercfo.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'BuilderCFO — Financial Dashboard for General Contractors',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BuilderCFO for General Contractors',
+    description:
+      'Multi-job dashboard, automated WIP, retainage forecasting, and subcontractor cost tracking.',
+    images: ['https://topbuildercfo.com/og-image.png'],
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      '@id': `${CANONICAL}#webpage`,
+      url: CANONICAL,
+      name: 'Financial Dashboard for General Contractors | BuilderCFO',
+      description:
+        'Multi-job P&L, subcontractor cost tracking, automated WIP, and retainage forecasting for GCs. QuickBooks-synced.',
+      isPartOf: { '@id': 'https://topbuildercfo.com/#website' },
+      about: { '@id': 'https://topbuildercfo.com/#software' },
+      audience: {
+        '@type': 'BusinessAudience',
+        audienceType: 'General Contractors',
+      },
+      breadcrumb: { '@id': `${CANONICAL}#breadcrumb` },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${CANONICAL}#breadcrumb`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'BuilderCFO', item: 'https://topbuildercfo.com' },
+        { '@type': 'ListItem', position: 2, name: 'General Contractors', item: CANONICAL },
+      ],
+    },
+  ],
+};
 
 const painPoints = [
   { icon: DollarSign, title: 'Subcontractor Cost Overruns', desc: 'When sub invoices come in higher than bids and you don\'t catch it until month-end close, the job margin is already gone.' },
@@ -26,6 +88,10 @@ const features = [
 export default function GeneralContractorsPage() {
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0] min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <TopAnnouncementBanner />
 
       {/* Nav */}

@@ -1,9 +1,71 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight, Check, Zap, DollarSign, TrendingUp, FileText, BarChart3 } from 'lucide-react';
 import TopAnnouncementBanner from '@/components/marketing/top-announcement-banner';
 import SecurityTrustBar from '@/components/marketing/security-trust-bar';
+
+const CANONICAL = 'https://topbuildercfo.com/trades/electrical-contractors';
+
+export const metadata: Metadata = {
+  title: 'Financial Dashboard for Electrical Contractors | BuilderCFO',
+  description:
+    'Track material costs, job margins, T&M vs. fixed-price profitability, and cash flow for electrical contractors. QuickBooks + ServiceTitan sync. 14-day free trial.',
+  keywords:
+    'electrical contractor software, electrician job costing, ServiceTitan QuickBooks integration, T&M profitability tracking, electrical contractor financial dashboard, electrical cash flow',
+  alternates: { canonical: CANONICAL },
+  openGraph: {
+    title: 'BuilderCFO for Electrical Contractors — Know Every Job Margin',
+    description:
+      'Material cost volatility, T&M vs. fixed-price margins, and service call profitability in real time. Synced from QuickBooks and ServiceTitan.',
+    url: CANONICAL,
+    siteName: 'BuilderCFO',
+    type: 'website',
+    images: [
+      {
+        url: 'https://topbuildercfo.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'BuilderCFO — Financial Dashboard for Electrical Contractors',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BuilderCFO for Electrical Contractors',
+    description:
+      'Material cost volatility, T&M vs. fixed-price margins, and service call profitability in real time.',
+    images: ['https://topbuildercfo.com/og-image.png'],
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      '@id': `${CANONICAL}#webpage`,
+      url: CANONICAL,
+      name: 'Financial Dashboard for Electrical Contractors | BuilderCFO',
+      description:
+        'Job margins, T&M vs. fixed-price profitability, and cash flow forecasting for electrical contractors. QuickBooks + ServiceTitan synced.',
+      isPartOf: { '@id': 'https://topbuildercfo.com/#website' },
+      about: { '@id': 'https://topbuildercfo.com/#software' },
+      audience: {
+        '@type': 'BusinessAudience',
+        audienceType: 'Electrical Contractors',
+      },
+      breadcrumb: { '@id': `${CANONICAL}#breadcrumb` },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${CANONICAL}#breadcrumb`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'BuilderCFO', item: 'https://topbuildercfo.com' },
+        { '@type': 'ListItem', position: 2, name: 'Electrical Contractors', item: CANONICAL },
+      ],
+    },
+  ],
+};
 
 const painPoints = [
   { icon: DollarSign, title: 'Material Price Volatility', desc: 'Copper and electrical supply prices fluctuate weekly. A bid from 30 days ago may already be underwater by the time you start the job.' },
@@ -26,6 +88,10 @@ const features = [
 export default function ElectricalContractorsPage() {
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0] min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <TopAnnouncementBanner />
 
       {/* Nav */}

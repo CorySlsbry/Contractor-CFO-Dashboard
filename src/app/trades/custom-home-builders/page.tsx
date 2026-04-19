@@ -1,9 +1,71 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight, Check, Home, DollarSign, TrendingUp, FileText, BarChart3, Shield } from 'lucide-react';
 import TopAnnouncementBanner from '@/components/marketing/top-announcement-banner';
 import SecurityTrustBar from '@/components/marketing/security-trust-bar';
+
+const CANONICAL = 'https://topbuildercfo.com/trades/custom-home-builders';
+
+export const metadata: Metadata = {
+  title: 'Financial Dashboard for Custom Home Builders | BuilderCFO',
+  description:
+    'Change order tracking, draw schedule forecasting, job costing, and cash flow visibility for custom home builders. QuickBooks + Buildertrend sync. 14-day free trial.',
+  keywords:
+    'custom home builder software, custom home builder financial dashboard, change order tracking, draw schedule software, custom home job costing, Buildertrend QuickBooks integration',
+  alternates: { canonical: CANONICAL },
+  openGraph: {
+    title: 'BuilderCFO for Custom Home Builders — Protect Every Margin',
+    description:
+      'Live change order impact, allowance overage tracking, and draw schedule forecasting for custom home builders. Synced from QuickBooks and Buildertrend.',
+    url: CANONICAL,
+    siteName: 'BuilderCFO',
+    type: 'website',
+    images: [
+      {
+        url: 'https://topbuildercfo.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'BuilderCFO — Financial Dashboard for Custom Home Builders',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BuilderCFO for Custom Home Builders',
+    description:
+      'Live change order impact, allowance tracking, and draw schedule forecasting synced from QuickBooks.',
+    images: ['https://topbuildercfo.com/og-image.png'],
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      '@id': `${CANONICAL}#webpage`,
+      url: CANONICAL,
+      name: 'Financial Dashboard for Custom Home Builders | BuilderCFO',
+      description:
+        'Change order tracking, draw forecasting, and real-time job margin visibility for custom home builders. QuickBooks-synced.',
+      isPartOf: { '@id': 'https://topbuildercfo.com/#website' },
+      about: { '@id': 'https://topbuildercfo.com/#software' },
+      audience: {
+        '@type': 'BusinessAudience',
+        audienceType: 'Custom Home Builders',
+      },
+      breadcrumb: { '@id': `${CANONICAL}#breadcrumb` },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${CANONICAL}#breadcrumb`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'BuilderCFO', item: 'https://topbuildercfo.com' },
+        { '@type': 'ListItem', position: 2, name: 'Custom Home Builders', item: CANONICAL },
+      ],
+    },
+  ],
+};
 
 const painPoints = [
   { icon: DollarSign, title: 'Change Order Chaos', desc: 'Homeowner upgrades and allowance overages eat margins when they\'re not tracked in real time against the original budget.' },
@@ -26,6 +88,10 @@ const features = [
 export default function CustomHomeBuildersPage() {
   return (
     <div className="bg-[#0a0a0f] text-[#e8e8f0] min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <TopAnnouncementBanner />
 
       {/* Nav */}
